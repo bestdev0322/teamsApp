@@ -9,6 +9,9 @@ import {
   styled,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import Contracting from '../pages/admin/Contracting';
+import Assessments from '../pages/admin/Assessments';
+import Teams from '../pages/admin/Teams';
 
 // Custom styled components for the tabs
 const StyledTabs = styled(Tabs)({
@@ -71,6 +74,20 @@ const Content: React.FC<ContentProps> = ({
     setSelectedTab(newValue);
   };
 
+  // Function to render content based on selected tab
+  const renderTabContent = () => {
+    switch (selectedTab) {
+      case 'Performance Contracting Periods':
+        return <Contracting />;
+      case 'Performance Assessments Periods':
+        return <Assessments />;
+      case 'Teams':
+        return <Teams />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <Box
       component="main"
@@ -118,8 +135,8 @@ const Content: React.FC<ContentProps> = ({
           </Box>
         </Box>
 
-        {/* Content section */}
-        {children}
+        {/* Conditional content rendering */}
+        {renderTabContent()}
       </Container>
     </Box>
   );
