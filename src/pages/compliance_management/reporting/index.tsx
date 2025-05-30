@@ -41,7 +41,7 @@ const ComplianceReporting: React.FC = () => {
         <Box sx={{ mt: 2 }}>
              <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
                 <StyledTabs value={tabValue} onChange={handleTabChange} aria-label="reports tabs">
-                    <StyledTab label="Dashboard" />
+                    <StyledTab label="Organization Compliance Dashboard" />
                     <StyledTab label="Reports" />
                 </StyledTabs>
             </Box>

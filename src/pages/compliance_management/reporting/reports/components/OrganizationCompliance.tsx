@@ -7,7 +7,7 @@ import { exportPdf } from '../../../../../utils/exportPdf';
 import { exportExcel } from '../../../../../utils/exportExcel';
 import { PdfType } from '../../../../../types';
 
-interface ComplianceDetailsProps {
+interface OrganizationComplianceProps {
   year: string;
   quarter: string;
   obligations: Obligation[];
@@ -37,7 +37,7 @@ const getComplianceStatusColor = (status: string) => {
   }
 };
 
-const ComplianceDetails: React.FC<ComplianceDetailsProps> = ({ year, quarter, obligations }) => {
+const OrganizationCompliance: React.FC<OrganizationComplianceProps> = ({ year, quarter, obligations }) => {
   const tableRef = useRef<any>(null);
 
   const getFilteredObligations = () => {
@@ -51,8 +51,8 @@ const ComplianceDetails: React.FC<ComplianceDetailsProps> = ({ year, quarter, ob
 
   const handleExportPDF = () => {
     if (filteredObligations.length > 0) {
-      const title = `${year}, ${quarter} Compliance Details`;
-      exportPdf(PdfType.ComplianceDetails, tableRef, title, '', '', [0.2, 0.15, 0.15, 0.15, 0.15, 0.2]);
+      const title = `${year}, ${quarter} Organization Compliance`;
+      exportPdf(PdfType.OrganizationCompliance, tableRef, title, '', '', [0.2, 0.15, 0.15, 0.15, 0.15, 0.2]);
     }
   };
 
@@ -68,7 +68,7 @@ const ComplianceDetails: React.FC<ComplianceDetailsProps> = ({ year, quarter, ob
         obligation.complianceStatus
       ]);
       
-      exportExcel(tableRef.current, `${year}_${quarter}_Compliance_Details`);
+      exportExcel(tableRef.current, `${year}_${quarter}_Organization_Compliance`);
     }
   };
 
@@ -76,7 +76,7 @@ const ComplianceDetails: React.FC<ComplianceDetailsProps> = ({ year, quarter, ob
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6">
-          {year}, {quarter} Compliance Details
+          {year}, {quarter} Organization Compliance
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <ExportButton
@@ -151,4 +151,4 @@ const ComplianceDetails: React.FC<ComplianceDetailsProps> = ({ year, quarter, ob
   );
 };
 
-export default ComplianceDetails; 
+export default OrganizationCompliance; 

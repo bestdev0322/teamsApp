@@ -116,7 +116,7 @@ function Main() {
       title: "Dashboard",
       icon: <Home24Regular fontSize={iconSize} />,
       tabs: ['Dashboard'],
-      show: isAppOwner || isSuperUser || isTeamOwner
+      show: true
     },
     {
       path: "/notifications/*",

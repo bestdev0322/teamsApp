@@ -9,6 +9,6 @@ export enum PdfType {
     Reports = 'Reports',
     ComplianceSummary = 'ComplianceSummary',
     HighRiskOverdue = 'HighRiskOverdue',
-    ComplianceDetails = 'ComplianceDetails',
+    OrganizationCompliance = 'OrganizationCompliance',
     ComplianceTrend = 'ComplianceTrend'
 }

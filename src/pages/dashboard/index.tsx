@@ -452,25 +452,23 @@ const Dashboard: React.FC<DashboardProps> = ({ title, icon, tabs, selectedTab })
               </Select>
             </StyledFormControl>
 
-            {(isSuperUser || isAppOwner || userOwnedTeam) && (
-              <StyledFormControl sx={{ minWidth: { xs: '100%', sm: 200 } }}>
-                <InputLabel>View Mode</InputLabel>
-                <Select
-                  value={viewMode}
-                  label="View Mode"
-                  onChange={(e) => {
-                    setViewMode(e.target.value as 'teamPerformance' | 'completion' | 'strategyMap' | 'strategyExecution');
-                    setShowDashboard(false);
-                    resetTables();
-                  }}
-                >
-                  {(isSuperUser || isAppOwner) && <MenuItem value="teamPerformance">Team Performance</MenuItem>}
-                  {(isSuperUser || isAppOwner) && <MenuItem value="completion">Completions</MenuItem>}
-                  <MenuItem value="strategyMap">Strategy Map</MenuItem>
-                  <MenuItem value="strategyExecution">Strategy Execution</MenuItem>
-                </Select>
-              </StyledFormControl>
-            )}
+            <StyledFormControl sx={{ minWidth: { xs: '100%', sm: 200 } }}>
+              <InputLabel>View Mode</InputLabel>
+              <Select
+                value={viewMode}
+                label="View Mode"
+                onChange={(e) => {
+                  setViewMode(e.target.value as 'teamPerformance' | 'completion' | 'strategyMap' | 'strategyExecution');
+                  setShowDashboard(false);
+                  resetTables();
+                }}
+              >
+                {(isSuperUser || isAppOwner) && <MenuItem value="teamPerformance">Team Performance</MenuItem>}
+                {(isSuperUser || isAppOwner) && <MenuItem value="completion">Completions</MenuItem>}
+                <MenuItem value="strategyMap">Strategy Map</MenuItem>
+                <MenuItem value="strategyExecution">Strategy Execution</MenuItem>
+              </Select>
+            </StyledFormControl>
 
             <StyledFormControl sx={{ minWidth: { xs: '100%', sm: 200 } }}>
               <InputLabel>Quarter</InputLabel>

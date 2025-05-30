@@ -5,16 +5,19 @@ import { useAppDispatch } from '../../../../hooks/useAppDispatch';
 import { fetchComplianceObligations } from '../../../../store/slices/complianceObligationsSlice';
 import ComplianceSummary from './components/ComplianceSummary';
 import HighRiskObligation from './components/HighRiskObligation';
-import ComplianceDetails from './components/ComplianceDetails';
+import OrganizationCompliance from './components/OrganizationCompliance';
+import { useAuth } from '../../../../contexts/AuthContext';
 
 const StyledFormControl = FormControl;
 const ViewButton = Button;
 
-type ReportType = 'compliance-summary' | 'high-risk-obligation' | 'compliance-details';
+type ReportType = 'compliance-summary' | 'high-risk-obligation' | 'organization-compliance';
 
 const Reports: React.FC = () => {
   const dispatch = useAppDispatch();
   const { obligations, status } = useAppSelector(state => state.complianceObligations);
+  const { user } = useAuth();
+  const teams = useAppSelector(state => state.teams.teams);
   
   // Get available years from obligations and current year
   const years = useMemo(() => {
@@ -54,7 +57,7 @@ const Reports: React.FC = () => {
   const reports = [
     { value: 'compliance-summary', label: 'Compliance Summary' },
     { value: 'high-risk-obligation', label: 'High-Risk Obligation' },
-    { value: 'compliance-details', label: 'Compliance Details' }
+    { value: 'organization-compliance', label: 'Organization Compliance' }
   ];
 
   // Determine if the view button should be disabled
@@ -67,13 +70,19 @@ const Reports: React.FC = () => {
   const renderReport = () => {
     if (!showReport) return null;
 
+    let teamName: string | undefined = undefined;
+    if (user?.teamId && Array.isArray(teams)) {
+      const team = teams.find(t => t._id === user.teamId);
+      teamName = team?.name;
+    }
+
     switch (selectedReport) {
       case 'compliance-summary':
-        return <ComplianceSummary year={year} quarter={selectedQuarter} obligations={obligations} />;
+        return <ComplianceSummary year={year} quarter={selectedQuarter} obligations={obligations} teamName={teamName} />;
       case 'high-risk-obligation':
         return <HighRiskObligation year={year} quarter={selectedQuarter} obligations={obligations} />;
-      case 'compliance-details':
-        return <ComplianceDetails year={year} quarter={selectedQuarter} obligations={obligations} />;
+      case 'organization-compliance':
+        return <OrganizationCompliance year={year} quarter={selectedQuarter} obligations={obligations} />;
       default:
         return null;
     }

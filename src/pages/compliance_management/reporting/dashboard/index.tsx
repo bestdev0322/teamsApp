@@ -63,67 +63,67 @@ const ComplianceAreas: React.FC = () => {
 
   return (
     <Box sx={{ p: 2, backgroundColor: '#F9FAFB', borderRadius: '8px' }}>
-      <Box sx={{
-        display: 'flex',
-        gap: 2,
-        mb: 3,
-        flexDirection: { xs: 'column', sm: 'row' }
-      }}>
+    <Box sx={{
+      display: 'flex',
+      gap: 2,
+      mb: 3,
+      flexDirection: { xs: 'column', sm: 'row' }
+    }}>
         <StyledFormControl sx={{ flex: 2 }}>
           <InputLabel>Year</InputLabel>
-          <Select
+        <Select
             value={year}
             label="Year"
             onChange={(e) => { setYear(e.target.value); setShowDashboard(false); }}
-          >
+        >
             {years.map((y) => (
               <MenuItem key={y} value={y}>{y}</MenuItem>
-            ))}
-          </Select>
-        </StyledFormControl>
+          ))}
+        </Select>
+      </StyledFormControl>
 
         {(isComplianceSuperUser || isComplianceChampion) && (
           <StyledFormControl sx={{ 
             flex: viewMode === 'compliance-trend-view' ? 2 : 1,
             width: { xs: '100%' }
           }}>
-            <InputLabel>View Mode</InputLabel>
-            <Select
-              value={viewMode}
-              label="View Mode"
-              onChange={(e) => {
+          <InputLabel>View Mode</InputLabel>
+          <Select
+            value={viewMode}
+            label="View Mode"
+            onChange={(e) => {
                 setViewMode(e.target.value as 'compliance-view' | 'compliance-trend-view');
-                setShowDashboard(false);
-              }}
-            >
+              setShowDashboard(false);
+            }}
+          >
               <MenuItem value="compliance-view">Compliance View</MenuItem>
               <MenuItem value="compliance-trend-view">Compliance Trend View</MenuItem>
-            </Select>
-          </StyledFormControl>
-        )}
+          </Select>
+        </StyledFormControl>
+      )}
 
         {viewMode !== 'compliance-trend-view' && <StyledFormControl sx={{ flex: 0.7, width: { xs: '100%' } }}>
-          <InputLabel>Quarter</InputLabel>
-          <Select
-            value={selectedQuarter}
-            label="Quarter"
+        <InputLabel>Quarter</InputLabel>
+        <Select
+          value={selectedQuarter}
+          label="Quarter"
             onChange={(e) => { setSelectedQuarter(e.target.value); setShowDashboard(false); }}
           >
             {quarters.map((q) => (
               <MenuItem key={q} value={q}>{q}</MenuItem>
-            ))}
-          </Select>
+          ))}
+        </Select>
         </StyledFormControl>}
 
-        <ViewButton
-          variant="contained"
+      <ViewButton
+        variant="contained"
           disabled={isViewButtonDisabled}
-          onClick={handleView}
-          sx={{ width: { xs: '100%', sm: 'auto' } }}
-        >
-          {isLoading ? 'Loading...' : 'View'}
-        </ViewButton>
-      </Box>
+        onClick={handleView}
+        sx={{ width: { xs: '100%', sm: 'auto' } }}
+      >
+        {isLoading ? 'Loading...' : 'View'}
+      </ViewButton>
+    </Box>
 
       {showDashboard && status === 'succeeded' && (
         viewMode === 'compliance-view' ? (

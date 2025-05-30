@@ -7,10 +7,12 @@ import { exportPdf } from '../../../../../utils/exportPdf';
 import { exportExcel } from '../../../../../utils/exportExcel';
 import { PdfType } from '../../../../../types';
 import { useAuth } from '../../../../../contexts/AuthContext';
+
 interface ComplianceSummaryProps {
   year: string;
   quarter: string;
   obligations: Obligation[];
+  teamName?: string;
 }
 
 interface SummaryRow {
@@ -21,7 +23,7 @@ interface SummaryRow {
   complianceRate: number;
 }
 
-const ComplianceSummary: React.FC<ComplianceSummaryProps> = ({ year, quarter, obligations }) => {
+const ComplianceSummary: React.FC<ComplianceSummaryProps> = ({ year, quarter, obligations, teamName }) => {
   const tableRef = useRef<any>(null);
   const { user } = useAuth();
   const isComplianceSuperUser = user?.isComplianceSuperUser;
@@ -78,7 +80,7 @@ const ComplianceSummary: React.FC<ComplianceSummaryProps> = ({ year, quarter, ob
 
   const handleExportPDF = () => {
     if (summaryData.length > 0) {
-      const title = `${year}, ${quarter} ${isComplianceSuperUser ? 'Organization' : 'Team'} Compliance Summary`;
+      const title = `${year}, ${quarter} ${isComplianceSuperUser ? 'Organization' : `${teamName} Team`} Compliance Summary`;
       exportPdf(PdfType.ComplianceSummary, tableRef, title, '', '', [0.25, 0.25, 0.25, 0.25]);
     }
   };
@@ -101,7 +103,7 @@ const ComplianceSummary: React.FC<ComplianceSummaryProps> = ({ year, quarter, ob
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6">
-          {year}, {quarter} {isComplianceSuperUser ? 'Organization' : 'Team'} Compliance
+          {year}, {quarter} {isComplianceSuperUser ? 'Organization' : `${teamName} Team`} Compliance
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <ExportButton
