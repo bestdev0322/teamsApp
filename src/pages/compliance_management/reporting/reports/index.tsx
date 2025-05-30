@@ -4,13 +4,13 @@ import { useAppSelector } from '../../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
 import { fetchComplianceObligations } from '../../../../store/slices/complianceObligationsSlice';
 import ComplianceSummary from './components/ComplianceSummary';
-import HighRiskOverdue from './components/HighRiskOverdue';
+import HighRiskObligation from './components/HighRiskObligation';
 import ComplianceDetails from './components/ComplianceDetails';
 
 const StyledFormControl = FormControl;
 const ViewButton = Button;
 
-type ReportType = 'compliance-summary' | 'high-risk-overdue' | 'compliance-details';
+type ReportType = 'compliance-summary' | 'high-risk-obligation' | 'compliance-details';
 
 const Reports: React.FC = () => {
   const dispatch = useAppDispatch();
@@ -53,7 +53,7 @@ const Reports: React.FC = () => {
   const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
   const reports = [
     { value: 'compliance-summary', label: 'Compliance Summary' },
-    { value: 'high-risk-overdue', label: 'High-Risk Over-Due' },
+    { value: 'high-risk-obligation', label: 'High-Risk Obligation' },
     { value: 'compliance-details', label: 'Compliance Details' }
   ];
 
@@ -70,8 +70,8 @@ const Reports: React.FC = () => {
     switch (selectedReport) {
       case 'compliance-summary':
         return <ComplianceSummary year={year} quarter={selectedQuarter} obligations={obligations} />;
-      case 'high-risk-overdue':
-        return <HighRiskOverdue year={year} quarter={selectedQuarter} obligations={obligations} />;
+      case 'high-risk-obligation':
+        return <HighRiskObligation year={year} quarter={selectedQuarter} obligations={obligations} />;
       case 'compliance-details':
         return <ComplianceDetails year={year} quarter={selectedQuarter} obligations={obligations} />;
       default:

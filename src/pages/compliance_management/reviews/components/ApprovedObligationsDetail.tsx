@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button, IconButton } from '@mui/material';
+import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button, IconButton, TextField } from '@mui/material';
 import { api } from '../../../../services/api';
 import { riskColors } from '../../obligation/obligationModal';
 import ArticleIcon from '@mui/icons-material/Article'; // Icon for comments/attachments
@@ -9,6 +9,7 @@ import { useAppSelector } from '../../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
 import { fetchComplianceObligations } from '../../../../store/slices/complianceObligationsSlice';
 import { Obligation, AssessmentStatus } from '../../../../types/compliance';
+import { exportPdf, exportExcel } from '../../../../utils/exportUtils';
 
 interface ApprovedObligationsDetailProps {
     year: number;
@@ -24,6 +25,9 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
     const [obligationForView, setObligationForView] = useState<Obligation | null>(null); // State for data in the comments/attachments modal
     const [commentsAttachmentsModalOpen, setCommentsAttachmentsModalOpen] = useState(false); // State for comments/attachments modal
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const [search, setSearch] = useState('');
+    const tableRef = React.useRef<any>(null);
+    const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
 
     // Filter obligations that have an update entry for the specified year and quarter and are approved
     const obligations = allObligations.filter(ob =>
@@ -32,6 +36,14 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
             u.quarter === quarter && 
             u.assessmentStatus === AssessmentStatus.Approved
         )
+    );
+
+    const filteredObligations = obligations.filter(ob =>
+        ob.complianceObligation.toLowerCase().includes(search.toLowerCase()) ||
+        ob.frequency.toLowerCase().includes(search.toLowerCase()) ||
+        (typeof ob.owner === 'object' ? ob.owner.name : ob.owner).toLowerCase().includes(search.toLowerCase()) ||
+        ob.riskLevel.toLowerCase().includes(search.toLowerCase()) ||
+        (ob.complianceStatus || '').toLowerCase().includes(search.toLowerCase())
     );
 
     useEffect(() => {
@@ -59,11 +71,41 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
         setObligationForView(null);
     };
 
+    const handleExportPdf = () => {
+        setExportType('pdf');
+    };
+    const handleExportExcel = () => {
+        setExportType('excel');
+    };
+
+    useEffect(() => {
+        if (exportType) {
+            const doExport = async () => {
+                if (exportType === 'pdf') {
+                    await exportPdf(
+                        'approved-quarterly-obligation',
+                        tableRef,
+                        `Approved Obligations for ${quarter} ${year}`,
+                        '',
+                        '',
+                        [0.17, 0.17, 0.17, 0.17, 0.17, 0.15]
+                    );
+                } else if (exportType === 'excel') {
+                    exportExcel(tableRef.current, `Approved Obligations for ${quarter} ${year}`);
+                }
+                setExportType(null);
+            };
+            setTimeout(doExport, 0);
+        }
+    }, [exportType, quarter, year]);
+
     if (loading) {
         return <Typography>Loading approved obligations...</Typography>;
     } else if (error) {
         return <Typography color="error">{error}</Typography>;
     }
+
+    const hasData = filteredObligations.length > 0;
 
     return (
         <Box sx={{ mt: 2 }}>
@@ -90,13 +132,40 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
             >
                 Back
             </Button>
+            {hasData && (
+                <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleExportPdf}
+                            sx={{ textTransform: 'none' }}
+                        >
+                            Export PDF
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={handleExportExcel}
+                            sx={{ textTransform: 'none' }}
+                        >
+                            Export Excel
+                        </Button>
+                    </Box>
+                    <TextField
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search by any field"
+                        size="small"
+                        sx={{ width: 320 }}
+                    />
+                </Box>
+            )}
             <Typography variant="h6" gutterBottom>Obligations for {quarter} {year}</Typography>
 
             {!obligations.length ? (
                 <Typography>No approved obligations found for this quarter.</Typography>
             ) : (
                 <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1, border: '1px solid #E5E7EB', overflowX: 'auto' }}>
-                    <Table>
+                    <Table ref={tableRef}>
                         <TableHead>
                             <TableRow>
                                 <TableCell>Compliance Obligation</TableCell>
@@ -108,7 +177,7 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {obligations.map(obligation => {
+                            {filteredObligations.map(obligation => {
                                 // Find the relevant update entry for the displayed quarter
                                 const displayQuarterUpdate = obligation.update?.find(u => u.year === year.toString() && u.quarter === quarter);
 

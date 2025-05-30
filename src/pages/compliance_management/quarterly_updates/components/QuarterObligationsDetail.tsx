@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button, IconButton, Checkbox, CircularProgress } from '@mui/material';
+import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button, IconButton, Checkbox, CircularProgress, TextField } from '@mui/material';
 import { api } from '../../../../services/api';
 import { riskColors } from '../../obligation/obligationModal';
 import ArticleIcon from '@mui/icons-material/Article'; // Icon for comments/attachments
@@ -10,6 +10,7 @@ import { useAppSelector } from '../../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
 import { fetchComplianceObligations, submitQuarterlyUpdates } from '../../../../store/slices/complianceObligationsSlice';
 import { Obligation, AssessmentStatus } from '../../../../types/compliance';
+import { exportPdf, exportExcel } from '../../../../utils/exportUtils';
 
 interface Attachment {
     filename: string;
@@ -42,6 +43,9 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     const [selectedObligations, setSelectedObligations] = useState<string[]>([]); // State for selected obligations
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [search, setSearch] = useState('');
+    const tableRef = React.useRef<any>(null);
+    const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
 
     // Filter obligations based on status and current quarter
     const obligations = allObligations.filter((ob: Obligation) => {
@@ -54,6 +58,14 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                (currentQuarterUpdate.assessmentStatus !== AssessmentStatus.Submitted && 
                 currentQuarterUpdate.assessmentStatus !== AssessmentStatus.Approved);
     });
+
+    const filteredObligations = obligations.filter(ob =>
+        ob.complianceObligation.toLowerCase().includes(search.toLowerCase()) ||
+        ob.frequency.toLowerCase().includes(search.toLowerCase()) ||
+        (typeof ob.owner === 'object' ? ob.owner.name : ob.owner).toLowerCase().includes(search.toLowerCase()) ||
+        ob.riskLevel.toLowerCase().includes(search.toLowerCase()) ||
+        (ob.complianceStatus || '').toLowerCase().includes(search.toLowerCase())
+    );
 
     useEffect(() => {
         const loadObligations = async () => {
@@ -232,6 +244,34 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
         }
     };
 
+    const handleExportPdf = () => {
+        setExportType('pdf');
+    };
+
+    const handleExportExcel = () => {
+        setExportType('excel');
+    };
+
+    useEffect(() => {
+        if (exportType) {
+            const doExport = async () => {
+                if (exportType === 'pdf') {
+                    await exportPdf(
+                        'quarterly-obligation',
+                        tableRef,
+                        `Obligations for ${quarter} ${year}`,
+                        '',
+                        '',
+                        [0.17, 0.17, 0.17, 0.17, 0.17, 0.15] // Adjust as needed for your columns
+                    );
+                } else if (exportType === 'excel') {
+                    exportExcel(tableRef.current, `Obligations for ${quarter} ${year}`);
+                }
+                setExportType(null);
+            };
+            setTimeout(doExport, 0);
+        }
+    }, [exportType]);
 
     if (loading) {
         return <Typography>Loading obligations...</Typography>;
@@ -247,6 +287,8 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
          return hasCommentsOrAttachmentsForQuarter && ob.complianceStatus !== undefined;
     });
     const isAllSelected = selectableObligations.length > 0 && selectedObligations.length === selectableObligations.length;
+
+    const hasData = filteredObligations.length > 0;
 
     return (
         <Box sx={{ mt: 2 }}>
@@ -313,16 +355,43 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                     )}
                 </Button>
             </Box>
+            {hasData && (
+                <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleExportPdf}
+                            sx={{ textTransform: 'none' }}
+                        >
+                            Export PDF
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={handleExportExcel}
+                            sx={{ textTransform: 'none' }}
+                        >
+                            Export Excel
+                        </Button>
+                    </Box>
+                    <TextField
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search by any field"
+                        size="small"
+                        sx={{ width: 320 }}
+                    />
+                </Box>
+            )}
             <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Obligations for {quarter} {year}</Typography>
 
             {!obligations.length ? (
                 <Typography>No active obligations found for this quarter.</Typography>
             ) : (
                 <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1, border: '1px solid #E5E7EB', overflowX: 'auto' }}>
-                    <Table>
+                    <Table ref={tableRef}>
                         <TableHead>
                             <TableRow>
-                                <TableCell padding="checkbox">
+                                <TableCell padding="checkbox" className="noprint">
                                      <Checkbox
                                          indeterminate={selectedObligations.length > 0 && selectedObligations.length < selectableObligations.length}
                                          checked={isAllSelected}
@@ -336,11 +405,11 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                                 <TableCell>Risk Level</TableCell>
                                 <TableCell>Compliance Status</TableCell>
                                 <TableCell align='center'>Comments</TableCell>
-                                <TableCell align='center'>Actions</TableCell>
+                                <TableCell align="center" className="noprint">Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {obligations.map(obligation => {
+                            {filteredObligations.map(obligation => {
                                 // Find the update entry for the current quarter
                                 const quarterUpdate = obligation.update?.find(u => u.year === year.toString() && u.quarter === quarter);
 
@@ -350,7 +419,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
 
                                 return (
                                     <TableRow key={obligation._id} hover>
-                                        <TableCell padding="checkbox">
+                                        <TableCell padding="checkbox" className="noprint">
                                             {canSelect && (
                                                 <Checkbox
                                                     checked={selectedObligations.includes(obligation._id)}
@@ -387,7 +456,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                                                 '-'
                                             )}
                                         </TableCell>
-                                        <TableCell align='center'>
+                                        <TableCell align="center" className="noprint">
                                             <Button variant="outlined" size="small" onClick={() => handleOpenUpdateModal(obligation)}>Update</Button>
                                         </TableCell>
                                     </TableRow>

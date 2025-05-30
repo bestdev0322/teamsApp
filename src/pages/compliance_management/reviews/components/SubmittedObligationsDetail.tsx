@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button, IconButton, Checkbox } from '@mui/material';
+import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button, IconButton, Checkbox, TextField, CircularProgress } from '@mui/material';
 import { api } from '../../../../services/api';
 import { riskColors } from '../../obligation/obligationModal';
 import ArticleIcon from '@mui/icons-material/Article'; // Icon for comments/attachments
@@ -10,6 +10,7 @@ import { useAppSelector } from '../../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
 import { fetchComplianceObligations, submitQuarterlyUpdates } from '../../../../store/slices/complianceObligationsSlice';
 import { Obligation, AssessmentStatus } from '../../../../types/compliance';
+import { exportPdf, exportExcel } from '../../../../utils/exportUtils';
 
 interface Attachment {
     filename: string;
@@ -41,6 +42,10 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     const [obligationForView, setObligationForView] = useState<Obligation | null>(null); // State for data in the new modal, might only need update data structure
     const [selectedObligations, setSelectedObligations] = useState<string[]>([]); // State for selected obligations
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const [search, setSearch] = useState('');
+    const tableRef = React.useRef<any>(null);
+    const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Filter obligations that have submitted updates for the current quarter
     const obligations = allObligations.filter(ob => 
@@ -50,6 +55,14 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
             u.quarter === quarter && 
             u.assessmentStatus === AssessmentStatus.Submitted
         )
+    );
+
+    const filteredObligations = obligations.filter(ob =>
+        ob.complianceObligation.toLowerCase().includes(search.toLowerCase()) ||
+        ob.frequency.toLowerCase().includes(search.toLowerCase()) ||
+        (typeof ob.owner === 'object' ? ob.owner.name : ob.owner).toLowerCase().includes(search.toLowerCase()) ||
+        ob.riskLevel.toLowerCase().includes(search.toLowerCase()) ||
+        (ob.complianceStatus || '').toLowerCase().includes(search.toLowerCase())
     );
 
     useEffect(() => {
@@ -197,6 +210,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
 
     const handleApproveSelected = async () => {
         try {
+            setIsSubmitting(true);
             await dispatch(submitQuarterlyUpdates({
                 obligationIds: selectedObligations,
                 year: year.toString(),
@@ -217,6 +231,8 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                 message: 'Error approving obligations',
                 type: 'error'
             });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -235,6 +251,33 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
         }
     };
 
+    const handleExportPdf = () => {
+        setExportType('pdf');
+    };
+    const handleExportExcel = () => {
+        setExportType('excel');
+    };
+
+    useEffect(() => {
+        if (exportType) {
+            const doExport = async () => {
+                if (exportType === 'pdf') {
+                    await exportPdf(
+                        'submitted-quarterly-obligation',
+                        tableRef,
+                        `Submitted Obligations for ${quarter} ${year}`,
+                        '',
+                        '',
+                        [0.17, 0.17, 0.17, 0.17, 0.17, 0.15] // Adjust as needed for your columns
+                    );
+                } else if (exportType === 'excel') {
+                    exportExcel(tableRef.current, `Submitted Obligations for ${quarter} ${year}`);
+                }
+                setExportType(null);
+            };
+            setTimeout(doExport, 0);
+        }
+    }, [exportType, quarter, year]);
 
     if (loading) {
         return <Typography>Loading obligations...</Typography>;
@@ -250,6 +293,8 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
         return hasCommentsOrAttachmentsForQuarter && ob.complianceStatus !== undefined;
     });
     const isAllSelected = selectableObligations.length > 0 && selectedObligations.length === selectableObligations.length;
+
+    const hasData = filteredObligations.length > 0;
 
     return (
         <Box sx={{ mt: 2 }}>
@@ -279,32 +324,80 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                 <Button
                     variant="contained"
                     onClick={handleApproveSelected}
-                    disabled={!canApprove}
+                    disabled={!canApprove || isSubmitting}
                     sx={{
                         textTransform: 'none',
-                        backgroundColor: '#10B981', // Green color
+                        backgroundColor: '#10B981',
+                        minWidth: '120px',
+                        height: '36px',
+                        position: 'relative',
                         '&:hover': {
-                            backgroundColor: '#059669', // Darker green on hover
+                            backgroundColor: '#059669',
                         },
                         '&:disabled': {
-                            backgroundColor: '#9CA3AF', // Gray when disabled
-                            color: '#E5E7EB', // Light gray text when disabled
+                            backgroundColor: '#9CA3AF',
+                            color: '#E5E7EB',
                         },
                     }}
                 >
-                    Approve
+                    <Box sx={{ 
+                        visibility: isSubmitting ? 'hidden' : 'visible',
+                        minWidth: '60px'
+                    }}>
+                        Submit
+                    </Box>
+                    {isSubmitting && (
+                        <CircularProgress
+                            size={24}
+                            sx={{
+                                color: '#fff',
+                                position: 'absolute',
+                                top: '50%',
+                                left: '50%',
+                                marginTop: '-12px',
+                                marginLeft: '-12px',
+                            }}
+                        />
+                    )}
                 </Button>
             </Box>
+            {hasData && (
+                <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                        <Button
+                            variant="outlined"
+                            onClick={handleExportPdf}
+                            sx={{ textTransform: 'none' }}
+                        >
+                            Export PDF
+                        </Button>
+                        <Button
+                            variant="outlined"
+                            onClick={handleExportExcel}
+                            sx={{ textTransform: 'none' }}
+                        >
+                            Export Excel
+                        </Button>
+                    </Box>
+                    <TextField
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                        placeholder="Search by any field"
+                        size="small"
+                        sx={{ width: 320 }}
+                    />
+                </Box>
+            )}
             <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>Obligations for {quarter} {year}</Typography>
 
             {!obligations.length ? (
                 <Typography>No submitted obligations found for this quarter.</Typography>
             ) : (
                 <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1, border: '1px solid #E5E7EB', overflowX: 'auto' }}>
-                    <Table>
+                    <Table ref={tableRef}>
                         <TableHead>
                             <TableRow>
-                                <TableCell padding="checkbox">
+                                <TableCell padding="checkbox" className="noprint">
                                     <Checkbox
                                         indeterminate={selectedObligations.length > 0 && selectedObligations.length < selectableObligations.length}
                                         checked={isAllSelected}
@@ -318,11 +411,11 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                                 <TableCell>Risk Level</TableCell>
                                 <TableCell>Compliance Status</TableCell>
                                 <TableCell align='center'>Comments</TableCell>
-                                <TableCell align='center'>Actions</TableCell>
+                                <TableCell align='center' className="noprint">Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {obligations.map(obligation => {
+                            {filteredObligations.map(obligation => {
                                 // Find the update entry for the current quarter
                                 const quarterUpdate = obligation.update?.find(u => u.year === year.toString() && u.quarter === quarter);
 
@@ -335,7 +428,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
 
                                 return (
                                     <TableRow key={obligation._id} hover>
-                                        <TableCell padding="checkbox">
+                                        <TableCell padding="checkbox" className='noprint'>
                                             {canSelect && (
                                                 <Checkbox
                                                     checked={selectedObligations.includes(obligation._id)}
