@@ -9,6 +9,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '../../../store';
 import { fetchTeams } from '../../../store/slices/teamsSlice';
 import { useAuth } from '../../../contexts/AuthContext';
+import { exportPdf, exportExcel } from '../../../utils/exportUtils';
 
 const riskColors: Record<string, string> = {
   High: '#FF4D4F',    // Red
@@ -45,6 +46,9 @@ const ComplianceObligationPage: React.FC = () => {
   const teams = useSelector((state: RootState) => state.teams.teams);
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useAuth();
+  const [search, setSearch] = useState('');
+  const tableRef = React.useRef<any>(null);
+  const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
 
   useEffect(() => {
     api.get('/compliance-areas').then(res => setComplianceAreas(res.data.data || []));
@@ -93,17 +97,79 @@ const ComplianceObligationPage: React.FC = () => {
     return owner?.name || '';
   };
 
+  // Filtered obligations for search
+  const filteredObligations = obligations.filter(ob =>
+    ob.complianceObligation.toLowerCase().includes(search.toLowerCase()) ||
+    getAreaName(ob.complianceArea).toLowerCase().includes(search.toLowerCase()) ||
+    ob.frequency.toLowerCase().includes(search.toLowerCase()) ||
+    ob.lastDueDate.toLowerCase().includes(search.toLowerCase()) ||
+    getTeamName(ob.owner).toLowerCase().includes(search.toLowerCase()) ||
+    ob.riskLevel.toLowerCase().includes(search.toLowerCase()) ||
+    ob.status.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleExportPdf = () => {
+    setExportType('pdf');
+  };
+  const handleExportExcel = () => {
+    setExportType('excel');
+  };
+
+  React.useEffect(() => {
+    if (exportType) {
+      const doExport = async () => {
+        if (exportType === 'pdf') {
+          await exportPdf(
+            'compliance-obligation',
+            tableRef,
+            'Compliance Obligations',
+            '',
+            '',
+            [0.2, 0.15, 0.1, 0.18, 0.18, 0.1, 0.09]
+          );
+        } else if (exportType === 'excel') {
+          exportExcel(tableRef.current, 'Compliance Obligations');
+        }
+        setExportType(null);
+      };
+      setTimeout(doExport, 0);
+    }
+  }, [exportType]);
+
   return (
     <Box>
-      <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => { setModalOpen(true); setEditObligation(null); }}
-          sx={{ textTransform: 'none', backgroundColor: '#0078D4', '&:hover': { backgroundColor: '#106EBE' } }}
-        >
-          Add Compliance Obligation
-        </Button>
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => { setModalOpen(true); setEditObligation(null); }}
+            sx={{ textTransform: 'none', backgroundColor: '#0078D4', '&:hover': { backgroundColor: '#106EBE' } }}
+          >
+            Add Compliance Obligation
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleExportPdf}
+            sx={{ textTransform: 'none' }}
+          >
+            Export PDF
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleExportExcel}
+            sx={{ textTransform: 'none' }}
+          >
+            Export Excel
+          </Button>
+        </Box>
+        <TextField
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search by any field"
+          size="small"
+          sx={{ width: 320 }}
+        />
       </Box>
       <ObligationModal
         open={modalOpen}
@@ -114,7 +180,7 @@ const ComplianceObligationPage: React.FC = () => {
         initialData={editObligation}
       />
       <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1, border: '1px solid #E5E7EB', overflowX: 'auto', mt: 2 }}>
-        <Table>
+        <Table ref={tableRef}>
           <TableHead>
             <TableRow>
               <TableCell>Compliance Obligation</TableCell>
@@ -124,11 +190,11 @@ const ComplianceObligationPage: React.FC = () => {
               <TableCell>Owner</TableCell>
               <TableCell>Risk Level</TableCell>
               <TableCell>Status</TableCell>
-              <TableCell align="center">Actions</TableCell>
+              <TableCell align="center" className="noprint">Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {obligations.map(ob => (
+            {filteredObligations.map(ob => (
               <TableRow key={ob._id} hover>
                 <TableCell>{ob.complianceObligation}</TableCell>
                 <TableCell>{getAreaName(ob.complianceArea)}</TableCell>
@@ -148,7 +214,7 @@ const ComplianceObligationPage: React.FC = () => {
                   {ob.riskLevel}
                 </TableCell>
                 <TableCell>{ob.status}</TableCell>
-                <TableCell align="center">
+                <TableCell align="center" className="noprint">
                   <IconButton color="primary" size="small" onClick={() => handleEditClick(ob)}>
                     <EditIcon fontSize="small" />
                   </IconButton>
