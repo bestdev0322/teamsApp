@@ -116,7 +116,7 @@ function Main() {
       title: "Dashboard",
       icon: <Home24Regular fontSize={iconSize} />,
       tabs: ['Dashboard'],
-      show: true
+      show: isAppOwner || isSuperUser || isTeamOwner
     },
     {
       path: "/notifications/*",
@@ -209,8 +209,8 @@ function Main() {
       icon: <DocumentText24Regular fontSize={iconSize} />,
       tabs: isAppOwner || isSuperUser ?
         ['Teams Performances', 'Teams Performance Assessments Completions', 'Teams Performance Agreements Completions', 'Teams Performance Assessments', 'Teams Performance Agreements', 'Performance Distribution Report', 'Employee Performance Rating', 'Supervisor Performance Distribution Report'] :
-        ['Teams Performances', 'Teams Performance Assessments Completions', 'Teams Performance Agreements Completions', 'Teams Performance Assessments', 'Teams Performance Agreements', 'Supervisor Performance Distribution Report'],
-      show: isAppOwner || isSuperUser || isTeamOwner
+        ['Teams Performances', 'Teams Performance Assessments Completions', 'Teams Performance Agreements Completions', 'Teams Performance Assessments', 'Teams Performance Agreements'],
+      show: true
     },
     {
       path: "/teams/*",
@@ -243,7 +243,7 @@ function Main() {
   return (
     <Routes>
       <Route element={<Layout pages={pages} />}>
-        <Route path="/*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="/*" element={<Navigate to={(isAppOwner || isSuperUser || isTeamOwner) ? "/dashboard" : "/notifications"} replace />} />
         {pages.map((page) => (
           page.show && (
             <Route
