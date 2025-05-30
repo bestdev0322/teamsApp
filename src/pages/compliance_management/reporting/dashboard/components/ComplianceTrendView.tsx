@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button } from '@mui/material';
 import { Obligation } from '../../../../../types/compliance';
+import { ExportButton } from '../../../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import jsPDF from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
@@ -38,7 +39,7 @@ const ComplianceTrendView: React.FC<ComplianceTrendViewProps> = ({ year, obligat
 
   const getComplianceTrendData = () => {
     const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
-    
+
     // Calculate organization compliance for each quarter
     const organizationTrend: ComplianceData[] = quarters.map(q => {
       const quarterObligations = obligations.filter(o => {
@@ -248,36 +249,22 @@ const ComplianceTrendView: React.FC<ComplianceTrendViewProps> = ({ year, obligat
       {/* Export Buttons */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant="outlined"
+          <ExportButton
+            className="pdf"
             startIcon={<FileDownloadIcon />}
             onClick={handleExportPDF}
-            sx={{
-              borderColor: '#E5E7EB',
-              color: '#374151',
-              '&:hover': {
-                borderColor: '#D1D5DB',
-                backgroundColor: 'rgba(0, 0, 0, 0.04)',
-              },
-            }}
+            size="small"
           >
             Export to PDF
-          </Button>
-          <Button
-            variant="outlined"
+          </ExportButton>
+          <ExportButton
+            className="word"
             startIcon={<FileDownloadIcon />}
             onClick={handleExportWord}
-            sx={{
-              borderColor: '#E5E7EB',
-              color: '#374151',
-              '&:hover': {
-                borderColor: '#D1D5DB',
-                backgroundColor: 'rgba(0, 0, 0, 0.04)',
-              },
-            }}
+            size="small"
           >
             Export to Word
-          </Button>
+          </ExportButton>
         </Box>
       </Box>
 
