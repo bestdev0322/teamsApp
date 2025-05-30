@@ -5,6 +5,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
 import { api } from '../../../services/api';
+import { exportPdf, exportExcel } from '../../../utils/exportUtils';
 
 interface ComplianceArea {
   _id: string;
@@ -23,6 +24,10 @@ const ComplianceAreas: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<{ [key: string]: boolean }>({});
+  const [search, setSearch] = useState('');
+  const tableRef = useRef<any>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
 
   const fetchAreas = async () => {
     try {
@@ -132,6 +137,10 @@ const ComplianceAreas: React.FC = () => {
   };
 
   const renderDescription = (area: ComplianceArea) => {
+    if (isExporting) {
+      // Always show full description for export
+      return area.description;
+    }
     if (editingAreaId === area._id) {
       return (
         <TextField
@@ -146,14 +155,14 @@ const ComplianceAreas: React.FC = () => {
 
     const isExpanded = expandedDescriptions[area._id];
     const shouldTruncate = area.description.length > 100;
-    const displayText = isExpanded 
-      ? area.description 
-      : shouldTruncate 
+    const displayText = isExpanded
+      ? area.description
+      : shouldTruncate
         ? area.description.slice(0, 100) + '...'
         : area.description;
 
     return (
-      <Box sx={{ 
+      <Box sx={{
         width: '100%',
         wordBreak: 'break-word',
         whiteSpace: 'pre-wrap'
@@ -173,25 +182,87 @@ const ComplianceAreas: React.FC = () => {
     );
   };
 
+  // Filtered areas for search
+  const filteredAreas = areas.filter(area =>
+    area.areaName.toLowerCase().includes(search.toLowerCase()) ||
+    area.description.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleExportPdf = () => {
+    setExportType('pdf');
+    setIsExporting(true);
+  };
+
+  const handleExportExcel = () => {
+    setExportType('excel');
+    setIsExporting(true);
+  };
+
+  useEffect(() => {
+    if (isExporting && exportType) {
+      const doExport = async () => {
+        if (exportType === 'pdf') {
+          await exportPdf(
+            'compliance-area',
+            tableRef,
+            'Compliance Areas',
+            '',
+            '',
+            [0.3, 0.7]
+          );
+        } else if (exportType === 'excel') {
+          exportExcel(tableRef.current, 'Compliance Areas');
+        }
+        setIsExporting(false);
+        setExportType(null);
+      };
+      // Use setTimeout to ensure the DOM updates before export
+      setTimeout(doExport, 0);
+    }
+  }, [isExporting, exportType]);
+
   return (
     <Box>
-      <Box sx={{ mb: 2, display: 'flex', gap: 2 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleAddClick}
-          sx={{ textTransform: 'none', backgroundColor: '#0078D4', '&:hover': { backgroundColor: '#106EBE' } }}
-        >
-          Add Compliance Area
-        </Button>
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleAddClick}
+            sx={{ textTransform: 'none', backgroundColor: '#0078D4', '&:hover': { backgroundColor: '#106EBE' } }}
+          >
+            Add Compliance Area
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleExportPdf}
+            sx={{ textTransform: 'none' }}
+          >
+            Export PDF
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleExportExcel}
+            sx={{ textTransform: 'none' }}
+          >
+            Export Excel
+          </Button>
+        </Box>
+        <TextField
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          placeholder="Search by name or description"
+          size="small"
+          sx={{ width: 320 }}
+        />
       </Box>
       <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1, border: '1px solid #E5E7EB', overflowX: 'auto', mt: 2 }}>
-        <Table>
+        <Table ref={tableRef}>
           <TableHead>
             <TableRow>
               <StyledHeaderCell sx={{ width: '0.3vw' }}>Name</StyledHeaderCell>
               <StyledHeaderCell sx={{ width: '0.5vw' }}>Description</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.2vw' }} align="center">Actions</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '0.2vw' }} align="center" className='noprint'>Actions</StyledHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -246,7 +317,7 @@ const ComplianceAreas: React.FC = () => {
                 </TableRow>
               </ClickAwayListener>
             )}
-            {areas.map(area => (
+            {filteredAreas.map(area => (
               <TableRow key={area._id} hover>
                 {editingAreaId === area._id ? (
                   <ClickAwayListener onClickAway={() => handleEditSave(area._id)}>
