@@ -36,6 +36,7 @@ const Teams: React.FC = () => {
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [editingTeamName, setEditingTeamName] = useState<string>('');
   const editInputRef = useRef<HTMLInputElement>(null);
+  const [search, setSearch] = useState('');
   
   // Check if user has admin/super user privileges
   const canManageTeams = user?.role === 'AppOwner' || user?.role === 'SuperUser';
@@ -194,6 +195,16 @@ const Teams: React.FC = () => {
     }
   };
 
+  // Filtered members for search
+  const filteredTeamMembers = status === ViewStatus.MEMBER_LIST
+    ? currentTeamMembers.filter(member =>
+        member.name?.toLowerCase().includes(search.toLowerCase()) ||
+        member.jobTitle?.toLowerCase().includes(search.toLowerCase()) ||
+        member.role?.toLowerCase().includes(search.toLowerCase()) ||
+        member.email?.toLowerCase().includes(search.toLowerCase())
+      )
+    : currentTeamMembers;
+
   // Fetch teams and all team members when component mounts or tenantId changes
   useEffect(() => {
     dispatch(fetchTeams(tenantId));
@@ -274,6 +285,19 @@ const Teams: React.FC = () => {
           </Button>
         )}
       </Box>
+
+      {/* Search box for member list */}
+      {status === ViewStatus.MEMBER_LIST && (
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <TextField
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search by name, job role, or email"
+            size="small"
+            sx={{ width: 320 }}
+          />
+        </Box>
+      )}
 
       {/* Table Section - Made responsive */}
       <TableContainer 
@@ -469,7 +493,7 @@ const Teams: React.FC = () => {
               </TableRow>
             ))}
 
-            {status === ViewStatus.MEMBER_LIST && currentTeamMembers.map((member, index) => (
+            {status === ViewStatus.MEMBER_LIST && filteredTeamMembers.map((member, index) => (
               <TableRow key={index} hover>
                 <StyledTableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

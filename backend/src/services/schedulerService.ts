@@ -1,6 +1,7 @@
 import cron from 'node-cron';
 import moment from 'moment';
 import { sendComplianceReminders } from './complianceReminderService';
+import axios from 'axios';
 
 interface Quarter {
   quarter: string;
@@ -34,8 +35,9 @@ class SchedulerService {
 
   private async getCurrentCompliancePeriod() {
     try {
-      const res = await fetch('/compliance-settings');
-      const response = await res.json() as ApiResponse<ComplianceSetting[]>;
+      const baseUrl = process.env.API_URL || 'http://localhost:3001';
+      const res = await axios.get(`${baseUrl}/api/compliance-settings`);
+      const response = res.data as ApiResponse<ComplianceSetting[]>;
       const settings = response.data || [];
 
       const today = moment().startOf('day');
