@@ -1,10 +1,9 @@
 import React from 'react';
-import { useLocation, Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 export const Login: React.FC = () => {
   const { login, isAuthenticated, isTeams, isTeamsInitialized, isLoading } = useAuth();
-  const location = useLocation();
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;

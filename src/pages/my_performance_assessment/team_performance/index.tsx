@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   Button,
@@ -11,7 +10,6 @@ import {
   Typography,
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableRow,
   Paper,
@@ -21,7 +19,7 @@ import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { RootState } from '../../../store';
 import { fetchAnnualTargets } from '../../../store/slices/scorecardSlice';
 import { fetchTeamPerformances } from '../../../store/slices/personalPerformanceSlice';
-import { TeamPerformance, PersonalQuarterlyTargetObjective, PdfType, AnnualTarget, QuarterType, PersonalPerformance } from '../../../types';
+import { TeamPerformance, PersonalQuarterlyTargetObjective, PdfType, AnnualTarget, QuarterType } from '../../../types';
 
 import { ExportButton } from '../../../components/Buttons';
 import { useAuth } from '../../../contexts/AuthContext';

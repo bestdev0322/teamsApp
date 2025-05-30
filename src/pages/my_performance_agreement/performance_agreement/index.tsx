@@ -8,17 +8,12 @@ import {
   Button,
   styled,
   SelectChangeEvent,
-  Typography,
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableRow,
   Paper,
-  Menu,
-  ListItemText,
   TableContainer,
-  IconButton,
 } from '@mui/material';
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
@@ -76,9 +71,6 @@ const PersonalPerformanceAgreement: React.FC = () => {
   const [selectedPersonalPerformance, setSelectedPersonalPerformance] = useState<PersonalPerformance | null>(null);
   const [showPersonalQuarterlyTarget, setShowPersonalQuarterlyTarget] = useState(false);
   const { user } = useAuth();
-  const teams = useAppSelector((state: RootState) =>
-    state.teams.teams
-  );
 
   const annualTargets = useAppSelector((state: RootState) =>
     state.scorecard.annualTargets

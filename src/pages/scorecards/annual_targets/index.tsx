@@ -3,7 +3,6 @@ import {
     Paper,
     Table,
     TableBody,
-    TableCell,
     TableContainer,
     TableHead,
     TableRow,
@@ -16,9 +15,6 @@ import {
     ListItemText,
     Collapse,
     Box,
-    Typography,
-    Tabs,
-    Tab,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -27,11 +23,7 @@ import {
     Select,
     FormControl,
     InputLabel,
-    FormHelperText,
-    Theme
 } from '@mui/material';
-import { SxProps } from '@mui/system';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import EditIcon from '@mui/icons-material/Edit';
@@ -50,9 +42,7 @@ import ContractingPeriodTab from './tabs/contracting_period';
 import AssessmentsPeriodTab from './tabs/assessments_period';
 import AddIcon from '@mui/icons-material/Add';
 import AddAnnualTargetModal from './AddAnnualTargetModal';
-import { ExportButton } from '../../../components/Buttons';
 import { api } from '../../../services/api';
-import { fetchTeams } from '../../../store/slices/teamsSlice';
 import { useAuth } from '../../../contexts/AuthContext';
 import { StyledTableCell, StyledHeaderCell } from '../../../components/StyledTableComponents';
 import { StyledTabs, StyledTab } from '../../../components/StyledTab';

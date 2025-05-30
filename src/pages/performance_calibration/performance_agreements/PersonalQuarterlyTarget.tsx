@@ -17,9 +17,9 @@ import {
 } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { useToast } from '../../../contexts/ToastContext';
-import { AnnualTarget, QuarterType, QuarterlyTargetObjective, AnnualTargetPerspective, QuarterlyTargetKPI, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
+import { AnnualTarget, QuarterType, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
-import { PersonalQuarterlyTargetObjective, PersonalPerformance, PersonalQuarterlyTarget, AgreementStatus, AssessmentStatus } from '../../../types/personalPerformance';
+import { PersonalQuarterlyTargetObjective, PersonalPerformance, AssessmentStatus } from '../../../types/personalPerformance';
 import RatingScalesModal from '../../../components/RatingScalesModal';
 import { api } from '../../../services/api';
 import SendBackModal from '../../../components/Modal/SendBackModal';

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Button, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel, TextField } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
+import { Box, Button, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import { api } from '../../../services/api';
 import AnnualComplianceDetailView from './AnnualComplianceDetailView';
 import { useToast } from '../../../contexts/ToastContext';
@@ -183,12 +182,6 @@ const ComplianceSettingPage: React.FC = () => {
         } catch (error) {
             console.error('Error updating quarter dates:', error);
         }
-    };
-
-
-    // State and handlers for detail view using viewId
-    const handleViewDetail = (id: string) => {
-        setViewId(id);
     };
 
     const handleBackFromDetail = () => {

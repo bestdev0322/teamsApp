@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper, Button, TableContainer, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import { Box, Typography, Paper, Button, TableContainer, Table, TableHead, TableBody, TableRow } from '@mui/material';
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { RootState } from '../../../store';
 import { AnnualTarget, QuarterType } from '../../../types/annualCorporateScorecard';

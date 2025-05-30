@@ -42,7 +42,7 @@ import { PendingAssessmentsTable } from './components/PendingAssessmentsTable';
 import PerformanceTable from './components/PerformanceTable';
 import { HeatmapByTeam } from './components/HeatmapByTeam';
 import StrategyMap from './components/strategyMap';
-import { enableTwoQuarterMode, isEnabledTwoQuarterMode } from '../../utils/quarterMode';
+import { enableTwoQuarterMode } from '../../utils/quarterMode';
 import { PersonalQuarterlyTargetObjective } from '../../types';
 import { Feedback as FeedbackType } from '../../types/feedback';
 import { fetchFeedback } from '../../store/slices/feedbackSlice';

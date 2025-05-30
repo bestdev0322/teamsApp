@@ -6,8 +6,6 @@ import {
   MenuItem,
   Button,
   SelectChangeEvent,
-  Typography,
-  Paper,
   InputLabel,
   styled,
 } from '@mui/material';
@@ -15,12 +13,11 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { RootState } from '../../../store';
-import { AnnualTarget } from '../../../types/annualCorporateScorecard';
 import { fetchAnnualTargets } from '../../../store/slices/scorecardSlice';
 import { api } from '../../../services/api';
 import { PersonalPerformance, PersonalQuarterlyTargetObjective } from '../../../types';
 import jsPDF from 'jspdf';
-import { autoTable, Styles } from 'jspdf-autotable'
+import { autoTable } from 'jspdf-autotable'
 import { enableTwoQuarterMode, isEnabledTwoQuarterMode } from '../../../utils/quarterMode';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 import { fetchFeedback } from '../../../store/slices/feedbackSlice';
@@ -40,24 +37,12 @@ const StyledFormControl = styled(FormControl)({
   },
 });
 
-const StyledTitle = styled(Typography)({
-  fontSize: '16px',
-  fontWeight: 600,
-  color: '#111827',
-  padding: '12px 0',
-  borderBottom: '2px solid #E5E7EB',
-  marginBottom: '24px',
-  textAlign: 'center',
-  width: '100%'
-});
-
 const SupervisorPerformanceDistributionReport: React.FC = () => {
   const dispatch = useAppDispatch();
   const [selectedAnnualTargetId, setSelectedAnnualTargetId] = useState('');
   const [selectedQuarter, setSelectedQuarter] = useState('');
   const [showReport, setShowReport] = useState(false);
   const [personalPerformances, setPersonalPerformances] = useState<PersonalPerformance[]>([]);
-  const teams = useAppSelector((state: RootState) => state.teams.teams);
   const { user } = useAuth();
   const annualTargets = useAppSelector((state: RootState) => state.scorecard.annualTargets);
   const selectedAnnualTarget = useAppSelector((state: RootState) =>
@@ -80,13 +65,6 @@ const SupervisorPerformanceDistributionReport: React.FC = () => {
         }
       });
       if (response.status === 200) {
-        // const newPersonalPerformances = [];
-        // response.data.data.forEach((item: any) => {
-        //   if (item.quarterlyTargets.find((quarter: any) => quarter.quarter === selectedQuarter).assessmentStatus === 'Approved') {
-        //     newPersonalPerformances.push(item);
-        //   }
-        // });
-        // setPersonalPerformances(newPersonalPerformances);
         setPersonalPerformances(response.data.data);
       }
     } catch (error) {

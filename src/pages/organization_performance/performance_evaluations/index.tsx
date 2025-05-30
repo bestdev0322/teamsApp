@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   FormControl,
@@ -15,13 +15,10 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Stack,
   IconButton,
-  TextField,
   TableContainer,
 } from '@mui/material';
 import { useAppSelector } from '../../../hooks/useAppSelector';
-import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { RootState } from '../../../store';
 import { QuarterType, AnnualTargetObjective, QuarterlyTargetKPI, AnnualTargetPerspective, AnnualTargetRatingScale, QuarterlyTargetObjective, PdfType } from '../../../types';
 import KPIModal from './KPIModal';

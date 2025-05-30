@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogContent,
   Box,
   Typography,
   TextField,
@@ -9,27 +8,17 @@ import {
   MenuItem,
   Button,
   IconButton,
-  styled,
   Grid,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
-import GetAppIcon from '@mui/icons-material/GetApp';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import { QuarterlyTarget, QuarterlyTargetKPI, QuarterlyTargetObjective, QuarterType, AnnualTarget } from '../../../types/annualCorporateScorecard';
-import { useAppDispatch } from '../../../hooks/useAppDispatch';
-import { useAppSelector } from '../../../hooks/useAppSelector';
-import { updateAnnualTarget } from '../../../store/slices/scorecardSlice';
+import { QuarterlyTargetKPI, QuarterType } from '../../../types/annualCorporateScorecard';
 import { api } from '../../../services/api';
-import { RootState } from '../../../store';
 interface KPIModalProps {
   open: boolean;
   onClose: () => void;
-  annualTargetId: string;
-  quarter: QuarterType;
   selectedKPI: QuarterlyTargetKPI;
   onSave: (kpi: QuarterlyTargetKPI) => void;
 }
@@ -43,12 +32,8 @@ const KPIModal: React.FC<KPIModalProps> = ({
   open,
   onClose,
   selectedKPI,
-  annualTargetId,
-  quarter,
   onSave
 }) => {
-  const dispatch = useAppDispatch();
-  const annualTargets = useAppSelector((state: RootState) => state.scorecard.annualTargets);
   const [actualAchieved, setActualAchieved] = useState(selectedKPI.actualAchieved || '');
   const [evidence, setEvidence] = useState(selectedKPI.evidence || '');
   const [attachments, setAttachments] = useState(selectedKPI.attachments || []);

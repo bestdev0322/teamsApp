@@ -23,7 +23,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import { useToast } from '../../../contexts/ToastContext';
 import { AnnualTarget, QuarterType, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
-import { PersonalQuarterlyTargetObjective, PersonalPerformance, AgreementStatus, AssessmentStatus, AgreementReviewStatus } from '../../../types/personalPerformance';
+import { PersonalQuarterlyTargetObjective, PersonalPerformance, AssessmentStatus, AgreementReviewStatus } from '../../../types/personalPerformance';
 import RatingScalesModal from '../../../components/RatingScalesModal';
 import { api } from '../../../services/api';
 import SendBackModal from '../../../components/Modal/SendBackModal';
@@ -112,14 +112,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
             return total + totalWeight;
         }, 0);
     };
-
-    const isAssessmentsEmpty = () => {
-        return personalQuarterlyObjectives.every(objective =>
-            objective.KPIs.every(kpi =>
-                kpi.actualAchieved === ""
-            )
-        );
-    }
 
     const canSendBack = () => {
         return personalPerformance && (personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.assessmentStatus !== AssessmentStatus.Submitted && personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.assessmentStatus !== AssessmentStatus.Approved);

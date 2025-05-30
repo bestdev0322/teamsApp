@@ -6,7 +6,6 @@ import {
   MenuItem,
   Button,
   SelectChangeEvent,
-  Typography,
   Table,
   TableBody,
   TableHead,
@@ -18,9 +17,7 @@ import {
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { RootState } from '../../../store';
-import { AnnualTarget } from '../../../types/annualCorporateScorecard';
 import { fetchAnnualTargets } from '../../../store/slices/scorecardSlice';
-import { fetchTeamPerformances } from '../../../store/slices/personalPerformanceSlice';
 import { TeamPerformance } from '../../../types';
 import { StyledTableCell, StyledHeaderCell } from '../../../components/StyledTableComponents';
 import { api } from '../../../services/api';

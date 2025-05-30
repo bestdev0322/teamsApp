@@ -9,7 +9,6 @@ import {
   Paper
 } from '@mui/material';
 import { TeamPerformance } from '../../../types';
-import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 interface PendingTargetsTableProps {
   teamPerformances: TeamPerformance[];
   selectedQuarter: string;

@@ -95,7 +95,6 @@ const EmployeeTrainingSelectionModal: React.FC<EmployeeTrainingSelectionModalPro
   const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
   const dispatch = useAppDispatch();
   const { user } = useAuth();
-  const { plans, loading: plansLoading } = useAppSelector((state: RootState) => state.devPlan);
   const { teamPerformances = [], teamPerformancesByTarget = {}, status: teamPerformancesStatus } = useAppSelector((state: RootState) => state.personalPerformance);
   const { annualTargets, status: annualTargetsStatus } = useAppSelector((state: RootState) => state.scorecard);
   // const { employees: existingEmployees } = useAppSelector((state: RootState) => state.trainingEmployees);

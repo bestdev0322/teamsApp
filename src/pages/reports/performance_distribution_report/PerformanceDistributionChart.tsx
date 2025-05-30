@@ -3,23 +3,14 @@ import {
   Box,
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableRow,
   Paper,
   Typography,
-  styled,
 } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { StyledTableCell, StyledHeaderCell } from '../../../components/StyledTableComponents';
-import { AnnualTarget, PersonalPerformance, PersonalQuarterlyTargetObjective } from '../../../types';
-interface PerformanceData {
-  score: number;
-  description: string;
-  count: number;
-  percentage: number;
-}
-
+import { AnnualTarget } from '../../../types';
 interface PerformanceDistributionChartProps {
   title: string;
   annualTarget: AnnualTarget;

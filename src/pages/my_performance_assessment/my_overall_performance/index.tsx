@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   Button,
@@ -20,10 +19,10 @@ import {
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { RootState } from '../../../store';
-import { AnnualTarget, AnnualTargetRatingScale, QuarterlyTargetObjective, QuarterType } from '../../../types/annualCorporateScorecard';
+import { AnnualTarget, QuarterType } from '../../../types/annualCorporateScorecard';
 import { fetchAnnualTargets } from '../../../store/slices/scorecardSlice';
 import { fetchTeamPerformances, fetchPersonalPerformances } from '../../../store/slices/personalPerformanceSlice';
-import { TeamPerformance, PersonalPerformance, PersonalQuarterlyTargetObjective } from '../../../types';
+import { PersonalPerformance, PersonalQuarterlyTargetObjective } from '../../../types';
 import { api } from '../../../services/api';
 import { enableTwoQuarterMode, isEnabledTwoQuarterMode } from '../../../utils/quarterMode';
 import { fetchFeedback } from '../../../store/slices/feedbackSlice';

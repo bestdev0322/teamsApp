@@ -20,9 +20,9 @@ import {
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
-import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
-import { courseAPI } from '../../../services/api';
-import { Course } from '../../../types/course';
+import { StyledHeaderCell, StyledTableCell } from '../StyledTableComponents';
+import { courseAPI } from '../../services/api';
+import { Course } from '../../types/course';
 
 interface SelectCourseModalProps {
   open: boolean;

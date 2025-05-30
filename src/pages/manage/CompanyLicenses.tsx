@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SearchRegular, EditRegular, DeleteRegular } from '@fluentui/react-icons';
+import { SearchRegular } from '@fluentui/react-icons';
 import { Table, type Column } from '../../components/Table';
 import { StatusBadge } from '../../components/StatusBadge';
 import { createSearchFilter } from '../../utils/search';

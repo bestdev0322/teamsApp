@@ -17,16 +17,15 @@ import {
   TableRow,
   TableCell,
   Collapse,
-  Stack,
-  Alert,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { AnnualTarget, AnnualTargetObjective, AnnualTargetPerspective, QuarterlyTargetKPI } from '@/types/annualCorporateScorecard';
+import { AnnualTarget, AnnualTargetPerspective, QuarterlyTargetKPI } from '@/types/annualCorporateScorecard';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { PersonalQuarterlyTargetObjective } from '@/types';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface AddInitiativeModalProps {
   open: boolean;
@@ -66,6 +65,7 @@ const AddInitiativeModal: React.FC<AddInitiativeModalProps> = ({
   }]);
   const [initiative, setInitiative] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (editingObjective) {
@@ -75,6 +75,13 @@ const AddInitiativeModal: React.FC<AddInitiativeModalProps> = ({
       setKpis(editingObjective.KPIs);
     }
   }, [editingObjective]);
+
+  useEffect(() => {
+    if (error) {
+      showToast(error, 'error');
+      setError(null);
+    }
+  }, [error, showToast]);
 
   const handlePerspectiveChange = (event: SelectChangeEvent) => {
     setSelectedPerspective(annualTarget.content.perspectives.find(p => p.name === event.target.value) || null);
@@ -187,16 +194,6 @@ const AddInitiativeModal: React.FC<AddInitiativeModalProps> = ({
             <CloseIcon />
           </IconButton>
         </Box>
-
-        {error && (
-          <Alert
-            severity="error"
-            sx={{ mb: 3 }}
-            onClose={() => setError(null)}
-          >
-            {error}
-          </Alert>
-        )}
 
         <Box sx={{ mb: 3 }}>
           <Typography sx={{ mb: 1 }}>Perspective</Typography>

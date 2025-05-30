@@ -22,7 +22,6 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
 import { useAppSelector } from '../../../../hooks/useAppSelector';
 import { useToast } from '../../../../contexts/ToastContext';
-import PeoplePickerModal from '../../../../components/PeoplePickerModal';
 import { format } from 'date-fns';
 import { api } from '../../../../services/api';
 import EmployeeTrainingSelectionModal from '../EmployeeTrainingSelectionModal';
@@ -70,7 +69,6 @@ const PlanView: React.FC<PlanViewProps> = ({ planId }) => {
   const { showToast } = useToast();
   const tableRef = useRef<any>(null);
   const dispatch = useAppDispatch();
-  const [isLoadingEmployees, setIsLoadingEmployees] = useState(false);
 
   
   const { employees, loading, error } = useAppSelector((state: RootState) => state.trainingEmployees);
@@ -84,14 +82,11 @@ const PlanView: React.FC<PlanViewProps> = ({ planId }) => {
     fetchPlanDetails();
     // Fetch all employees
     const fetchAllEmployees = async () => {
-      setIsLoadingEmployees(true);
       try {
         const response = await api.get('/training/all-employees');
         setAllEmployees(response.data.data.employees || []);
       } catch (error) {
         console.error('Error fetching all employees:', error);
-      } finally {
-        setIsLoadingEmployees(false);
       }
     };
     fetchAllEmployees();

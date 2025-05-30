@@ -42,7 +42,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { exportPdf } from '../../../utils/exportPdf';
 
 import DeleteIcon from '@mui/icons-material/Delete';
-import SelectCourseModal from './SelectCourseModal';
+import SelectCourseModal from '../../../components/Modal/SelectCourseModal';
 import { Course } from '../../../types/course';
 import { fetchFeedback } from '../../../store/slices/feedbackSlice';
 import PersonalFeedback from './PersonalFeedback';
@@ -1099,8 +1099,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           onClose={() => setSelectedKPI(null)}
           onSave={handleSave}
           selectedKPI={selectedKPI.kpi}
-          annualTargetId={personalPerformance?.annualTargetId || ''}
-          quarter={quarter}
         />
       )}
 

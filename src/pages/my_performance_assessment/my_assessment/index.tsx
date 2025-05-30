@@ -8,26 +8,21 @@ import {
   Button,
   styled,
   SelectChangeEvent,
-  Typography,
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableRow,
   Paper,
-  Menu,
-  ListItemText,
   TableContainer,
-  IconButton,
 } from '@mui/material';
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { RootState } from '../../../store';
-import { AnnualTarget, AnnualTargetRatingScale, QuarterlyTargetObjective, QuarterType } from '../../../types/annualCorporateScorecard';
+import { AnnualTarget, QuarterType } from '../../../types/annualCorporateScorecard';
 import { fetchAnnualTargets } from '../../../store/slices/scorecardSlice';
 import { fetchPersonalPerformances } from '../../../store/slices/personalPerformanceSlice';
-import { StyledHeaderCell, StyledTableCell, StyledMenuItem, StyledListItemIcon } from '../../../components/StyledTableComponents';
-import { PersonalPerformance, PersonalQuarterlyTarget } from '../../../types';
+import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
+import { PersonalPerformance } from '../../../types';
 import PersonalQuarterlyTargetContent from './PersonalQuarterlyTarget';
 import { format } from 'date-fns';
 import { enableTwoQuarterMode, isEnabledTwoQuarterMode } from '../../../utils/quarterMode';
@@ -78,11 +73,7 @@ const PerformanceAssessment: React.FC = () => {
   const selectedAnnualTarget: AnnualTarget | undefined = useAppSelector((state: RootState) =>
     state.scorecard.annualTargets.find(target => target._id === selectedAnnualTargetId)
   );
-
-  const teams = useAppSelector((state: RootState) =>
-    state.teams.teams
-  );
-
+  
   useEffect(() => {
     dispatch(fetchAnnualTargets());
   }, [dispatch]);

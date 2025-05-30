@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Typography,
   TextField,
   InputAdornment,
-  Tabs,
-  Tab,
   Paper,
   Table,
   TableBody,
-  TableCell,
   TableContainer,
   TableHead,
   TableRow,
@@ -24,17 +20,6 @@ import { Company } from '../../types';
 import { companyAPI } from '../../services/api';
 import { api } from '../../services/api';
 import { StyledTableCell, StyledHeaderCell } from '../../components/StyledTableComponents';
-
-const StyledTab = styled(Tab)({
-  textTransform: 'none',
-  minWidth: 0,
-  fontWeight: 'normal',
-  '&.Mui-selected': {
-    backgroundColor: '#0078D4',
-    color: 'white',
-    borderRadius: '4px',
-  },
-});
 
 const ViewButton = styled(Button)({
   textTransform: 'none',
@@ -54,7 +39,6 @@ interface ModuleRow {
 }
 
 const Modules: React.FC = () => {
-  const [tabValue, setTabValue] = useState(3); // Modules tab selected by default
   const [searchQuery, setSearchQuery] = useState('');
   const [modules, setModules] = useState<ModuleRow[]>([]);
   const [companies, setCompanies] = useState<Company[]>([]);

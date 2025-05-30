@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Button, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, TextField, IconButton, Tooltip, Chip, ClickAwayListener, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Button, Paper, TableContainer, Table, TableHead, TableRow, TableBody, TextField, IconButton, Tooltip, Chip, ClickAwayListener, useTheme, useMediaQuery } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
-import EditIcon from '@mui/icons-material/Edit';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { createTeam, deleteTeam, fetchTeams, fetchAllTeamMembers, fetchTeamOwner, setTeamOwner, addTeamMembers, removeTeamMember } from '../../../store/slices/teamsSlice';
 import { RootState } from '../../../store';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { useAppSelector } from '../../../hooks/useAppSelector';
-import * as microsoftTeams from "@microsoft/teams-js";
 import { api } from '../../../services/api';
 import PeoplePickerModal, { Person } from '../../../components/PeoplePickerModal';
 import { useAuth } from '../../../contexts/AuthContext';

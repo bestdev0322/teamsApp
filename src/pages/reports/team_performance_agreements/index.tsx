@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
     Box,
     FormControl,
@@ -8,27 +8,18 @@ import {
     Button,
     styled,
     SelectChangeEvent,
-    Typography,
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableRow,
     Paper,
-    Stack,
-    IconButton,
-    TextField,
 } from '@mui/material';
 import { useAppSelector } from '../../../hooks/useAppSelector';
-import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { RootState } from '../../../store';
 import { QuarterType, AnnualTarget } from '../../../types/annualCorporateScorecard';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-import { PDFDownloadLink, Document, Page, View, Text, StyleSheet, pdf } from '@react-pdf/renderer';
 import PersonalQuarterlyTargetContent from './PersonalQuarterlyTarget';
 import { api } from '../../../services/api';
-import { fetchTeamPerformances } from '../../../store/slices/personalPerformanceSlice';
 import { enableTwoQuarterMode, isEnabledTwoQuarterMode } from '../../../utils/quarterMode';
 import { useAuth } from '../../../contexts/AuthContext';
 const StyledFormControl = styled(FormControl)({
@@ -108,32 +99,7 @@ const StyledHeaderCell = styled(TableCell)(({ theme }) => ({
     }
 }));
 
-const ExportButton = styled(Button)({
-    backgroundColor: '#fff',
-    color: '#374151',
-    textTransform: 'none',
-    padding: '6px 16px',
-    border: '1px solid #E5E7EB',
-    '&:hover': {
-        backgroundColor: '#F9FAFB',
-        borderColor: '#D1D5DB',
-    },
-    '&.excel': {
-        '&:hover': {
-            color: '#059669',
-            borderColor: '#059669',
-        },
-    },
-    '&.pdf': {
-        '&:hover': {
-            color: '#DC2626',
-            borderColor: '#DC2626',
-        },
-    }
-});
-
 const TeamPerformanceAgreements: React.FC = () => {
-    const dispatch = useAppDispatch();
     const [selectedAnnualTargetId, setSelectedAnnualTargetId] = useState('');
     const [selectedQuarter, setSelectedQuarter] = useState('');
     const [showTable, setShowTable] = useState(false);

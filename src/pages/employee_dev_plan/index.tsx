@@ -8,15 +8,8 @@ import AnnualOrganizationDevelopmentPlans from './annual_org_dev_plan';
 import EmployeesTraining from './employee_training';
 import MyTrainingDashboard from './my_training_dashboard';
 import { Routes, Route, Navigate } from 'react-router-dom';
-// import { useAppDispatch } from '../../hooks/useAppDispatch';
-// import { fetchAnnualTargets } from '../../store/slices/scorecardSlice';
 
 const EmployeeDevPlan: React.FC<PageProps> = ({ title, icon, tabs }) => {
-//   const dispatch = useAppDispatch();
-
-//   useEffect(() => {
-//     dispatch(fetchAnnualTargets());
-//   }, [dispatch]);
 
   return (
     <Box>

@@ -45,7 +45,6 @@ const PerformanceAgreements: React.FC = () => {
     const [selectedQuarter, setSelectedQuarter] = useState<QuarterType | ''>('');
     const [showTable, setShowTable] = useState(false);
     const [agreements, setAgreements] = useState<AgreementRow[]>([]);
-    const [loading, setLoading] = useState(false);
     const [viewingUser, setViewingUser] = useState<AgreementRow | null>(null);
     const { user } = useAuth();
     const annualTargets = useAppSelector((state: RootState) => state.scorecard.annualTargets);
@@ -54,7 +53,6 @@ const PerformanceAgreements: React.FC = () => {
     );
 
     const handleView = async () => {
-        setLoading(true);
         try {
             const response = await api.get('/personal-performance/manage-performance-agreement/company-users', {
                 params: {
@@ -85,7 +83,6 @@ const PerformanceAgreements: React.FC = () => {
             setAgreements([]);
             setShowTable(true);
         }
-        setLoading(false);
     };
 
     const handleTableView = (row: AgreementRow) => {

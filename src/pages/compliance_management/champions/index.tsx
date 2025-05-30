@@ -10,23 +10,6 @@ import { useAuth } from '../../../contexts/AuthContext';
 import PeoplePickerModal from '../../../components/PeoplePickerModal';
 
 
-// // Mock data for demonstration
-// const initialChampions = [
-//   {
-//     _id: '1',
-//     name: 'Product Development',
-//     members: [
-//       { name: 'Helen Chin', jobTitle: 'Chief Product Development Officer', email: 'helen@softincnam.onmicrosoft.com', MicrosoftId: '1' },
-//       { name: 'Tom Imene', jobTitle: '', email: 'tom@softincnam.onmicrosoft.com', MicrosoftId: '2' },
-//     ],
-//   },
-//   {
-//     _id: '2',
-//     name: 'Technical Operations',
-//     members: [],
-//   },
-// ];
-
 const Champions: React.FC = () => {
   const dispatch = useAppDispatch();
   const { user } = useAuth();

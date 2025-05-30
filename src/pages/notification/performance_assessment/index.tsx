@@ -27,7 +27,6 @@ import EvidenceModal from './EvidenceModal';
 import { fetchNotifications } from '../../../store/slices/notificationSlice';
 import SendBackModal from '../../../components/Modal/SendBackModal';
 import { useToast } from '../../../contexts/ToastContext';
-import { useAuth } from '../../../contexts/AuthContext';
 import PersonalFeedback from './PersonalFeedback';
 import { fetchFeedback } from '../../../store/slices/feedbackSlice';
 import ViewSendBackMessageModal from '../../../components/Modal/ViewSendBackMessageModal';

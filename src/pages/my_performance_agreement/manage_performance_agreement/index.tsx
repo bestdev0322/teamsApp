@@ -8,28 +8,22 @@ import {
   Button,
   styled,
   SelectChangeEvent,
-  Typography,
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableRow,
   Paper,
-  Menu,
-  ListItemText,
   TableContainer,
-  IconButton,
   TextField,
   InputAdornment,
 } from '@mui/material';
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { RootState } from '../../../store';
-import { AnnualTarget, AnnualTargetRatingScale, QuarterlyTargetObjective, QuarterType } from '../../../types/annualCorporateScorecard';
+import { AnnualTarget, QuarterType } from '../../../types/annualCorporateScorecard';
 import { fetchAnnualTargets } from '../../../store/slices/scorecardSlice';
 import { fetchPersonalPerformances } from '../../../store/slices/personalPerformanceSlice';
-import { StyledHeaderCell, StyledTableCell, StyledMenuItem, StyledListItemIcon } from '../../../components/StyledTableComponents';
-import { PersonalPerformance, PersonalQuarterlyTarget } from '../../../types';
+import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
 import { api } from '../../../services/api';
 import PersonalQuarterlyTargetContent from './PersonalQuarterlyTarget';
 import SearchIcon from '@mui/icons-material/Search';
@@ -67,16 +61,10 @@ const PersonalPerformanceAgreement: React.FC = () => {
   const [showPersonalQuarterlyTarget, setShowPersonalQuarterlyTarget] = useState(false);
   const [companyUsers, setCompanyUsers] = useState<{ id: string, name: string, team: string, position: string }[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const teams = useAppSelector((state: RootState) =>
-    state.teams.teams
-  );
+
   const { user } = useAuth();
   const annualTargets = useAppSelector((state: RootState) =>
     state.scorecard.annualTargets
-  );
-
-  const personalPerformances = useAppSelector((state: RootState) =>
-    state.personalPerformance.personalPerformances
   );
 
   const selectedAnnualTarget: AnnualTarget | undefined = useAppSelector((state: RootState) =>

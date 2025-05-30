@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosInstance } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { Company, SuperUser, License, Course } from '../types';
 
 // Get the API URL from environment or try common development ports

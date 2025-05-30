@@ -7,7 +7,6 @@ import {
   Button,
   SelectChangeEvent,
   Typography,
-  Paper,
   InputLabel,
   styled,
 } from '@mui/material';
@@ -15,13 +14,12 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { RootState } from '../../../store';
-import { AnnualTarget } from '../../../types/annualCorporateScorecard';
 import { fetchAnnualTargets } from '../../../store/slices/scorecardSlice';
 import PerformanceDistributionChart from './PerformanceDistributionChart';
 import { api } from '../../../services/api';
 import { PersonalPerformance, PersonalQuarterlyTargetObjective } from '../../../types';
 import jsPDF from 'jspdf';
-import { autoTable, Styles } from 'jspdf-autotable'
+import { autoTable } from 'jspdf-autotable'
 import { enableTwoQuarterMode, isEnabledTwoQuarterMode } from '../../../utils/quarterMode';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 import { fetchFeedback } from '../../../store/slices/feedbackSlice';

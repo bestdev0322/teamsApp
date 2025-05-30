@@ -12,20 +12,14 @@ import {
     FormControl,
     Select,
     MenuItem,
-    SelectChangeEvent,
     IconButton,
-    Stack,
-    CircularProgress,
 } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
-import { AnnualTarget, QuarterType, QuarterlyTargetObjective, AnnualTargetPerspective, QuarterlyTargetKPI, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
+import { AnnualTarget, QuarterType, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
-import { PersonalQuarterlyTargetObjective, PersonalPerformance, PersonalQuarterlyTarget } from '@/types/personalPerformance';
+import { PersonalQuarterlyTargetObjective, PersonalPerformance } from '@/types/personalPerformance';
 import RatingScalesModal from '../../../components/RatingScalesModal';
 import { api } from '../../../services/api';
-import { useAuth } from '../../../contexts/AuthContext';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 interface PersonalQuarterlyTargetProps {
     annualTarget: AnnualTarget;

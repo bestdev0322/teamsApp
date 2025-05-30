@@ -23,12 +23,10 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { updateAnnualTarget } from '../../../store/slices/scorecardSlice';
-import { AnnualTarget, AnnualTargetObjective, AnnualTargetKPI, AnnualTargetPerspective, QuarterlyTargetObjective, QuarterlyTargetKPI, QuarterType } from '../../../types/annualCorporateScorecard';
+import { AnnualTarget, AnnualTargetPerspective, QuarterlyTargetObjective, QuarterlyTargetKPI, QuarterType } from '../../../types/annualCorporateScorecard';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { useAppSelector } from '@/hooks/useAppSelector';
-import { RootState } from '@/store';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 
 interface QuarterlyObjectiveModalProps {

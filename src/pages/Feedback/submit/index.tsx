@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
     Box,
     Typography,
@@ -6,7 +6,6 @@ import {
     TableHead,
     TableBody,
     TableRow,
-    TableCell,
     Button,
     IconButton,
     Paper,
@@ -24,7 +23,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useSearchParams } from 'react-router-dom';
 import { publicApi } from '../../../services/api';
 import { StyledTableCell, StyledHeaderCell } from '../../../components/StyledTableComponents';
-import { Feedback, PersonalQuarterlyTargetFeedback, PersonalQuarterlyTargetFeedbackProvider } from '../../../types';
+import { PersonalQuarterlyTargetFeedback, PersonalQuarterlyTargetFeedbackProvider } from '../../../types';
 
 interface FeedbackResponse {
     dimension: string;
@@ -67,7 +66,6 @@ const FeedbackSubmission = () => {
     const [previousResponses, setPreviousResponses] = useState<FeedbackResponse[]>([]);
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [showValidationAlert, setShowValidationAlert] = useState(false);
-    const [provider, setProvider] = useState<PersonalQuarterlyTargetFeedbackProvider | null>(null);
     const [isCompleted, setIsCompleted] = useState(false);
 
     useEffect(() => {
@@ -105,7 +103,6 @@ const FeedbackSubmission = () => {
                 });
                 setResponses(feedbackTemplate);
                 setPreviousResponses(feedbackTemplate);
-                setProvider(response.data.data.provider);
                 setIsCompleted(response.data.data.provider.status === 'Completed');
             }
         } catch (error) {

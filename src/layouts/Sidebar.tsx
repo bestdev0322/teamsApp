@@ -1,15 +1,13 @@
 import React from 'react';
 import { 
-  PeopleTeamRegular,
   ChevronLeftRegular,
   ChevronRightRegular,
-  GridRegular,
   SignOut24Regular
 } from '@fluentui/react-icons';
 import { PageProps } from '../types';
 import { useAppSelector } from '../hooks/useAppSelector';
 import { RootState } from '../store';
-import { Badge, Divider } from '@mui/material';
+import { Badge } from '@mui/material';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 

@@ -12,10 +12,7 @@ import {
   FormControl,
   Select,
   MenuItem,
-  SelectChangeEvent,
   IconButton,
-  styled,
-  Stack,
   Chip,
   Skeleton,
 } from '@mui/material';
@@ -25,7 +22,6 @@ import { RootState } from '../../../store';
 import { AnnualTarget, QuarterType, QuarterlyTargetObjective } from '@/types/annualCorporateScorecard';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
 import { PersonalQuarterlyTargetObjective, PersonalPerformance } from '@/types/personalPerformance';
-import { useAuth } from '../../../contexts/AuthContext';
 import { api } from '../../../services/api';
 import EvidenceModal from './EvidenceModal';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
