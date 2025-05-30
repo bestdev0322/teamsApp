@@ -3,6 +3,7 @@ import { Box, Button, TableContainer, Paper, Table, TableHead, TableRow, TableBo
 import EditIcon from '@mui/icons-material/Edit';
 import { api } from '../../../services/api';
 import AnnualComplianceDetailView from './AnnualComplianceDetailView';
+import { useToast } from '../../../contexts/ToastContext';
 
 const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + 1 - i);
 const months = [
@@ -36,10 +37,7 @@ const ComplianceSettingPage: React.FC = () => {
     const [newYear, setNewYear] = useState<number>(years[0]);
     const [newMonth, setNewMonth] = useState<string>(months[0]);
     const [editSetting, setEditSetting] = useState<ComplianceSetting | null>(null);
-    const [quarterModalOpen, setQuarterModalOpen] = useState(false);
-    const [editQuarter, setEditQuarter] = useState<Quarter | null>(null);
-    const [editStart, setEditStart] = useState('');
-    const [editEnd, setEditEnd] = useState('');
+    const { showToast } = useToast();
 
     useEffect(() => {
         api.get('/compliance-settings').then(res => {
@@ -51,6 +49,33 @@ const ComplianceSettingPage: React.FC = () => {
             })));
         });
     }, []);
+
+    const checkAndSendQuarterNotification = async (year: number, quarters: Quarter[]) => {
+        const today = new Date();
+        const currentQuarter = quarters.find(q => {
+            const start = new Date(q.start);
+            const end = new Date(q.end);
+            return today >= start && today <= end;
+        });
+
+        if (currentQuarter) {
+            try {
+                const res = await api.post('/compliance-obligations/send-reminders', {
+                    year: year.toString(),
+                    quarter: currentQuarter.quarter,
+                    endDate: currentQuarter.end,
+                });
+                if (res.data.data && res.data.data.success) {
+                    showToast(res.data.message || 'Reminder emails sent to all champions.', 'success');
+                } else {
+                    showToast('Failed to send reminder emails.', 'error');
+                }
+            } catch (error) {
+                showToast('Error sending quarter notifications.', 'error');
+                console.error('Error sending quarter notifications:', error);
+            }
+        }
+    };
 
     const handleAddOrEdit = async () => {
         if (editSetting) {
@@ -69,18 +94,20 @@ const ComplianceSettingPage: React.FC = () => {
                         quarters: res.data.data.quarters,
                     } : s
                 ));
+                // Check and send notification after update
+                checkAndSendQuarterNotification(newYear, editSetting.quarters);
                 setEditSetting(null);
             } catch (error) {
                 console.error('Error updating compliance setting:', error);
-                // Optionally show an error message to the user
             }
         } else {
             // Create
             try {
+                const quarters = initialQuarters(newYear);
                 const res = await api.post('/compliance-settings', {
                     year: newYear,
                     firstMonth: newMonth,
-                    quarters: initialQuarters(newYear),
+                    quarters: quarters,
                 });
                 setSettings(prev => [
                     {
@@ -91,9 +118,10 @@ const ComplianceSettingPage: React.FC = () => {
                     },
                     ...prev,
                 ]);
+                // Check and send notification after creation
+                checkAndSendQuarterNotification(newYear, quarters);
             } catch (error) {
                 console.error('Error creating compliance setting:', error);
-                // Optionally show an error message to the user
             }
         }
         setModalOpen(false);
@@ -128,13 +156,7 @@ const ComplianceSettingPage: React.FC = () => {
         setEditSetting(null);
     };
 
-    // Quarter modal handlers
-    const handleEditQuarter = (q: Quarter) => {
-        setEditQuarter(q);
-        setEditStart(q.start);
-        setEditEnd(q.end);
-        setQuarterModalOpen(true);
-    };
+
     const handleSaveQuarter = async (quarter: Quarter, start: string, end: string) => {
         if (!viewId) return;
         const setting = settings.find(s => s.id === viewId);
@@ -156,15 +178,13 @@ const ComplianceSettingPage: React.FC = () => {
                     quarters: res.data.data.quarters,
                 } : s
             ));
+            // Check and send notification after quarter update
+            await checkAndSendQuarterNotification(setting.year, updatedQuarters);
         } catch (error) {
             console.error('Error updating quarter dates:', error);
-            // Optionally show an error message to the user
         }
     };
-    const handleCancelQuarter = () => {
-        setQuarterModalOpen(false);
-        setEditQuarter(null);
-    };
+
 
     // State and handlers for detail view using viewId
     const handleViewDetail = (id: string) => {
@@ -173,9 +193,7 @@ const ComplianceSettingPage: React.FC = () => {
 
     const handleBackFromDetail = () => {
         setViewId(null);
-        // Reset quarter modal state as well when going back from detail view
-        setEditQuarter(null);
-        setQuarterModalOpen(false);
+
     };
 
     const selectedSetting = settings.find(s => s.id === viewId);

@@ -16,21 +16,12 @@ const graphService = new GraphService();
 
 export const sendComplianceReminders = async (year: string, quarter: string, endDate: string) => {
   try {
-    // Get the date 2 days before the end date
-    const reminderDate = new Date(endDate);
-    reminderDate.setDate(reminderDate.getDate() - 2);
-    const currentDate = new Date();
-    const endDateTime = new Date(endDate);
-
-    // Only proceed if we're within the last 2 days (inclusive) of the period
-    if (currentDate > endDateTime || currentDate < reminderDate) {
-      return { success: true, message: 'Not within reminder period yet' };
-    }
-
     // Find all obligations that don't have updates for the current quarter
     // or have updates but not in 'Submitted' or 'Approved' status
     const obligations = await Obligation.find({
       $or: [
+        { update: { $exists: false } },
+        { update: { $size: 0 } },
         { 'update': { $not: { $elemMatch: { year, quarter } } } },
         {
           'update': {
@@ -80,7 +71,7 @@ export const sendComplianceReminders = async (year: string, quarter: string, end
         // Send email to each compliance champion
         for (const champion of complianceChampions) {
           if (champion.email && champion.tenantId) {
-            const emailSubject = `${year}, Q${quarter} Compliance Obligations Update`;
+            const emailSubject = `${year}, ${quarter} Compliance Obligations Update`;
             const emailContent = `
               <html>
                 <body>
@@ -110,14 +101,11 @@ export const sendComplianceReminders = async (year: string, quarter: string, end
       }
     }
 
-    const daysLeft = Math.ceil((endDateTime.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24));
-    const daysMessage = daysLeft === 0 ? 'today' : daysLeft === 1 ? 'tomorrow' : `in ${daysLeft} days`;
-
-    return { 
-      success: true, 
-      message: remindersSent > 0 
-        ? `Compliance reminders sent successfully to ${remindersSent} compliance champion(s). Updates due ${daysMessage}.` 
-        : 'No compliance champions found to send reminders to' 
+    return {
+      success: true,
+      message: remindersSent > 0
+        ? `Compliance reminders sent successfully to ${remindersSent} compliance champion(s). Updates due soon.`
+        : 'No compliance champions found to send reminders to'
     };
   } catch (error) {
     console.error('Error sending compliance reminders:', error);

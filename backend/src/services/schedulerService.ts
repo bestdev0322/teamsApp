@@ -77,11 +77,20 @@ class SchedulerService {
         const { quarter, year } = await this.getCurrentCompliancePeriod();
         
         if (quarter && year) {
-          await sendComplianceReminders(
-            year.toString(),
-            quarter.quarter,
-            quarter.end
-          );
+          // Only send reminders if today is within the last 2 days before the end date
+          const endDate = quarter.end;
+          const reminderDate = moment(endDate).subtract(2, 'days').startOf('day');
+          const endDateTime = moment(endDate).startOf('day');
+          const today = moment().startOf('day');
+          if (today.isSameOrAfter(reminderDate) && today.isSameOrBefore(endDateTime)) {
+            await sendComplianceReminders(
+              year.toString(),
+              quarter.quarter,
+              quarter.end
+            );
+          } else {
+            console.log('Not within reminder period yet');
+          }
         } else {
           console.log('No active compliance period found');
         }
