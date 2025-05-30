@@ -5,7 +5,9 @@ import { ExportButton } from '../../../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { exportPdf } from '../../../../../utils/exportPdf';
 import { exportExcel } from '../../../../../utils/exportExcel';
+import { exportWord } from '../../../../../utils/exportUtils';
 import { PdfType } from '../../../../../types';
+import { getComplianceStatusColor } from './OrganizationCompliance'
 
 interface HighRiskOverdueProps {
   year: string;
@@ -47,8 +49,15 @@ const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obl
         obligation.complianceStatus,
         obligation.update?.find(u => u.year === year && u.quarter === quarter)?.comments || ''
       ]);
-      
+
       exportExcel(tableRef.current, `${year}_${quarter}_High_Risk_Overdue`);
+    }
+  };
+
+  const handleExportWord = () => {
+    if (overdueObligations.length > 0) {
+      const title = `${year}, ${quarter} High-Risk Overdue Obligations`;
+      exportWord(tableRef, title, [0.2, 0.2, 0.2, 0.2, 0.2]);
     }
   };
 
@@ -75,6 +84,14 @@ const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obl
           >
             Export to PDF
           </ExportButton>
+          <ExportButton
+            className="word"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExportWord}
+            size="small"
+          >
+            Export to Word
+          </ExportButton>
         </Box>
       </Box>
       <TableContainer component={Paper} variant="outlined">
@@ -94,7 +111,10 @@ const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obl
                 <TableCell>{obligation.complianceObligation}</TableCell>
                 <TableCell>{obligation.complianceArea.areaName}</TableCell>
                 <TableCell>{obligation.owner.name}</TableCell>
-                <TableCell>{obligation.complianceStatus}</TableCell>
+                <TableCell
+                  data-color={getComplianceStatusColor(obligation.complianceStatus || '')}
+                  sx={{color: getComplianceStatusColor(obligation.complianceStatus || '')}}
+                >{obligation.complianceStatus}</TableCell>
                 <TableCell>
                   {obligation.update?.find(u => u.year === year && u.quarter === quarter)?.comments || ''}
                 </TableCell>

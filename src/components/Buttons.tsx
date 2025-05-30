@@ -24,5 +24,11 @@ export const ExportButton = styled(Button)({
         color: '#DC2626',
         borderColor: '#DC2626',
       },
-    }
+    },
+    '&.word': {
+      '&:hover': {
+        color: '#2563eb',
+        borderColor: '#2563eb',
+      },
+    },
   });

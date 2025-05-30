@@ -5,6 +5,9 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import jsPDF from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
 import { useAuth } from '../../../../../contexts/AuthContext';
+import { saveAs } from 'file-saver';
+import { Document, Packer, Paragraph, Table as DocxTable, TableCell as DocxTableCell, TableRow as DocxTableRow, WidthType } from 'docx';
+
 interface ComplianceTrendViewProps {
   year: string;
   quarter: string;
@@ -149,6 +152,82 @@ const ComplianceTrendView: React.FC<ComplianceTrendViewProps> = ({ year, obligat
     doc.save(`${year}_Compliance_Trend_Report.pdf`);
   };
 
+  const handleExportWord = async () => {
+    // Create docx content
+    const orgTableRows = [
+      new DocxTableRow({
+        children: [
+          new DocxTableCell({ children: [new Paragraph('Quarter')], width: { size: 33, type: WidthType.PERCENTAGE } }),
+          new DocxTableCell({ children: [new Paragraph('Compliance %')], width: { size: 33, type: WidthType.PERCENTAGE } }),
+          new DocxTableCell({ children: [new Paragraph('Non-Compliance %')], width: { size: 34, type: WidthType.PERCENTAGE } }),
+        ],
+      }),
+      ...organizationTrend.map(row =>
+        new DocxTableRow({
+          children: [
+            new DocxTableCell({ children: [new Paragraph(row.quarter)] }),
+            new DocxTableCell({ children: [new Paragraph(`${row.compliance}%`)] }),
+            new DocxTableCell({ children: [new Paragraph(`${row.nonCompliance}%`)] }),
+          ],
+        })
+      ),
+    ];
+    const orgTable = new DocxTable({
+      rows: orgTableRows,
+      width: { size: 100, type: WidthType.PERCENTAGE },
+    });
+
+    const teamTables = teamTrends.map(team => [
+      new Paragraph({
+        text: team.team,
+        heading: 'Heading2',
+        spacing: { after: 100 },
+      }),
+      new DocxTable({
+        rows: [
+          new DocxTableRow({
+            children: [
+              new DocxTableCell({ children: [new Paragraph('Quarter')] }),
+              new DocxTableCell({ children: [new Paragraph('Compliance %')] }),
+              new DocxTableCell({ children: [new Paragraph('Non-Compliance %')] }),
+            ],
+          }),
+          ...team.data.map(row =>
+            new DocxTableRow({
+              children: [
+                new DocxTableCell({ children: [new Paragraph(row.quarter)] }),
+                new DocxTableCell({ children: [new Paragraph(`${row.compliance}%`)] }),
+                new DocxTableCell({ children: [new Paragraph(`${row.nonCompliance}%`)] }),
+              ],
+            })
+          ),
+        ],
+        width: { size: 100, type: WidthType.PERCENTAGE },
+      }),
+    ]).flat();
+
+    const doc = new Document({
+      sections: [
+        {
+          children: [
+            new Paragraph({
+              text: `${year} Compliance Trend Report`,
+              heading: 'Title',
+              spacing: { after: 300 },
+            }),
+            new Paragraph({ text: 'Organization Compliance Trend', heading: 'Heading1', spacing: { after: 100 } }),
+            orgTable,
+            new Paragraph({ text: 'Team Compliance Trends', heading: 'Heading1', spacing: { before: 300, after: 100 } }),
+            ...teamTables,
+          ],
+        },
+      ],
+    });
+
+    const blob = await Packer.toBlob(doc);
+    saveAs(blob, `${year}_Compliance_Trend_Report.docx`);
+  };
+
   return (
     <Box sx={{ mt: 4 }}>
       {/* Export Buttons */}
@@ -168,6 +247,21 @@ const ComplianceTrendView: React.FC<ComplianceTrendViewProps> = ({ year, obligat
             }}
           >
             Export to PDF
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExportWord}
+            sx={{
+              borderColor: '#E5E7EB',
+              color: '#374151',
+              '&:hover': {
+                borderColor: '#D1D5DB',
+                backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              },
+            }}
+          >
+            Export to Word
           </Button>
         </Box>
       </Box>

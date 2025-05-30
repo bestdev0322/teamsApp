@@ -5,6 +5,7 @@ import { ExportButton } from '../../../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { exportPdf } from '../../../../../utils/exportPdf';
 import { exportExcel } from '../../../../../utils/exportExcel';
+import { exportWord } from '../../../../../utils/exportUtils';
 import { PdfType } from '../../../../../types';
 import { useAuth } from '../../../../../contexts/AuthContext';
 
@@ -99,6 +100,13 @@ const ComplianceSummary: React.FC<ComplianceSummaryProps> = ({ year, quarter, ob
     }
   };
 
+  const handleExportWord = () => {
+    if (summaryData.length > 0) {
+      const title = `${year}, ${quarter} ${isComplianceSuperUser ? 'Organization' : `${teamName} Team`} Compliance Summary`;
+      exportWord(tableRef, title, [0.25, 0.25, 0.25, 0.25]);
+    }
+  };
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -121,6 +129,14 @@ const ComplianceSummary: React.FC<ComplianceSummaryProps> = ({ year, quarter, ob
             size="small"
           >
             Export to PDF
+          </ExportButton>
+          <ExportButton
+            className="word"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExportWord}
+            size="small"
+          >
+            Export to Word
           </ExportButton>
         </Box>
       </Box>

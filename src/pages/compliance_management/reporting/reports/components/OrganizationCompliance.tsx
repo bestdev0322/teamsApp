@@ -5,6 +5,7 @@ import { ExportButton } from '../../../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { exportPdf } from '../../../../../utils/exportPdf';
 import { exportExcel } from '../../../../../utils/exportExcel';
+import { exportWord } from '../../../../../utils/exportUtils';
 import { PdfType } from '../../../../../types';
 
 interface OrganizationComplianceProps {
@@ -26,7 +27,7 @@ const getRiskLevelColor = (riskLevel: string) => {
   }
 };
 
-const getComplianceStatusColor = (status: string) => {
+export const getComplianceStatusColor = (status: string) => {
   switch (status) {
     case 'Compliant':
       return '#059669';  // Green
@@ -72,6 +73,13 @@ const OrganizationCompliance: React.FC<OrganizationComplianceProps> = ({ year, q
     }
   };
 
+  const handleExportWord = () => {
+    if (filteredObligations.length > 0) {
+      const title = `${year}, ${quarter} Organization Compliance`;
+      exportWord(tableRef, title, [0.2, 0.15, 0.15, 0.15, 0.15, 0.2]);
+    }
+  };
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -94,6 +102,14 @@ const OrganizationCompliance: React.FC<OrganizationComplianceProps> = ({ year, q
             size="small"
           >
             Export to PDF
+          </ExportButton>
+          <ExportButton
+            className="word"
+            startIcon={<FileDownloadIcon />}
+            onClick={handleExportWord}
+            size="small"
+          >
+            Export to Word
           </ExportButton>
         </Box>
       </Box>

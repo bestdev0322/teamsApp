@@ -40,6 +40,19 @@ interface Obligation {
   status: string;
 }
 
+const getRiskLevelColor = (status) => {
+  switch (status) {
+    case 'High':
+      return '#FF4D4F';  // Green
+    case 'Medium':
+      return '#FFC53D';  // Red
+    case 'Low':
+      return '#52C41A';  // Red
+    default:
+      return 'inherit';
+  }
+}
+
 const ComplianceObligationPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [complianceAreas, setComplianceAreas] = useState<ComplianceArea[]>([]);
@@ -207,7 +220,10 @@ const ComplianceObligationPage: React.FC = () => {
                 <TableCell>{ob.frequency}</TableCell>
                 <TableCell>{ob.lastDueDate}</TableCell>
                 <TableCell>{getTeamName(ob.owner)}</TableCell>
-                <TableCell>
+                <TableCell
+                  data-color={getRiskLevelColor(ob.riskLevel || '')}
+                  sx={{ color: getRiskLevelColor(ob.riskLevel || '') }}
+                >
                   <Box component="span" sx={{
                     display: 'inline-block',
                     width: 12,
