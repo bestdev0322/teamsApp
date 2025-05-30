@@ -15,7 +15,7 @@ import teamRoutes from './routes/teams';
 import reportRoutes from './routes/report';
 import { authenticateToken } from './middleware/auth';
 import { checkLicenseStatus } from './middleware/licenseCheck';
-import userRoutes from './routes/user';
+import userRoutes from './routes/User';
 import orgDevPlanRoutes from './routes/org_dev_plan';
 import trainingCoursesRoutes from './routes/training_courses';
 import trainingRoutes from './routes/training';
