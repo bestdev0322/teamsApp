@@ -167,7 +167,7 @@ const PersonalPerformanceAgreement: React.FC = () => {
               quarter.editable
             )).map((quarter) => (
               quarter.quarter
-            )), user?.isTeamOwner || user?.role === 'SuperUser').map((quarter) => (
+            )), user?.isTeamOwner).map((quarter) => (
               <MenuItem key={quarter.key} value={quarter.key}>
                 {quarter.alias}
               </MenuItem>
@@ -258,7 +258,7 @@ const PersonalPerformanceAgreement: React.FC = () => {
           isEnabledTwoQuarterMode={isEnabledTwoQuarterMode(selectedAnnualTarget?.content.quarterlyTarget.quarterlyTargets
             .filter((quarter) => quarter.editable)
             .map((quarter) => quarter.quarter),
-            user?.isTeamOwner || user?.role === 'SuperUser'
+            user?.isTeamOwner
           )}
         />
       )}
