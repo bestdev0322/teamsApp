@@ -10,7 +10,6 @@ import {
   Paper,
   TableContainer,
   FormControl,
-  Select,
   MenuItem,
   SelectChangeEvent,
   IconButton,
@@ -22,10 +21,10 @@ import {
   Switch,
 } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
-import { AnnualTarget, QuarterType, QuarterlyTargetObjective, AnnualTargetPerspective, QuarterlyTargetKPI, AnnualTargetRatingScale } from '../../../types/annualCorporateScorecard';
+import { AnnualTarget, QuarterType, QuarterlyTargetObjective, QuarterlyTargetKPI } from '../../../types/annualCorporateScorecard';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
 import { PersonalQuarterlyTargetObjective, PersonalPerformance, PersonalQuarterlyTarget, AssessmentStatus, AssessmentReviewStatus } from '../../../types/personalPerformance';
-import { PdfType, Feedback } from '../../../types';
+import { PdfType } from '../../../types';
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { fetchPersonalPerformances, updatePersonalPerformance } from '../../../store/slices/personalPerformanceSlice';
@@ -42,13 +41,12 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 import { exportPdf } from '../../../utils/exportPdf';
 
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SelectCourseModal from './SelectCourseModal';
 import { Course } from '../../../types/course';
 import { fetchFeedback } from '../../../store/slices/feedbackSlice';
 import PersonalFeedback from './PersonalFeedback';
-import { Toast } from '../../../components/Toast';
+import { useToast } from '../../../contexts/ToastContext';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 import { createSelector } from '@reduxjs/toolkit';
 import CommentModal from '../../../components/CommentModal';
@@ -113,7 +111,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   const { user } = useAuth();
   const [isSelectCourseModalOpen, setIsSelectCourseModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { showToast } = useToast();
   const [viewSendBackModalOpen, setViewSendBackModalOpen] = useState(false);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [selectedComment, setSelectedComment] = useState('');
@@ -289,26 +287,17 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           quarter: quarter,
           personalPerformanceId: personalPerformance?._id || ''
         });
-        setToast({
-          message: 'Performance assessment submitted successfully',
-          type: 'success'
-        });
+        showToast('Performance assessment submitted successfully', 'success');
       } catch (emailError) {
         console.error('Error sending email notification:', emailError);
-        setToast({
-          message: 'Performance assessment submitted successfully, but email notification failed',
-          type: 'success'
-        });
+        showToast('Performance assessment submitted successfully, but email notification failed', 'success');
       }
 
       setIsSubmitted(true);
       setStatus(AssessmentStatus.Submitted);
     } catch (error) {
       console.error('Error submitting quarterly target:', error);
-      setToast({
-        message: 'Failed to submit performance assessment',
-        type: 'error'
-      });
+      showToast('Failed to submit performance assessment', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -324,10 +313,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
   const handleRecall = async () => {
     if (hasAnyAssessmentComment()) {
-      setToast({
-        message: 'You cannot recall as Supervisor is busy reviewing your assessment.',
-        type: 'error'
-      });
+      showToast('You cannot recall as Supervisor is busy reviewing your assessment.', 'error');
       return;
     }
     setIsSubmitting(true);
@@ -359,31 +345,18 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           quarter: quarter,
           personalPerformanceId: personalPerformance?._id || ''
         });
-        setToast({
-          message: 'Performance assessment recalled successfully',
-          type: 'success'
-        });
+        showToast('Performance assessment recalled successfully', 'success');
       } catch (emailError) {
         console.error('Error sending email notification:', emailError);
-        setToast({
-          message: 'Performance assessment recalled successfully, but email notification failed',
-          type: 'success'
-        });
+        showToast('Performance assessment recalled successfully, but email notification failed', 'success');
       }
 
       setIsSubmitted(false);
       const currentTarget = newPersonalQuarterlyTargets?.find(target => target.quarter === quarter);
       setStatus(currentTarget?.isAssessmentCommitteeSendBack ? AssessmentStatus.CommitteeSendBack : AssessmentStatus.Draft);
-      setToast({
-        message: 'Performance assessment recalled successfully',
-        type: 'success'
-      });
     } catch (error) {
       console.error('Error recalling quarterly target:', error);
-      setToast({
-        message: 'Failed to recall performance assessment',
-        type: 'error'
-      });
+      showToast('Failed to recall performance assessment', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -490,10 +463,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         exportPdf(PdfType.PerformanceEvaluation, tableRef, title, `Total Weight: ${calculateTotalWeight(personalQuarterlyObjectives)}`, '', [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.2],
           { score: `${score} ${ratingScore.name} (${ratingScore.min}-${ratingScore.max})`, color: ratingScore.color });
       } else {
-        setToast({
-          message: 'No Assessment evaluation found',
-          type: 'error'
-        });
+        showToast('No Assessment evaluation found', 'error');
       }
     }
   }
@@ -592,13 +562,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
   return (
     <Box>
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
       <Box sx={{
         mb: 3,
         display: 'flex',

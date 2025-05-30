@@ -28,8 +28,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { api } from '../../../services/api';
 import { exportPdf } from '../../../utils/exportPdf';
 import { enableTwoQuarterMode } from '../../../utils/quarterMode';
-import * as XLSX from 'xlsx';
-import { Toast } from '../../../components/Toast';
+import { useToast } from '../../../contexts/ToastContext';
 import { exportExcel } from '../../../utils/exportExcel';
 import { useAuth } from '../../../contexts/AuthContext';
 import { importExcelFile } from '../../../utils/excelImport';
@@ -40,7 +39,7 @@ const EmployeePerformanceRating: React.FC = () => {
   const [showTable, setShowTable] = useState(false);
   const [excelData, setExcelData] = useState<{ email: string; orgUnit: string }[]>([]);
   const [fileName, setFileName] = useState('');
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+  const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { user } = useAuth();
   const annualTargets = useAppSelector((state: RootState) => state.scorecard.annualTargets as AnnualTargetType[]);
@@ -74,10 +73,10 @@ const EmployeePerformanceRating: React.FC = () => {
         setExcelData(rows);
         setFileName(file.name);
         setShowTable(true);
-        setToast({ message: 'Excel file imported successfully', type: 'success' });
+        showToast('Excel file imported successfully', 'success');
       },
       onError: (error) => {
-        setToast({ message: `Error importing file: ${error}`, type: 'error' });
+        showToast(`Error importing file: ${error}`, 'error');
       }
     });
   };
@@ -206,13 +205,6 @@ const EmployeePerformanceRating: React.FC = () => {
   }
   return (
     <Box sx={{ p: 2, backgroundColor: '#F9FAFB', borderRadius: '8px' }}>
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
       <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
         <FormControl fullWidth>
           {annualTargets.length > 0 ? (

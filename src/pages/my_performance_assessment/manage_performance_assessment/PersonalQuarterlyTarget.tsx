@@ -16,15 +16,13 @@ import {
     Chip,
 } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
-import { AnnualTarget, QuarterType, QuarterlyTargetObjective, AnnualTargetPerspective, QuarterlyTargetKPI, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
+import { AnnualTarget, QuarterType, QuarterlyTargetObjective, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
-import { PersonalQuarterlyTargetObjective, PersonalPerformance, PersonalQuarterlyTarget, AgreementStatus, AssessmentStatus, AssessmentReviewStatus } from '../../../types/personalPerformance';
+import { PersonalQuarterlyTargetObjective, PersonalPerformance, AssessmentStatus, AssessmentReviewStatus } from '../../../types/personalPerformance';
 import { api } from '../../../services/api';
 import { useToast } from '../../../contexts/ToastContext';
 import EvidenceModal from './EvidenceModal';
 import SendBackModal from '../../../components/Modal/SendBackModal';
-import { useAuth } from '../../../contexts/AuthContext';
-import { Toast } from '../../../components/Toast';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 import CommentModal from '../../../components/CommentModal';
 
@@ -46,11 +44,9 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     userId,
     userName
 }) => {
-    const { user } = useAuth();
     const [selectedSupervisor, setSelectedSupervisor] = React.useState('');
     const [personalQuarterlyObjectives, setPersonalQuarterlyObjectives] = React.useState<PersonalQuarterlyTargetObjective[]>([]);
     const [personalPerformance, setPersonalPerformance] = React.useState<PersonalPerformance | null>(null);
-    const [selectedRatingScales, setSelectedRatingScales] = React.useState<AnnualTargetRatingScale[] | null>(null);
     const [companyUsers, setCompanyUsers] = useState<{ id: string, fullName: string, jobTitle: string, team: string, teamId: string }[]>([]);
     const [evidenceModalData, setEvidenceModalData] = useState<{
         evidence: string;
@@ -60,7 +56,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     const [sendBackModalOpen, setSendBackModalOpen] = useState(false);
     const { showToast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const [commentModalOpen, setCommentModalOpen] = useState(false);
     const [selectedComment, setSelectedComment] = useState('');
 
@@ -164,26 +159,17 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
                         });
 
                         if (response.status === 200) {
-                            setToast({
-                                message: 'Performance assessment sent back successfully',
-                                type: 'success'
-                            });
+                            showToast('Performance assessment sent back successfully', 'success');
                             onBack?.();
                         }
                     } catch (emailError) {
                         console.error('Error sending email notification:', emailError);
-                        setToast({
-                            message: 'Performance assessment sent back successfully, but email notification failed',
-                            type: 'success'
-                        });
+                        showToast('Performance assessment sent back successfully, but email notification failed', 'success');
                         onBack?.();
                     }
                 } catch (error) {
                     console.error('Error updating assessment status:', error);
-                    setToast({
-                        message: 'Failed to send back performance assessment',
-                        type: 'error'
-                    });
+                    showToast('Failed to send back performance assessment', 'error');
                 } finally {
                     setIsSubmitting(false);
                 }
@@ -198,13 +184,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
     return (
         <Box>
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast(null)}
-                />
-            )}
             <Box sx={{
                 mb: 3,
                 display: 'flex',

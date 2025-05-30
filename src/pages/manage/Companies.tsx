@@ -6,8 +6,8 @@ import { createSearchFilter } from '../../utils/search';
 import { Company } from '../../types';
 import { CompanyModal } from '../../components/Modal/AddCompanyModal';
 import { DeleteModal } from '../../components/Modal/DeleteModal';
-import { Toast } from '../../components/Toast';
-import { companyAPI, licenseAPI } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
+import { companyAPI } from '../../services/api';
 
 const SEARCH_FIELDS: (keyof Company)[] = ['name', 'status', '_id'];
 
@@ -20,7 +20,7 @@ const Companies: React.FC = () => {
   const [selectedCompany, setSelectedCompany] = useState<Company | undefined>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,9 +94,11 @@ const Companies: React.FC = () => {
         setCompanies(companies.filter(company => company._id !== selectedCompany._id));
         setIsDeleteModalOpen(false);
         setSelectedCompany(undefined);
+        showToast('Company deleted successfully', 'success');
       } catch (error) {
         console.error('Error deleting company:', error);
         setError('Failed to delete company. Please try again later.');
+        showToast('Failed to delete company. Please try again later.', 'error');
       }
     }
   };
@@ -110,19 +112,13 @@ const Companies: React.FC = () => {
         setCompanies(companies.map(company => 
           company._id === selectedCompany._id ? response.data.data : company
         ));
-        setToast({
-          message: 'Company updated successfully',
-          type: 'success'
-        });
+        showToast('Company updated successfully', 'success');
       } else {
         // Add new company
         const companyResponse = await companyAPI.create(companyData);
         const newCompany = companyResponse.data.data;
         setCompanies([...companies, newCompany]);
-        setToast({
-          message: 'Company created successfully',
-          type: 'success'
-        });
+        showToast('Company created successfully', 'success');
       }
       setIsModalOpen(false);
       setSelectedCompany(undefined);
@@ -131,20 +127,11 @@ const Companies: React.FC = () => {
       const errorMessage = error.response?.data?.message;
       
       if (errorMessage?.includes('Tenant ID is already in use')) {
-        setToast({
-          message: 'This Tenant ID is already in use by another company',
-          type: 'warning'
-        });
+        showToast('This Tenant ID is already in use by another company', 'warning');
       } else if (errorMessage?.includes('Company name already exists')) {
-        setToast({
-          message: 'A company with this name already exists',
-          type: 'warning'
-        });
+        showToast('A company with this name already exists', 'warning');
       } else {
-        setToast({
-          message: 'Failed to save company. Please try again later.',
-          type: 'error'
-        });
+        showToast('Failed to save company. Please try again later.', 'error');
       }
       // Don't close modal on error so user can fix the input
       return;
@@ -163,14 +150,6 @@ const Companies: React.FC = () => {
 
   return (
     <div className="space-y-4">
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
-      
       <div className="flex justify-between items-center bg-white p-4 rounded-lg shadow">
         <div className="relative w-64">
           <SearchRegular className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />

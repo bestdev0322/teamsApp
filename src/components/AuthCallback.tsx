@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { isInTeams } from '../utils/teamsUtils';
+
 export const AuthCallback: React.FC = () => {
   const location = useLocation();
   const { isAuthenticated } = useAuth();

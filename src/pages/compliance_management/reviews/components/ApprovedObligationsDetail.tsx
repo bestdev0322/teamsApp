@@ -7,7 +7,7 @@ import { api } from '../../../../services/api';
 import ComplianceUpdateModal, { FileToUpload } from './ComplianceUpdateModal';
 import ArticleIcon from '@mui/icons-material/Article'; // Icon for comments/attachments
 import CommentsAttachmentsViewModal from './CommentsAttachmentsViewModal'; // Import the view modal
-import { Toast } from '../../../../components/Toast';
+import { useToast } from '../../../../contexts/ToastContext';
 import { useAppSelector } from '../../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
 import { fetchComplianceObligations } from '../../../../store/slices/complianceObligationsSlice';
@@ -27,7 +27,7 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
     const [error, setError] = useState<string | null>(null);
     const [obligationForView, setObligationForView] = useState<Obligation | null>(null); // State for data in the comments/attachments modal
     const [commentsAttachmentsModalOpen, setCommentsAttachmentsModalOpen] = useState(false); // State for comments/attachments modal
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const { showToast } = useToast();
     const [search, setSearch] = useState('');
     const tableRef = React.useRef<any>(null);
     const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
@@ -152,10 +152,7 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
                 }
             });
 
-            setToast({
-                message: 'Update saved successfully',
-                type: 'success'
-            });
+            showToast('Update saved successfully', 'success');
 
         } catch (error) {
             console.error('Error saving compliance update:', error);
@@ -168,10 +165,7 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
                 }
             });
 
-            setToast({
-                message: 'Error saving update',
-                type: 'error'
-            });
+            showToast('Error saving update', 'error');
         }
     };
 
@@ -213,13 +207,6 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
 
     return (
         <Box sx={{ mt: 2 }}>
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast(null)}
-                />
-            )}
             <Button
                 variant="outlined"
                 onClick={onBack}

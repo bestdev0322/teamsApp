@@ -21,13 +21,12 @@ import {
 } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { useToast } from '../../../contexts/ToastContext';
-import { AnnualTarget, QuarterType, QuarterlyTargetObjective, AnnualTargetPerspective, QuarterlyTargetKPI, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
+import { AnnualTarget, QuarterType, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
-import { PersonalQuarterlyTargetObjective, PersonalPerformance, PersonalQuarterlyTarget, AgreementStatus, AssessmentStatus, AgreementReviewStatus } from '../../../types/personalPerformance';
+import { PersonalQuarterlyTargetObjective, PersonalPerformance, AgreementStatus, AssessmentStatus, AgreementReviewStatus } from '../../../types/personalPerformance';
 import RatingScalesModal from '../../../components/RatingScalesModal';
 import { api } from '../../../services/api';
 import SendBackModal from '../../../components/Modal/SendBackModal';
-import { Toast } from '../../../components/Toast';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 import CommentModal from '../../../components/CommentModal';
 
@@ -54,12 +53,10 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     const [personalPerformance, setPersonalPerformance] = React.useState<PersonalPerformance | null>(null);
     const [selectedRatingScales, setSelectedRatingScales] = React.useState<AnnualTargetRatingScale[] | null>(null);
     const [companyUsers, setCompanyUsers] = useState<{ id: string, fullName: string, jobTitle: string, team: string, teamId: string }[]>([]);
-    const [isApproved, setIsApproved] = useState(false);
     const [committeeReviewed, setCommitteeReviewed] = useState(false);
     const { showToast } = useToast();
     const [sendBackModalOpen, setSendBackModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const [warningModalOpen, setWarningModalOpen] = useState(false);
     const [commentModalOpen, setCommentModalOpen] = useState(false);
     const [selectedComment, setSelectedComment] = useState('');
@@ -73,7 +70,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         if (personalPerformance) {
             setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
             setSelectedSupervisor(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.supervisorId || '');
-            setIsApproved(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.agreementStatus === AgreementStatus.Approved);
         }
     }, [personalPerformance]);
 
@@ -150,26 +146,17 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
                         });
 
                         if (response.status === 200) {
-                            setToast({
-                                message: 'Performance agreement sent back successfully',
-                                type: 'success'
-                            });
+                            showToast('Performance agreement sent back successfully', 'success');
                             onBack?.();
                         }
                     } catch (emailError) {
                         console.error('Error sending email notification:', emailError);
-                        setToast({
-                            message: 'Performance agreement sent back successfully, but email notification failed',
-                            type: 'success'
-                        });
+                        showToast('Performance agreement sent back successfully, but email notification failed', 'success');
                         onBack?.();
                     }
                 } catch (error) {
                     console.error('Error updating agreement status:', error);
-                    setToast({
-                        message: 'Failed to send back performance agreement',
-                        type: 'error'
-                    });
+                    showToast('Failed to send back performance agreement', 'error');
                 } finally {
                     setIsSubmitting(false);
                 }
@@ -184,13 +171,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
     return (
         <Box>
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast(null)}
-                />
-            )}
             <Box sx={{
                 mb: 3,
                 display: 'flex',

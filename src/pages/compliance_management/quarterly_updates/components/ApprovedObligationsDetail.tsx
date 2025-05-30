@@ -5,25 +5,11 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { riskColors } from '../../obligation/obligationModal';
 import ArticleIcon from '@mui/icons-material/Article'; // Icon for comments/attachments
 import CommentsAttachmentsViewModal from './CommentsAttachmentsViewModal'; // Import the view modal
-import { Toast } from '../../../../components/Toast';
 import { useAppSelector } from '../../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
 import { fetchComplianceObligations } from '../../../../store/slices/complianceObligationsSlice';
 import { Obligation, AssessmentStatus } from '../../../../types/compliance';
 import { exportPdf, exportExcel } from '../../../../utils/exportUtils';
-
-interface Attachment {
-    filename: string;
-    filepath: string;
-}
-
-interface UpdateEntry {
-    year: string;
-    quarter: string;
-    comments?: string;
-    assessmentStatus: AssessmentStatus;
-    attachments?: Attachment[];
-}
 
 interface ApprovedObligationsDetailProps {
     year: number;
@@ -38,7 +24,6 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
     const [error, setError] = useState<string | null>(null);
     const [obligationForView, setObligationForView] = useState<Obligation | null>(null); // State for data in the comments/attachments modal
     const [commentsAttachmentsModalOpen, setCommentsAttachmentsModalOpen] = useState(false); // State for comments/attachments modal
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
     const [search, setSearch] = useState('');
     const tableRef = React.useRef<any>(null);
     const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
@@ -123,13 +108,6 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
 
     return (
         <Box sx={{ mt: 2 }}>
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast(null)}
-                />
-            )}
             <Button
                 variant="outlined"
                 onClick={onBack}

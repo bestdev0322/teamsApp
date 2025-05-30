@@ -7,25 +7,12 @@ import { riskColors } from '../../obligation/obligationModal';
 import ArticleIcon from '@mui/icons-material/Article'; // Icon for comments/attachments
 import ComplianceUpdateModal, { FileToUpload } from './ComplianceUpdateModal';
 import CommentsAttachmentsViewModal from './CommentsAttachmentsViewModal'; // Import the new modal
-import { Toast } from '../../../../components/Toast';
+import { useToast } from '../../../../contexts/ToastContext';
 import { useAppSelector } from '../../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
 import { fetchComplianceObligations, submitQuarterlyUpdates } from '../../../../store/slices/complianceObligationsSlice';
 import { Obligation, AssessmentStatus } from '../../../../types/compliance';
 import { exportPdf, exportExcel } from '../../../../utils/exportUtils';
-
-interface Attachment {
-    filename: string;
-    filepath: string;
-}
-
-interface UpdateEntry {
-    year: string;
-    quarter: string;
-    comments?: string;
-    attachments?: Attachment[];
-    assessmentStatus?: AssessmentStatus;
-}
 
 interface QuarterObligationsDetailProps {
     year: number;
@@ -43,7 +30,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     const [commentsAttachmentsModalOpen, setCommentsAttachmentsModalOpen] = useState(false); // State for the new modal
     const [obligationForView, setObligationForView] = useState<Obligation | null>(null); // State for data in the new modal, might only need update data structure
     const [selectedObligations, setSelectedObligations] = useState<string[]>([]); // State for selected obligations
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+    const { showToast } = useToast();
     const [search, setSearch] = useState('');
     const tableRef = React.useRef<any>(null);
     const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
@@ -157,10 +144,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                 }
             });
 
-            setToast({
-                message: 'Update saved successfully',
-                type: 'success'
-            });
+            showToast('Update saved successfully', 'success');
 
         } catch (error) {
             console.error('Error saving compliance update:', error);
@@ -173,10 +157,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                 }
             });
 
-            setToast({
-                message: 'Error saving update',
-                type: 'error'
-            });
+            showToast('Error saving update', 'error');
         }
     };
 
@@ -221,18 +202,12 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
             })).unwrap();
 
             setSelectedObligations([]);
-            setToast({
-                message: 'Obligations approved successfully',
-                type: 'success'
-            });
+            showToast('Obligations approved successfully', 'success');
 
             await dispatch(fetchComplianceObligations());
         } catch (error) {
             console.error('Error approving obligations:', error);
-            setToast({
-                message: 'Error approving obligations',
-                type: 'error'
-            });
+            showToast('Error approving obligations', 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -300,13 +275,6 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
 
     return (
         <Box sx={{ mt: 2 }}>
-            {toast && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast(null)}
-                />
-            )}
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Button
                     variant="outlined"

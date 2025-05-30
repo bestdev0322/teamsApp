@@ -4,14 +4,12 @@ import {
     Paper,
     Table,
     TableBody,
-    TableCell,
     TableHead,
     TableRow,
     Button,
     Select,
     MenuItem,
     IconButton,
-    SelectChangeEvent,
     Typography,
     Dialog,
     DialogTitle,
@@ -24,16 +22,10 @@ import {
     FormControl,
     InputAdornment,
     Autocomplete,
-    Tooltip,
-    Snackbar,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
-    Feedback,
-    FeedbackDimension,
     PersonalPerformance,
     QuarterType,
     PersonalQuarterlyTargetFeedback,
@@ -116,7 +108,6 @@ const PersonalFeedback: React.FC<Props> = ({ quarter, annualTargetId, personalPe
     });
     const [organizationMembers, setOrganizationMembers] = useState<{ name: string, email: string }[]>([]);
     const [emailError, setEmailError] = useState<string>('');
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     // Use memoized selector
     const feedbacks = useAppSelector(state => selectFeedbacks(state, annualTargetId, quarter));
@@ -611,13 +602,6 @@ const PersonalFeedback: React.FC<Props> = ({ quarter, annualTargetId, personalPe
                     </Button>
                 </DialogActions>
             </Dialog>
-
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={3000}
-                onClose={() => setSnackbarOpen(false)}
-                message="Feedback link copied to clipboard"
-            />
         </Box>
     );
 };

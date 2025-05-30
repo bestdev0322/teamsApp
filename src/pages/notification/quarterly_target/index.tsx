@@ -9,33 +9,22 @@ import {
   TableRow,
   Paper,
   TableContainer,
-  FormControl,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
   IconButton,
-  Stack,
   Chip,
 } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
-import AddIcon from '@mui/icons-material/Add';
-import { AnnualTarget, QuarterType, QuarterlyTargetObjective, AnnualTargetPerspective, QuarterlyTargetKPI, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
+import { AnnualTarget, QuarterType, QuarterlyTargetKPI, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
-import { PersonalQuarterlyTargetObjective, PersonalPerformance, PersonalQuarterlyTarget, AgreementStatus, AgreementReviewStatus } from '../../../types/personalPerformance';
+import { PersonalQuarterlyTargetObjective, PersonalPerformance, AgreementStatus } from '../../../types/personalPerformance';
 import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddInitiativeModal from './AddInitiativeModal';
 import RatingScalesModal from '../../../components/RatingScalesModal';
-import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
-import { updatePersonalPerformance } from '../../../store/slices/personalPerformanceSlice';
 import { api } from '../../../services/api';
 import { Notification } from '@/types';
 import { fetchNotifications } from '../../../store/slices/notificationSlice';
 import SendBackModal from '../../../components/Modal/SendBackModal';
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
-import { Toast } from '../../../components/Toast';
 import ViewSendBackMessageModal from '../../../components/Modal/ViewSendBackMessageModal';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 import EditCommentModal from '../../../components/EditCommentModal';
@@ -55,21 +44,15 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   onBack,
   notification = null,
 }) => {
-  const { user } = useAuth();
   const dispatch = useAppDispatch();
-  const [selectedSupervisor, setSelectedSupervisor] = React.useState('');
   const [personalQuarterlyObjectives, setPersonalQuarterlyObjectives] = React.useState<PersonalQuarterlyTargetObjective[]>([]);
   const [selectedRatingScales, setSelectedRatingScales] = useState<AnnualTargetRatingScale[] | null>(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [companyUsers, setCompanyUsers] = useState<{ id: string, name: string }[]>([]);
   const [personalPerformance, setPersonalPerformance] = useState<PersonalPerformance | null>(null);
   const [sendBackModalOpen, setSendBackModalOpen] = useState(false);
   const [isAgreementCommitteeSendBack, setIsAgreementCommitteeSendBack] = useState(false);
   const { showToast } = useToast();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
   const [isSendingBack, setIsSendingBack] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [viewSendBackModalOpen, setViewSendBackModalOpen] = useState(false);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [kpiId, setKpiId] = useState(-1);
@@ -79,31 +62,16 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   const [previousComment, setPreviousComment] = useState('');
 
   useEffect(() => {
-    fetchCompanyUsers();
     fetchPersonalPerformance();
   }, []);
 
   useEffect(() => {
     if (personalPerformance) {
       setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
-      setSelectedSupervisor(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.supervisorId || '');
-      setIsSubmitted(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.agreementStatus === AgreementStatus.Submitted);
       setIsAgreementCommitteeSendBack(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.isAgreementCommitteeSendBack || false);
     }
   }, [personalPerformance]);
 
-  const fetchCompanyUsers = async () => {
-    try {
-      const response = await api.get('/personal-performance/company-users');
-      if (response.status === 200) {
-        setCompanyUsers(response.data.data);
-      } else {
-        setCompanyUsers([]);
-      }
-    } catch (error) {
-      setCompanyUsers([]);
-    }
-  }
 
   const fetchPersonalPerformance = async () => {
     try {
@@ -118,22 +86,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     }
   }
 
-  const updatePersonalPerformance = async (comment: string, kpiId: number) => {
-    try {
-      const response = await api.put(`/notifications/personal-performance/${notification?._id}`, {
-        agreementComment: comment,
-        kpiId: kpiId
-      });
-      if (response.status === 200) {
-        setToast({
-          message: 'Performance agreement comment updated successfully',
-          type: 'success'
-        });
-      }
-    } catch (error) {
-      console.error('Error updating personal performance:', error);
-    }
-  }
 
   const handleViewRatingScales = (kpi: QuarterlyTargetKPI) => {
     setSelectedRatingScales(kpi.ratingScales);
@@ -171,18 +123,12 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         const response = await api.post(`/notifications/approve/${notification._id}`);
         if (response.status === 200) {
           dispatch(fetchNotifications());
-          setToast({
-            message: 'Performance agreement approved successfully',
-            type: 'success'
-          });
+          showToast('Performance agreement approved successfully', 'success');
           onBack?.();
         }
       } catch (error) {
         console.error('Error approving notification:', error);
-        setToast({
-          message: 'Failed to approve performance agreement',
-          type: 'error'
-        });
+        showToast('Failed to approve performance agreement', 'error');
       } finally {
         setIsApproving(false);
       }
@@ -221,27 +167,18 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
             if (response.status === 200) {
               dispatch(fetchNotifications());
-              setToast({
-                message: 'Performance agreement sent back successfully',
-                type: 'success'
-              });
+              showToast('Performance agreement sent back successfully', 'success');
               onBack?.();
             }
           } catch (emailError) {
             console.error('Error sending email notification:', emailError);
             dispatch(fetchNotifications());
-            setToast({
-              message: 'Performance agreement sent back successfully, but email notification failed',
-              type: 'success'
-            });
+            showToast('Performance agreement sent back successfully, but email notification failed', 'success');
             onBack?.();
           }
         } catch (error) {
           console.error('Error updating agreement status:', error);
-          setToast({
-            message: 'Failed to send back performance agreement',
-            type: 'error'
-          });
+          showToast('Failed to send back performance agreement', 'error');
         } finally {
           setIsSendingBack(false);
         }
@@ -307,19 +244,13 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
       });
 
       if (response.status === 200) {
-        setToast({
-          message: 'Performance agreement comment updated successfully',
-          type: 'success'
-        });
+        showToast('Performance agreement comment updated successfully', 'success');
         // Refresh the personal performance data
         await fetchPersonalPerformance();
       }
     } catch (error) {
       console.error('Error updating personal performance comment:', error);
-      setToast({
-        message: 'Failed to update performance agreement comment',
-        type: 'error'
-      });
+      showToast('Failed to update performance agreement comment', 'error');
     } finally {
       setCommentModalOpen(false);
       setSelectedObjective('');
@@ -338,13 +269,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
   return (
     <Box>
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
       <Box sx={{
         mb: 3,
         display: 'flex',

@@ -4,7 +4,6 @@ import {
     Paper,
     Table,
     TableBody,
-    TableCell,
     TableHead,
     TableRow,
     Button,
@@ -24,16 +23,11 @@ import {
     FormControl,
     InputAdornment,
     Autocomplete,
-    Tooltip,
-    Snackbar,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import {
-    Feedback,
-    FeedbackDimension,
     PersonalPerformance,
     QuarterType,
     PersonalQuarterlyTargetFeedback,
@@ -41,7 +35,7 @@ import {
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { RootState } from '../../../store';
-import { ViewButton, StyledTableCell, StyledHeaderCell } from '../../../components/StyledTableComponents';
+import { StyledTableCell, StyledHeaderCell } from '../../../components/StyledTableComponents';
 import { api } from '../../../services/api';
 import { updatePersonalPerformance } from '../../../store/slices/personalPerformanceSlice';
 import { useToast } from '../../../contexts/ToastContext';
@@ -147,7 +141,6 @@ const PersonalFeedback: React.FC<Props> = ({ quarter, annualTargetId, personalPe
     });
     const [organizationMembers, setOrganizationMembers] = useState<{ name: string, email: string }[]>([]);
     const [emailError, setEmailError] = useState<string>('');
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [isSharing, setIsSharing] = useState(false);
     const annualTarget = useAppSelector(state => selectAnnualTargetById(state, annualTargetId));
 
@@ -738,13 +731,6 @@ const PersonalFeedback: React.FC<Props> = ({ quarter, annualTargetId, personalPe
                     </Button>
                 </DialogActions>
             </Dialog>
-
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={3000}
-                onClose={() => setSnackbarOpen(false)}
-                message="Feedback link copied to clipboard"
-            />
         </Box>
     );
 };

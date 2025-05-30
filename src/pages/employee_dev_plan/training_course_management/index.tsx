@@ -20,21 +20,19 @@ import {
   Select,
   MenuItem,
   InputAdornment,
-  Snackbar,
-  Alert,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import SearchIcon from '@mui/icons-material/Search';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import * as XLSX from 'xlsx';
 import { useAuth } from '../../../contexts/AuthContext';
 import { courseAPI } from '../../../services/api';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
 import { Course } from '../../../types/course';
 import { SelectChangeEvent } from '@mui/material/Select';
 import { importExcelFile } from '../../../utils/excelImport';
+import { useToast } from '../../../contexts/ToastContext';
 
 type TrainingCourse = Omit<Course, 'createdAt' | 'updatedAt'>;
 
@@ -59,7 +57,7 @@ const TrainingCoursesManagement: React.FC = () => {
     status: 'active'
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { showToast } = useToast();
 
   // Check if user has super user privileges
   const isSuperUser = user?.role === 'SuperUser';
@@ -125,6 +123,7 @@ const TrainingCoursesManagement: React.FC = () => {
       await courseAPI.create(formData);
       await fetchCourses();
       handleCloseAddModal();
+      showToast('Courses imported successfully', 'success');
     } catch (error) {
       console.error('Error creating course:', error);
       setError('Failed to create course');
@@ -158,6 +157,7 @@ const TrainingCoursesManagement: React.FC = () => {
       await courseAPI.update(editingCourse._id, formData);
       await fetchCourses();
       handleCloseEditModal();
+      showToast('Course updated successfully', 'success');
     } catch (error) {
       console.error('Error updating course:', error);
       setError('Failed to update course');
@@ -168,6 +168,7 @@ const TrainingCoursesManagement: React.FC = () => {
     try {
       await courseAPI.delete(courseId);
       await fetchCourses();
+      showToast('Course deleted successfully', 'success');
     } catch (error) {
       console.error('Error deleting course:', error);
       setError('Failed to delete course');
@@ -193,15 +194,15 @@ const TrainingCoursesManagement: React.FC = () => {
         Promise.all(courses.map(course => courseAPI.create(course)))
           .then(() => {
             fetchCourses();
-            setToast({ message: 'Courses imported successfully', type: 'success' });
+            showToast('Courses imported successfully', 'success');
           })
           .catch(error => {
             console.error('Error creating courses:', error);
-            setToast({ message: 'Error creating some courses', type: 'error' });
+            showToast('Error creating some courses', 'error');
           });
       },
       onError: (error) => {
-        setToast({ message: `Error importing file: ${error}`, type: 'error' });
+        showToast(`Error importing file: ${error}`, 'error');
       }
     });
   };
@@ -211,10 +212,6 @@ const TrainingCoursesManagement: React.FC = () => {
     course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     course.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleCloseToast = () => {
-    setToast(null);
-  };
 
   if (loading) {
     return <Box>Loading courses...</Box>;
@@ -435,21 +432,6 @@ const TrainingCoursesManagement: React.FC = () => {
           </Table>
         </TableContainer>
       </Paper>
-
-      <Snackbar 
-        open={!!toast} 
-        autoHideDuration={6000} 
-        onClose={handleCloseToast}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={handleCloseToast} 
-          severity={toast?.type || 'info'} 
-          sx={{ width: '100%' }}
-        >
-          {toast?.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };

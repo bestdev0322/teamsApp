@@ -18,17 +18,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Badge,
   Chip,
-  Alert,
   Autocomplete,
   TextField,
   InputLabel,
   Select,
 } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
-import AddIcon from '@mui/icons-material/Add';
-import { AnnualTarget, QuarterType, QuarterlyTargetObjective, AnnualTargetPerspective, QuarterlyTargetKPI, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
+import { AnnualTarget, QuarterType, QuarterlyTargetKPI, AnnualTargetRatingScale } from '@/types/annualCorporateScorecard';
 import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
 import { PersonalQuarterlyTargetObjective, PersonalPerformance, PersonalQuarterlyTarget, AgreementStatus, PdfType, AgreementReviewStatus } from '../../../types';
 import EditIcon from '@mui/icons-material/Edit';
@@ -49,7 +46,7 @@ import { ExportButton } from '../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 
 import { exportPdf } from '../../../utils/exportPdf';
-import { Toast } from '../../../components/Toast';
+import { useToast } from '../../../contexts/ToastContext';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 import { fetchNotifications } from '../../../store/slices/notificationSlice';
 
@@ -93,7 +90,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   const [sourceScorecardId, setSourceScorecardId] = useState('');
   const annualTargets = useAppSelector((state: RootState) => state.scorecard.annualTargets);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const { showToast } = useToast();
   const [viewSendBackModalOpen, setViewSendBackModalOpen] = useState(false);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [selectedComment, setSelectedComment] = useState('');
@@ -260,7 +257,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
       );
 
       if (agreementNotification) {
-        // Mark notification as read
         await api.post(`/notifications/read/${agreementNotification._id}`);
       }
 
@@ -303,26 +299,17 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           quarter: quarter,
           personalPerformanceId: personalPerformance?._id || ''
         });
-        setToast({
-          message: 'Performance agreement submitted successfully',
-          type: 'success'
-        });
+        showToast('Performance agreement submitted successfully', 'success');
       } catch (emailError) {
         console.error('Error sending email notification:', emailError);
-        setToast({
-          message: 'Performance agreement submitted successfully, but email notification failed',
-          type: 'success'
-        });
+        showToast('Performance agreement submitted successfully, but email notification failed', 'success');
       }
 
       setIsSubmitted(true);
       setStatus(AgreementStatus.Submitted);
     } catch (error) {
       console.error('Error submitting quarterly target:', error);
-      setToast({
-        message: 'Failed to submit performance agreement',
-        type: 'error'
-      });
+      showToast('Failed to submit performance agreement', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -330,10 +317,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
   const handleRecall = async () => {
     if (hasAnyAgreementComment()) {
-      setToast({
-        message: 'You cannot recall as Supervisor is busy reviewing your agreement or assessment.',
-        type: 'error'
-      });
+      showToast('You cannot recall as Supervisor is busy reviewing your agreement or assessment.', 'error');
       return;
     }
 
@@ -366,16 +350,10 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           quarter: quarter,
           personalPerformanceId: personalPerformance?._id || ''
         });
-        setToast({
-          message: 'Performance agreement recalled successfully',
-          type: 'success'
-        });
+        showToast('Performance agreement recalled successfully', 'success');
       } catch (emailError) {
         console.error('Error sending email notification:', emailError);
-        setToast({
-          message: 'Performance agreement recalled successfully, but email notification failed',
-          type: 'success'
-        });
+        showToast('Performance agreement recalled successfully, but email notification failed', 'success');
       }
 
       setIsSubmitted(false);
@@ -383,10 +361,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
       setStatus(currentTarget?.isAgreementCommitteeSendBack ? AgreementStatus.CommitteeSendBack : AgreementStatus.Draft);
     } catch (error) {
       console.error('Error recalling quarterly target:', error);
-      setToast({
-        message: 'Failed to recall performance agreement',
-        type: 'error'
-      });
+      showToast('Failed to recall performance agreement', 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -500,13 +475,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
   return (
     <Box>
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(null)}
-        />
-      )}
       <Box sx={{
         mb: 3,
         display: 'flex',
