@@ -3,6 +3,8 @@ import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, Tab
 import { ExportButton } from '../../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { riskColors } from '../../obligation/obligationModal';
+import { api } from '../../../../services/api';
+import ComplianceUpdateModal, { FileToUpload } from './ComplianceUpdateModal';
 import ArticleIcon from '@mui/icons-material/Article'; // Icon for comments/attachments
 import CommentsAttachmentsViewModal from './CommentsAttachmentsViewModal'; // Import the view modal
 import { Toast } from '../../../../components/Toast';
@@ -29,12 +31,15 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
     const [search, setSearch] = useState('');
     const tableRef = React.useRef<any>(null);
     const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
+    const [updateModalOpen, setUpdateModalOpen] = useState(false);
+    const [selectedObligation, setSelectedObligation] = useState<Obligation | null>(null);
+
 
     // Filter obligations that have an update entry for the specified year and quarter and are approved
     const obligations = allObligations.filter(ob =>
-        ob.update?.some(u => 
-            u.year === year.toString() && 
-            u.quarter === quarter && 
+        ob.update?.some(u =>
+            u.year === year.toString() &&
+            u.quarter === quarter &&
             u.assessmentStatus === AssessmentStatus.Approved
         )
     );
@@ -70,6 +75,104 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
     const handleCloseCommentsAttachmentsModal = () => {
         setCommentsAttachmentsModalOpen(false);
         setObligationForView(null);
+    };
+
+    const handleOpenUpdateModal = (obligation: Obligation) => {
+        setSelectedObligation(obligation);
+        setUpdateModalOpen(true);
+    };
+
+    const handleCloseUpdateModal = () => {
+        setUpdateModalOpen(false);
+        setSelectedObligation(null);
+    };
+
+    const handleSaveComplianceUpdate = async (obligationId: string, data: { complianceStatus: string, comments: string, filesToUpload: FileToUpload[], attachments: { filename: string, filepath: string }[] }) => {
+        try {
+            // 1. Upload new files first
+            const uploadedFiles = await Promise.all(
+                data.filesToUpload.map(async (fileData) => {
+                    try {
+                        const formData = new FormData();
+                        formData.append('file', fileData.file); // Append the actual File object
+
+                        // Use the backend upload endpoint
+                        const response = await api.post('/compliance-obligations/upload', formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data',
+                            },
+                        });
+
+                        // The backend /upload endpoint should return an object with the file path in a 'data' property
+                        if (response.status === 200 && response.data && typeof response.data.data === 'string') {
+                            // Use original filename and the returned filepath from response.data.data
+                            return { filename: fileData.name, filepath: response.data.data };
+                        } else {
+                            console.error('File upload failed for:', fileData.name, response);
+                            return null; // Handle upload failure
+                        }
+                    } catch (error) {
+                        console.error('Error uploading file:', error);
+                        return null;
+                    }
+                })
+            );
+
+            // Filter out any upload failures
+            const successfulUploads = uploadedFiles.filter(fileInfo => fileInfo !== null) as { filename: string, filepath: string }[];
+
+            // 2. Combine existing attachments and newly uploaded attachments' info
+            // Filter out any attachments from the initial data that had temporary blob: URLs
+            // and combine with successfully uploaded files (which have server paths).
+            const existingServerAttachments = data.attachments.filter(att => !att.filepath.startsWith('blob:'));
+
+            const finalAttachments = [...existingServerAttachments, ...successfulUploads];
+
+            // 3. Prepare data for the main obligation update
+            const updatePayload = {
+                complianceStatus: data.complianceStatus,
+                year,
+                quarter,
+                comments: data.comments,
+                attachments: finalAttachments, // Send only server paths
+            };
+
+            // 4. Send the update payload
+            const res = await api.put(`/compliance-obligations/${obligationId}/update`, updatePayload);
+
+            // Update the obligation in the state with the response data from the backend
+            // This response data should have the correct server paths for attachments.
+            await dispatch(fetchComplianceObligations());
+            handleCloseUpdateModal();
+
+            // Revoke any temporary blob URLs after successful save and state update
+            data.attachments.forEach(att => {
+                if (att.filepath.startsWith('blob:')) {
+                    URL.revokeObjectURL(att.filepath);
+                }
+            });
+
+            setToast({
+                message: 'Update saved successfully',
+                type: 'success'
+            });
+
+        } catch (error) {
+            console.error('Error saving compliance update:', error);
+            // Optionally show an error message to the user
+
+            // Also revoke temporary blob URLs on error
+            data.attachments.forEach(att => {
+                if (att.filepath.startsWith('blob:')) {
+                    URL.revokeObjectURL(att.filepath);
+                }
+            });
+
+            setToast({
+                message: 'Error saving update',
+                type: 'error'
+            });
+        }
     };
 
     const handleExportPdf = () => {
@@ -177,6 +280,7 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
                                 <TableCell>Risk Level</TableCell>
                                 <TableCell>Compliance Status</TableCell>
                                 <TableCell align='center'>Comments/Attachments</TableCell>
+                                <TableCell align='center' className="noprint">Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -218,6 +322,9 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
                                                 '-'
                                             )}
                                         </TableCell>
+                                        <TableCell align='center'>
+                                            <Button variant="outlined" size="small" onClick={() => handleOpenUpdateModal(obligation)}>Update</Button>
+                                        </TableCell>
                                     </TableRow>
                                 );
                             })}
@@ -225,6 +332,16 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
                     </Table>
                 </TableContainer>
             )}
+
+            {/* Compliance Update Modal */}
+            <ComplianceUpdateModal
+                open={updateModalOpen}
+                onClose={handleCloseUpdateModal}
+                onSave={handleSaveComplianceUpdate}
+                obligation={selectedObligation}
+                year={year}
+                quarter={quarter}
+            />
             {/* Comments/Attachments View Modal */}
             <CommentsAttachmentsViewModal
                 open={commentsAttachmentsModalOpen}
