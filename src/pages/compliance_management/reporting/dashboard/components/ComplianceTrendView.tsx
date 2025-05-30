@@ -6,7 +6,7 @@ import jsPDF from 'jspdf';
 import { autoTable } from 'jspdf-autotable';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, Table as DocxTable, TableCell as DocxTableCell, TableRow as DocxTableRow, WidthType } from 'docx';
+import { Document, Packer, Paragraph, Table as DocxTable, TableCell as DocxTableCell, TableRow as DocxTableRow, WidthType, TextRun } from 'docx';
 
 interface ComplianceTrendViewProps {
   year: string;
@@ -179,8 +179,9 @@ const ComplianceTrendView: React.FC<ComplianceTrendViewProps> = ({ year, obligat
 
     const teamTables = teamTrends.map(team => [
       new Paragraph({
-        text: team.team,
-        heading: 'Heading2',
+        children: [
+          new TextRun({ text: team.team, size: 20, bold: true })
+        ],
         spacing: { after: 100 },
       }),
       new DocxTable({
@@ -211,13 +212,27 @@ const ComplianceTrendView: React.FC<ComplianceTrendViewProps> = ({ year, obligat
         {
           children: [
             new Paragraph({
-              text: `${year} Compliance Trend Report`,
-              heading: 'Title',
-              spacing: { after: 300 },
+              children: [
+                new TextRun({ text: `${year} Compliance Trend Report`, size: 24, bold: true })
+              ],
+              spacing: { after: 200 },
+              alignment: 'center',
             }),
-            new Paragraph({ text: 'Organization Compliance Trend', heading: 'Heading1', spacing: { after: 100 } }),
+            new Paragraph({
+              children: [
+                new TextRun({ text: 'Organization Compliance Trend', size: 20, bold: true })
+              ],
+              spacing: { after: 100 },
+              alignment: 'left',
+            }),
             orgTable,
-            new Paragraph({ text: 'Team Compliance Trends', heading: 'Heading1', spacing: { before: 300, after: 100 } }),
+            new Paragraph({
+              children: [
+                new TextRun({ text: 'Team Compliance Trends', size: 20, bold: true })
+              ],
+              spacing: { before: 200, after: 100 },
+              alignment: 'left',
+            }),
             ...teamTables,
           ],
         },
