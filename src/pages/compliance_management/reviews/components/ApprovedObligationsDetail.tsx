@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button, IconButton, TextField } from '@mui/material';
-import { api } from '../../../../services/api';
+import { ExportButton } from '../../../../components/Buttons';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { riskColors } from '../../obligation/obligationModal';
 import ArticleIcon from '@mui/icons-material/Article'; // Icon for comments/attachments
 import CommentsAttachmentsViewModal from './CommentsAttachmentsViewModal'; // Import the view modal
@@ -134,21 +135,23 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
             </Button>
             {hasData && (
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                        <Button
-                            variant="outlined"
-                            onClick={handleExportPdf}
-                            sx={{ textTransform: 'none' }}
-                        >
-                            Export PDF
-                        </Button>
-                        <Button
-                            variant="outlined"
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <ExportButton
+                            className="excel"
+                            startIcon={<FileDownloadIcon />}
                             onClick={handleExportExcel}
-                            sx={{ textTransform: 'none' }}
+                            size="small"
                         >
-                            Export Excel
-                        </Button>
+                            Export to Excel
+                        </ExportButton>
+                        <ExportButton
+                            className="pdf"
+                            startIcon={<FileDownloadIcon />}
+                            onClick={handleExportPdf}
+                            size="small"
+                        >
+                            Export to PDF
+                        </ExportButton>
                     </Box>
                     <TextField
                         value={search}

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { ExportButton } from '../../../../components/Buttons';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button, IconButton, Checkbox, CircularProgress, TextField } from '@mui/material';
 import { api } from '../../../../services/api';
 import { riskColors } from '../../obligation/obligationModal';
@@ -50,12 +52,12 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     // Filter obligations based on status and current quarter
     const obligations = allObligations.filter((ob: Obligation) => {
         if (ob.status !== 'Active') return false;
-        const currentQuarterUpdate = ob.update?.find(u => 
-            u.year === year.toString() && 
+        const currentQuarterUpdate = ob.update?.find(u =>
+            u.year === year.toString() &&
             u.quarter === quarter
         );
-        return !currentQuarterUpdate || 
-               (currentQuarterUpdate.assessmentStatus !== AssessmentStatus.Submitted && 
+        return !currentQuarterUpdate ||
+            (currentQuarterUpdate.assessmentStatus !== AssessmentStatus.Submitted &&
                 currentQuarterUpdate.assessmentStatus !== AssessmentStatus.Approved);
     });
 
@@ -161,7 +163,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
             console.error('Error saving compliance update:', error);
             // Optionally show an error message to the user
 
-             // Also revoke temporary blob URLs on error
+            // Also revoke temporary blob URLs on error
             data.attachments.forEach(att => {
                 if (att.filepath.startsWith('blob:')) {
                     URL.revokeObjectURL(att.filepath);
@@ -171,19 +173,19 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     };
 
     const handleViewCommentsAttachments = (obligation: Obligation) => {
-         // Find the most recent update for the current quarter to display
+        // Find the most recent update for the current quarter to display
         const latestQuarterUpdate = obligation.update?.find(u => u.year === year.toString() && u.quarter === quarter); // Assuming year is passed as number and stored as string
         if (latestQuarterUpdate) {
             // Pass the specific update entry and obligation ID to the modal
-             setObligationForView(obligation); // Pass the full obligation
-             // The CommentsAttachmentsViewModal will need to find the correct update entry internally
+            setObligationForView(obligation); // Pass the full obligation
+            // The CommentsAttachmentsViewModal will need to find the correct update entry internally
             setCommentsAttachmentsModalOpen(true);
         } else {
-             // Handle case where no update exists for the current quarter (e.g., show empty modal or alert)
+            // Handle case where no update exists for the current quarter (e.g., show empty modal or alert)
             console.log('No update found for this quarter for obligation', obligation._id);
-             // Pass the full obligation, modal should handle empty state if update is not found
-             setObligationForView(obligation);
-             setCommentsAttachmentsModalOpen(true);
+            // Pass the full obligation, modal should handle empty state if update is not found
+            setObligationForView(obligation);
+            setCommentsAttachmentsModalOpen(true);
         }
     };
 
@@ -200,41 +202,41 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
         );
     };
 
-     const handleSubmitSelected = async () => {
-         try {
-             setIsSubmitting(true);
-             await dispatch(submitQuarterlyUpdates({
-                 obligationIds: selectedObligations,
-                 year: year.toString(),
-                 quarter: quarter,
-                 status: 'Submitted'
-             })).unwrap();
+    const handleSubmitSelected = async () => {
+        try {
+            setIsSubmitting(true);
+            await dispatch(submitQuarterlyUpdates({
+                obligationIds: selectedObligations,
+                year: year.toString(),
+                quarter: quarter,
+                status: 'Submitted'
+            })).unwrap();
 
-             setSelectedObligations([]);
-             setToast({
-                 message: 'Obligations submitted successfully',
-                 type: 'success'
-             });
+            setSelectedObligations([]);
+            setToast({
+                message: 'Obligations submitted successfully',
+                type: 'success'
+            });
 
-             // Refetch obligations after successful submission
-             await dispatch(fetchComplianceObligations());
-         } catch (error) {
-             console.error('Error submitting obligations:', error);
-             setToast({
-                 message: 'Error submitting obligations',
-                 type: 'error'
-             });
-         } finally {
-             setIsSubmitting(false);
-         }
-     };
+            // Refetch obligations after successful submission
+            await dispatch(fetchComplianceObligations());
+        } catch (error) {
+            console.error('Error submitting obligations:', error);
+            setToast({
+                message: 'Error submitting obligations',
+                type: 'error'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
             // Select all obligations that have an update for the current quarter with comments or attachments AND a compliance status
             const allSelectableObligationIds = obligations.filter(ob => {
                 const quarterUpdate = ob.update?.find(u => u.year === year.toString() && u.quarter === quarter);
-                 // Check condition based on the quarter's update
+                // Check condition based on the quarter's update
                 const hasCommentsOrAttachmentsForQuarter = quarterUpdate && ((quarterUpdate.comments && quarterUpdate.comments.length > 0) || (quarterUpdate.attachments && quarterUpdate.attachments.length > 0));
                 return hasCommentsOrAttachmentsForQuarter && ob.complianceStatus !== undefined;
             }).map(ob => ob._id);
@@ -282,9 +284,9 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     const canSubmit = selectedObligations.length > 0;
     // Filter selectable obligations based on having an update for the current quarter with comments/attachments AND compliance status
     const selectableObligations = obligations.filter(ob => {
-         const quarterUpdate = ob.update?.find(u => u.year === year.toString() && u.quarter === quarter);
-          const hasCommentsOrAttachmentsForQuarter = quarterUpdate && ((quarterUpdate.comments && quarterUpdate.comments.length > 0) || (quarterUpdate.attachments && quarterUpdate.attachments.length > 0));
-         return hasCommentsOrAttachmentsForQuarter && ob.complianceStatus !== undefined;
+        const quarterUpdate = ob.update?.find(u => u.year === year.toString() && u.quarter === quarter);
+        const hasCommentsOrAttachmentsForQuarter = quarterUpdate && ((quarterUpdate.comments && quarterUpdate.comments.length > 0) || (quarterUpdate.attachments && quarterUpdate.attachments.length > 0));
+        return hasCommentsOrAttachmentsForQuarter && ob.complianceStatus !== undefined;
     });
     const isAllSelected = selectableObligations.length > 0 && selectedObligations.length === selectableObligations.length;
 
@@ -334,7 +336,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                         },
                     }}
                 >
-                    <Box sx={{ 
+                    <Box sx={{
                         visibility: isSubmitting ? 'hidden' : 'visible',
                         minWidth: '60px'
                     }}>
@@ -357,21 +359,23 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
             </Box>
             {hasData && (
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                        <Button
-                            variant="outlined"
-                            onClick={handleExportPdf}
-                            sx={{ textTransform: 'none' }}
-                        >
-                            Export PDF
-                        </Button>
-                        <Button
-                            variant="outlined"
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <ExportButton
+                            className="excel"
+                            startIcon={<FileDownloadIcon />}
                             onClick={handleExportExcel}
-                            sx={{ textTransform: 'none' }}
+                            size="small"
                         >
-                            Export Excel
-                        </Button>
+                            Export to Excel
+                        </ExportButton>
+                        <ExportButton
+                            className="pdf"
+                            startIcon={<FileDownloadIcon />}
+                            onClick={handleExportPdf}
+                            size="small"
+                        >
+                            Export to PDF
+                        </ExportButton>
                     </Box>
                     <TextField
                         value={search}
@@ -392,12 +396,12 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                         <TableHead>
                             <TableRow>
                                 <TableCell padding="checkbox" className="noprint">
-                                     <Checkbox
-                                         indeterminate={selectedObligations.length > 0 && selectedObligations.length < selectableObligations.length}
-                                         checked={isAllSelected}
-                                         onChange={handleSelectAllClick}
-                                         disabled={selectableObligations.length === 0} // Disable select all if no rows are selectable
-                                     />
+                                    <Checkbox
+                                        indeterminate={selectedObligations.length > 0 && selectedObligations.length < selectableObligations.length}
+                                        checked={isAllSelected}
+                                        onChange={handleSelectAllClick}
+                                        disabled={selectableObligations.length === 0} // Disable select all if no rows are selectable
+                                    />
                                 </TableCell>
                                 <TableCell>Compliance Obligation</TableCell>
                                 <TableCell>Frequency</TableCell>

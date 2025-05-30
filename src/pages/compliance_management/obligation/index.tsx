@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TextField, IconButton, TableCell } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
+import { ExportButton } from '../../../components/Buttons';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ObligationModal from './obligationModal';
@@ -148,20 +150,24 @@ const ComplianceObligationPage: React.FC = () => {
           >
             Add Compliance Obligation
           </Button>
-          <Button
-            variant="outlined"
-            onClick={handleExportPdf}
-            sx={{ textTransform: 'none' }}
-          >
-            Export PDF
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={handleExportExcel}
-            sx={{ textTransform: 'none' }}
-          >
-            Export Excel
-          </Button>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <ExportButton
+              className="excel"
+              startIcon={<FileDownloadIcon />}
+              onClick={handleExportExcel}
+              size="small"
+            >
+              Export to Excel
+            </ExportButton>
+            <ExportButton
+              className="pdf"
+              startIcon={<FileDownloadIcon />}
+              onClick={handleExportPdf}
+              size="small"
+            >
+              Export to PDF
+            </ExportButton>
+          </Box>
         </Box>
         <TextField
           value={search}

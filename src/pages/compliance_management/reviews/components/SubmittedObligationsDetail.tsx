@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { ExportButton } from '../../../../components/Buttons';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button, IconButton, Checkbox, TextField, CircularProgress } from '@mui/material';
 import { api } from '../../../../services/api';
 import { riskColors } from '../../obligation/obligationModal';
@@ -48,11 +50,11 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Filter obligations that have submitted updates for the current quarter
-    const obligations = allObligations.filter(ob => 
-        ob.status === 'Active' && 
-        ob.update?.some(u => 
-            u.year === year.toString() && 
-            u.quarter === quarter && 
+    const obligations = allObligations.filter(ob =>
+        ob.status === 'Active' &&
+        ob.update?.some(u =>
+            u.year === year.toString() &&
+            u.quarter === quarter &&
             u.assessmentStatus === AssessmentStatus.Submitted
         )
     );
@@ -340,7 +342,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                         },
                     }}
                 >
-                    <Box sx={{ 
+                    <Box sx={{
                         visibility: isSubmitting ? 'hidden' : 'visible',
                         minWidth: '60px'
                     }}>
@@ -363,21 +365,23 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
             </Box>
             {hasData && (
                 <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-                        <Button
-                            variant="outlined"
-                            onClick={handleExportPdf}
-                            sx={{ textTransform: 'none' }}
-                        >
-                            Export PDF
-                        </Button>
-                        <Button
-                            variant="outlined"
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <ExportButton
+                            className="excel"
+                            startIcon={<FileDownloadIcon />}
                             onClick={handleExportExcel}
-                            sx={{ textTransform: 'none' }}
+                            size="small"
                         >
-                            Export Excel
-                        </Button>
+                            Export to Excel
+                        </ExportButton>
+                        <ExportButton
+                            className="pdf"
+                            startIcon={<FileDownloadIcon />}
+                            onClick={handleExportPdf}
+                            size="small"
+                        >
+                            Export to PDF
+                        </ExportButton>
                     </Box>
                     <TextField
                         value={search}
