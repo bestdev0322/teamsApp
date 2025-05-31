@@ -6,10 +6,12 @@ import {
 } from '@fluentui/react-icons';
 import { PageProps } from '../types';
 import { useAppSelector } from '../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
 import { RootState } from '../store';
 import { Badge } from '@mui/material';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { fetchComplianceObligations } from '../store/slices/complianceObligationsSlice';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -23,15 +25,25 @@ const Sidebar: React.FC<SidebarProps> = ({
   isOpen,
   onToggle,
   activePageTitle,
-  onPageChange,
+  onPageChange: originalOnPageChange,
   pagePropsList
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const notifications = useAppSelector((state: RootState) => state.notification.notifications);
+  const dispatch = useAppDispatch();
 
   const handleLogout = () => {
     navigate('/logout');
+  };
+
+  const handleSidebarNavigation = (pageProps: PageProps) => {
+    originalOnPageChange(pageProps.title);
+
+    if (pageProps.title === 'Compliance Management') {
+      console.log('Sidebar: Navigating to Compliance Management, fetching obligations...');
+      dispatch(fetchComplianceObligations());
+    }
   };
 
   return (
@@ -61,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     ? 'bg-ms-blue bg-opacity-10 text-ms-blue'
                     : 'text-gray-700 hover:bg-gray-100'
                 }`}
-                onClick={() => onPageChange(pageProps.title)}
+                onClick={() => handleSidebarNavigation(pageProps)}
               >
                 <span className="inline-flex items-center justify-center w-6 h-6">
                   {pageProps.title === 'Notifications' ? (

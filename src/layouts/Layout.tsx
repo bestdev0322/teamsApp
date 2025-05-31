@@ -4,6 +4,11 @@ import Sidebar from './Sidebar';
 import Content from './Content';
 import { PageProps } from '../types';
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useAppSelector } from '../hooks/useAppSelector';
+import { useAppDispatch } from '../hooks/useAppDispatch';
+import { getCurrentQuarterYear } from '../store/slices/complianceObligationsSlice';
+import { fetchComplianceSettings } from '../store/slices/complianceSettingsSlice';
 
 interface LayoutProps {
   // selectedTabChanger: (tab: string) => void;
@@ -17,11 +22,38 @@ const Layout: React.FC<LayoutProps> = (props) => {
   const [activePageTitle, setActivePageTitle] = useState('Dashboard');
   const location = useLocation();
   const [selectedTabItem, setSelectedTabItem] = useState('Dashboard');
+  const { user } = useAuth();
+  const obligations = useAppSelector((state: any) => state.complianceObligations.obligations);
+  const dispatch = useAppDispatch();
+  const { year: currentYear, quarter: currentQuarter } = useAppSelector(getCurrentQuarterYear);
+  const settingsStatus = useAppSelector((state: any) => state.complianceSettings.status);
+  let { quarterlyBadge, reviewBadge } = useAppSelector((state) => state.complianceObligations);
 
+
+
+  if (user?.isComplianceChampion && currentYear && currentQuarter) {
+    quarterlyBadge = obligations.filter((ob: any) => {
+      if (ob.status !== 'Active') return false;
+      const update = ob.update?.find((u: any) => u.year === currentYear.toString() && u.quarter === currentQuarter);
+      return !update || (update.assessmentStatus !== 'Submitted' && update.assessmentStatus !== 'Approved');
+    }).length;
+  }
+  if (user?.isComplianceSuperUser && currentYear && currentQuarter) {
+    reviewBadge = obligations.filter((ob: any) => {
+      if (ob.status !== 'Active') return false;
+      const update = ob.update?.find((u: any) => u.year === currentYear.toString() && u.quarter === currentQuarter);
+      return update && update.assessmentStatus === 'Submitted';
+    }).length;
+  }
   useEffect(() => {
     setSelectedTabItem(location.pathname.split('/')[2]);
   }, [location]);
-  
+
+  useEffect(() => {
+    if (settingsStatus === 'idle') {
+      dispatch(fetchComplianceSettings());
+    }
+  }, [dispatch, settingsStatus]);
 
   // const pages = React.Children.toArray(props.children) as PageElement[];
   const pages = props.pages as PageProps[];
@@ -77,11 +109,11 @@ const Layout: React.FC<LayoutProps> = (props) => {
   const renderContent = () => {
     if (pagePropsList.length === 0) {
       return (
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '100%' 
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%'
         }}>
           <p className="text-gray-500">No content available</p>
         </Box>
@@ -91,11 +123,11 @@ const Layout: React.FC<LayoutProps> = (props) => {
     const activePage = pagePropsList.find((page) => page.title === activePageTitle);
     if (!activePage) {
       return (
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          height: '100%' 
+        <Box sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%'
         }}>
           <p className="text-gray-500">Page not found</p>
         </Box>
@@ -109,12 +141,15 @@ const Layout: React.FC<LayoutProps> = (props) => {
         icon={activePage.icon}
         selectedTab={selectedTabItem}
         onTabChange={handleTabChange}
+        user={user}
+        quarterlyBadge={quarterlyBadge}
+        reviewBadge={reviewBadge}
       />
     );
   };
 
   return (
-    <Box sx={{ 
+    <Box sx={{
       display: 'flex',
       height: '100vh',
       overflow: 'hidden',

@@ -1,6 +1,7 @@
 import { io, Socket } from 'socket.io-client';
 import { SocketEvent, SocketMessage } from '../types/socket';
 import { authService } from './authService';
+
 class SocketService {
   private socket: Socket | null = null;
   private reconnectAttempts = 0;
@@ -41,25 +42,38 @@ class SocketService {
           this.reconnectInterval = null;
         }
 
-        this.socket?.emit('authenticate', authService.getToken());
+        const token = authService.getToken();
+        this.socket?.emit('authenticate', token);
+
+        // Listen for authentication success/failure (optional, depending on backend)
+        this.socket?.once('authenticated', () => {
+          this.processMessageQueue(); // Process queued messages after authentication
+        });
+
+        this.socket?.once('unauthorized', (error) => {
+          console.error('SocketService: Authentication failed:', error);
+          this.handleDisconnect(); // Disconnect on auth failure
+        });
+
       } else {
         this.handleDisconnect();
       }
     });
 
     this.socket.on('connect_error', (error) => {
-      console.error('Socket connection error:', error);
+      console.error('SocketService: Connection error:', error);
       this.handleDisconnect();
     });
 
-    this.socket.on('disconnect', () => {
-      console.log('Socket disconnected');
+    this.socket.on('disconnect', (reason) => {
+      console.log('SocketService: Disconnected. Reason:', reason);
       this.handleDisconnect();
     });
 
     // Handle incoming messages
     Object.values(SocketEvent).forEach(event => {
       this.socket?.on(event, (data: any) => {
+        // console.log(`SocketService: Event ${event} received:`, data);
         this.notifyListeners(event, data);
       });
     });
@@ -138,19 +152,19 @@ class SocketService {
   private handleDisconnect(): void {
     if (this.reconnectInterval) return; // Already trying to reconnect
 
-    this.reconnectInterval = setInterval(() => {
-      if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-        if (this.reconnectInterval) {
-          clearInterval(this.reconnectInterval);
-          this.reconnectInterval = null;
-        }
-        return;
-      }
-
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
       console.log(`Attempting to reconnect... (${this.reconnectAttempts + 1}/${this.maxReconnectAttempts})`);
       this.reconnectAttempts++;
-      this.reconnect();
-    }, this.reconnectDelay);
+      this.reconnectInterval = setInterval(() => {
+         this.reconnect();
+      }, this.reconnectDelay);
+    } else {
+      console.error('SocketService: Max reconnect attempts reached. Giving up.');
+      if (this.reconnectInterval) {
+        clearInterval(this.reconnectInterval);
+        this.reconnectInterval = null;
+      }
+    }
   }
 
   public unsubscribe(event: string): void {

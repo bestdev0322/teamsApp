@@ -7,9 +7,13 @@ import {
   MenuItem,
   IconButton,
   styled,
+  Badge,
 } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useAppSelector } from '../hooks/useAppSelector';
+import { UserProfile } from '../types';
 
 interface ContentProps {
   title: string;
@@ -18,6 +22,9 @@ interface ContentProps {
   selectedTab: string;
   onTabChange: (tab: string) => void;
   children?: React.ReactNode;
+  user?: UserProfile | null;
+  quarterlyBadge: number;
+  reviewBadge: number;
 }
 
 const TabContainer = styled(Box)({
@@ -85,6 +92,9 @@ const Content: React.FC<ContentProps> = ({
   icon,
   selectedTab,
   onTabChange,
+  user,
+  quarterlyBadge,
+  reviewBadge,
 }) => {
   const [visibleTabs, setVisibleTabs] = useState<string[]>([]);
   const [overflowTabs, setOverflowTabs] = useState<string[]>([]);
@@ -153,15 +163,57 @@ const Content: React.FC<ContentProps> = ({
         </Box>
 
         <TabContainer ref={containerRef} sx={{ bgcolor: '#f5f5f5' }}>
-          {visibleTabs.map((tab) => (
-            <StyledNavLink
-              key={tab}
-              to={getTabPath(tab)}
-              className={({ isActive }) => isActive ? 'active' : ''}
-            >
-              {tab}
-            </StyledNavLink>
-          ))}
+          {visibleTabs.map((tab) => {
+            const isQuarterlyTab = tab.toLowerCase().includes('quarterly compliance updates');
+            const isReviewTab = tab.toLowerCase().includes('compliance reviews');
+            return (
+              <StyledNavLink
+                key={tab}
+                to={getTabPath(tab)}
+                className={({ isActive }) => isActive ? 'active' : ''}
+              >
+                {isQuarterlyTab && user?.isComplianceChampion && quarterlyBadge > 0 ? (
+                  <Badge
+                    color="error"
+                    badgeContent={quarterlyBadge}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    overlap="rectangular"
+                    sx={{
+                      ml: 0,
+                      '& .MuiBadge-badge': {
+                        fontSize: '0.7rem',
+                        minWidth: 20,
+                        height: 20,
+                        right: -15,
+                        top: 2
+                      }
+                    }}
+                  >
+                    <span>{tab}</span>
+                  </Badge>
+                ) : isReviewTab && user?.isComplianceSuperUser && reviewBadge > 0 ? (
+                  <Badge
+                    color="error"
+                    badgeContent={reviewBadge}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    overlap="rectangular"
+                    sx={{
+                      ml: 0,
+                      '& .MuiBadge-badge': {
+                        fontSize: '0.7rem',
+                        minWidth: 20,
+                        height: 20,
+                        right: -15,
+                        top: 2
+                      }
+                    }}
+                  >
+                    <span>{tab}</span>
+                  </Badge>
+                ) : tab}
+              </StyledNavLink>
+            );
+          })}
 
           {overflowTabs.length > 0 && (
             <>
@@ -172,12 +224,17 @@ const Content: React.FC<ContentProps> = ({
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
+                PaperProps={{
+                  sx: { overflow: 'visible' }
+                }}
               >
                 {overflowTabs.map((tab) => {
                   const tabPath = getTabPath(tab);
                   const lastSegment = location.pathname.split('/').filter(Boolean).pop();
                   const tabSegment = tabPath.split('/').filter(Boolean).pop();
                   const isActive = lastSegment === tabSegment;
+                  const isQuarterlyTab = tab.toLowerCase().includes('quarterly compliance updates');
+                  const isReviewTab = tab.toLowerCase().includes('compliance reviews');
                   return (
                     <NavLink
                       key={tab}
@@ -186,7 +243,47 @@ const Content: React.FC<ContentProps> = ({
                       onClick={() => handleTabSelect(tab)}
                     >
                       <StyledMenuItem className={isActive ? 'active-menu-item' : ''}>
-                        {tab}
+                        {isQuarterlyTab && user?.isComplianceChampion && quarterlyBadge > 0 ? (
+                          <Badge
+                            color="error"
+                            badgeContent={quarterlyBadge}
+                            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            overlap="rectangular"
+                            sx={{
+                              ml: 0,
+                              '& .MuiBadge-badge': {
+                                fontSize: '0.7rem',
+                                minWidth: 20,
+                                height: 20,
+                                right: -15,
+                                top: 2
+                              }
+                            }}
+                          >
+                            <span>{tab}</span>
+                          </Badge>
+                        ) : isReviewTab && user?.isComplianceSuperUser && reviewBadge > 0 ? (
+                          <Badge
+                            color="error"
+                            badgeContent={reviewBadge}
+                            anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                            overlap="rectangular"
+                            sx={{
+                              ml: 0,
+                              '& .MuiBadge-badge': {
+                                fontSize: '0.7rem',
+                                minWidth: 20,
+                                height: 20,
+                                right: -15,
+                                top: 2
+                              }
+                            }}
+                          >
+                            <span>{tab}</span>
+                          </Badge>
+                        ) : (
+                          tab
+                        )}
                       </StyledMenuItem>
                     </NavLink>
                   );

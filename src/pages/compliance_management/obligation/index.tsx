@@ -7,11 +7,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import ObligationModal from './obligationModal';
 import { api } from '../../../services/api';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState, AppDispatch } from '../../../store';
+import { useAppSelector } from '../../../hooks/useAppSelector';
+import { useAppDispatch } from '../../../hooks/useAppDispatch';
+import { RootState } from '../../../store';
 import { fetchTeams } from '../../../store/slices/teamsSlice';
 import { useAuth } from '../../../contexts/AuthContext';
 import { exportPdf, exportExcel } from '../../../utils/exportUtils';
+import { fetchComplianceObligations, updateBadgeCounts, getCurrentQuarterYear } from '../../../store/slices/complianceObligationsSlice';
 
 const riskColors: Record<string, string> = {
   High: '#FF4D4F',    // Red
@@ -29,6 +31,8 @@ interface Team {
   name: string;
 }
 
+type Update = { year: string; quarter: string; assessmentStatus: string; };
+
 interface Obligation {
   _id: string;
   complianceObligation: string;
@@ -38,6 +42,7 @@ interface Obligation {
   owner: Team | string;
   riskLevel: string;
   status: string;
+  update?: Update[];
 }
 
 const getRiskLevelColor = (status) => {
@@ -58,12 +63,13 @@ const ComplianceObligationPage: React.FC = () => {
   const [complianceAreas, setComplianceAreas] = useState<ComplianceArea[]>([]);
   const [obligations, setObligations] = useState<Obligation[]>([]);
   const [editObligation, setEditObligation] = useState<Obligation | null>(null);
-  const teams = useSelector((state: RootState) => state.teams.teams);
-  const dispatch = useDispatch<AppDispatch>();
+  const teams = useAppSelector((state: RootState) => state.teams.teams);
   const { user } = useAuth();
   const [search, setSearch] = useState('');
   const tableRef = React.useRef<any>(null);
   const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
+  const { year: currentYear, quarter: currentQuarter } = useAppSelector(getCurrentQuarterYear);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     api.get('/compliance-areas').then(res => setComplianceAreas(res.data.data || []));
@@ -91,6 +97,23 @@ const ComplianceObligationPage: React.FC = () => {
       setObligations(prev => [...prev, res.data.data]);
     }
     setModalOpen(false);
+    dispatch(fetchComplianceObligations());
+    let newQuarterlyBadge = 0, newReviewBadge = 0;
+    if (user?.isComplianceChampion && currentYear && currentQuarter) {
+      newQuarterlyBadge = obligations.filter((ob) => {
+        if (ob.status !== 'Active') return false;
+        const update = ob.update?.find((u) => u.year === currentYear.toString() && u.quarter === currentQuarter);
+        return !update || (update.assessmentStatus !== 'Submitted' && update.assessmentStatus !== 'Approved');
+      }).length;
+    }
+    if (user?.isComplianceSuperUser && currentYear && currentQuarter) {
+      newReviewBadge = obligations.filter((ob) => {
+        if (ob.status !== 'Active') return false;
+        const update = ob.update?.find((u) => u.year === currentYear.toString() && u.quarter === currentQuarter);
+        return update && update.assessmentStatus === 'Submitted';
+      }).length;
+    }
+    dispatch(updateBadgeCounts({ quarterlyBadge: newQuarterlyBadge, reviewBadge: newReviewBadge }));
   };
 
   const handleEditClick = (ob: Obligation) => {
@@ -101,6 +124,23 @@ const ComplianceObligationPage: React.FC = () => {
   const handleDeleteObligation = async (id: string) => {
     await api.delete(`/compliance-obligations/${id}`);
     setObligations(prev => prev.filter(ob => ob._id !== id));
+    dispatch(fetchComplianceObligations());
+    let newQuarterlyBadge = 0, newReviewBadge = 0;
+    if (user?.isComplianceChampion && currentYear && currentQuarter) {
+      newQuarterlyBadge = obligations.filter((ob) => {
+        if (ob.status !== 'Active') return false;
+        const update = ob.update?.find((u) => u.year === currentYear.toString() && u.quarter === currentQuarter);
+        return !update || (update.assessmentStatus !== 'Submitted' && update.assessmentStatus !== 'Approved');
+      }).length;
+    }
+    if (user?.isComplianceSuperUser && currentYear && currentQuarter) {
+      newReviewBadge = obligations.filter((ob) => {
+        if (ob.status !== 'Active') return false;
+        const update = ob.update?.find((u) => u.year === currentYear.toString() && u.quarter === currentQuarter);
+        return update && update.assessmentStatus === 'Submitted';
+      }).length;
+    }
+    dispatch(updateBadgeCounts({ quarterlyBadge: newQuarterlyBadge, reviewBadge: newReviewBadge }));
   };
 
   const getAreaName = (area: ComplianceArea | string) => {

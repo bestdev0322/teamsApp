@@ -28,14 +28,21 @@ class SocketService {
 
       // Handle user authentication
       socket.on('authenticate', async (token: string) => {
+        console.log('Server received authenticate event. Token status:', token ? 'Received Token' : 'No Token');
         const dbUser = await authService.verifyToken(token);
         if (!dbUser) {
+          console.error('Server: Authentication failed for socket', socket.id, ': Invalid token.');
+          // Optionally emit an 'unauthorized' event back to the client before disconnecting
+          socket.emit('unauthorized', { message: 'Invalid token' });
           socket.disconnect();
           return;
         }
         const microsoftId = dbUser.MicrosoftId;
-        console.log('User authenticated:', microsoftId);
+        console.log('Server: User authenticated successfully:', microsoftId, 'for socket', socket.id);
         this.handleUserConnection(socket, microsoftId);
+
+        // Optionally emit an 'authenticated' event back to the client
+        socket.emit('authenticated');
       });
 
       socket.on('disconnect', () => {
@@ -67,6 +74,35 @@ class SocketService {
 
       socket.on(SocketEvent.SEND_BACK_PERFORMANCE_ASSESSMENT, (data) => {
         this.handleAssessment(socket, data);
+      });
+
+      // Handle obligation submission events
+      socket.on(SocketEvent.OBLIGATION_SUBMITTED, async (data) => {
+        console.log('Server received SocketEvent.OBLIGATION_SUBMITTED:', data);
+        // data: { tenantId, year, quarter, submittedBy }
+        try {
+          const { tenantId, year, quarter, submittedBy } = data.data;
+          console.log('Server OBLIGATION_SUBMITTED handler: Received tenantId:', tenantId);
+          if (!tenantId) {
+            console.log('Server OBLIGATION_SUBMITTED handler: tenantId is missing, returning.');
+            return;
+          }
+          // Dynamically import User model to avoid circular deps
+          console.log('Server OBLIGATION_SUBMITTED handler: Searching for super users in tenant:', tenantId);
+          const User = require('../models/User').default;
+          const superUsers = await User.find({ tenantId, isComplianceSuperUser: true });
+          console.log('Server OBLIGATION_SUBMITTED handler: Found super users:', superUsers.map((u: any) => u.MicrosoftId)); // Log just MicrosoftIds
+          superUsers.forEach((superUser: any) => {
+            console.log('Server forwarding SocketEvent.OBLIGATION_SUBMITTED to super user:', superUser.MicrosoftId);
+            this.emitToUser(superUser.MicrosoftId, SocketEvent.OBLIGATION_SUBMITTED, {
+              year,
+              quarter,
+              submittedBy
+            });
+          });
+        } catch (err) {
+          console.error('Error handling OBLIGATION_SUBMITTED socket event:', err);
+        }
       });
     });
   }

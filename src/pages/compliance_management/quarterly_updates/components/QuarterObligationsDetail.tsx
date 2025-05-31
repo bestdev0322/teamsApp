@@ -13,6 +13,9 @@ import { useAppDispatch } from '../../../../hooks/useAppDispatch';
 import { fetchComplianceObligations, submitQuarterlyUpdates } from '../../../../store/slices/complianceObligationsSlice';
 import { Obligation, AssessmentStatus } from '../../../../types/compliance';
 import { exportPdf, exportExcel } from '../../../../utils/exportUtils';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { useSocket } from '../../../../hooks/useSocket';
+import { SocketEvent } from '../../../../types/socket';
 
 
 
@@ -37,6 +40,8 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     const [search, setSearch] = useState('');
     const tableRef = React.useRef<any>(null);
     const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
+    const { user } = useAuth();
+    const { emit } = useSocket(SocketEvent.OBLIGATION_SUBMITTED, () => {});
 
     // Filter obligations based on status and current quarter
     const obligations = allObligations.filter((ob: Obligation) => {
@@ -206,6 +211,18 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
 
             // Refetch obligations after successful submission
             await dispatch(fetchComplianceObligations());
+
+            // Emit socket event to notify super users in the tenant
+            if (user?.tenantId) {
+                console.log('Client emitting SocketEvent.OBLIGATION_SUBMITTED. Checking tenantId:', user?.tenantId);
+                console.log('Emitting SocketEvent.OBLIGATION_SUBMITTED with data:', { tenantId: user.tenantId, year: year.toString(), quarter, submittedBy: user.id || user.email });
+                emit({
+                    tenantId: user.tenantId,
+                    year: year.toString(),
+                    quarter,
+                    submittedBy: user.id || user.email
+                });
+            }
         } catch (error) {
             console.error('Error submitting obligations:', error);
             showToast('Error submitting obligations', 'error');

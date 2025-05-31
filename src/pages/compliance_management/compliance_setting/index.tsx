@@ -3,6 +3,12 @@ import { Box, Button, TableContainer, Paper, Table, TableHead, TableRow, TableBo
 import { api } from '../../../services/api';
 import AnnualComplianceDetailView from './AnnualComplianceDetailView';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAppDispatch } from '../../../hooks/useAppDispatch';
+import { useAppSelector } from '../../../hooks/useAppSelector';
+import { useAuth } from '../../../contexts/AuthContext';
+import { updateBadgeCounts, fetchComplianceObligations, getCurrentQuarterYear } from '../../../store/slices/complianceObligationsSlice';
+import moment from 'moment';
+import { fetchComplianceSettings } from '../../../store/slices/complianceSettingsSlice';
 
 const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + 1 - i);
 const months = [
@@ -37,6 +43,10 @@ const ComplianceSettingPage: React.FC = () => {
     const [newMonth, setNewMonth] = useState<string>(months[0]);
     const [editSetting, setEditSetting] = useState<ComplianceSetting | null>(null);
     const { showToast } = useToast();
+    const dispatch = useAppDispatch();
+    const obligations = useAppSelector((state: any) => state.complianceObligations.obligations);
+    const { user } = useAuth();
+    const { year: currentYear, quarter: currentQuarter } = useAppSelector(getCurrentQuarterYear);
 
     useEffect(() => {
         api.get('/compliance-settings').then(res => {
@@ -93,9 +103,29 @@ const ComplianceSettingPage: React.FC = () => {
                         quarters: res.data.data.quarters,
                     } : s
                 ));
+                // Update badge counts before sending emails
+                await dispatch(fetchComplianceObligations());
+                let newQuarterlyBadge = 0, newReviewBadge = 0;
+                if (user?.isComplianceChampion && currentYear && currentQuarter) {
+                  newQuarterlyBadge = obligations.filter((ob: any) => {
+                    if (ob.status !== 'Active') return false;
+                    const update = ob.update?.find((u: any) => u.year === currentYear.toString() && u.quarter === currentQuarter);
+                    return !update || (update.assessmentStatus !== 'Submitted' && update.assessmentStatus !== 'Approved');
+                  }).length;
+                }
+                if (user?.isComplianceSuperUser && currentYear && currentQuarter) {
+                  newReviewBadge = obligations.filter((ob: any) => {
+                    if (ob.status !== 'Active') return false;
+                    const update = ob.update?.find((u: any) => u.year === currentYear.toString() && u.quarter === currentQuarter);
+                    return update && update.assessmentStatus === 'Submitted';
+                  }).length;
+                }
+                dispatch(updateBadgeCounts({ quarterlyBadge: newQuarterlyBadge, reviewBadge: newReviewBadge }));
                 // Check and send notification after update
                 checkAndSendQuarterNotification(newYear, editSetting.quarters);
                 setEditSetting(null);
+                // Update the store with the latest settings
+                await dispatch(fetchComplianceSettings());
             } catch (error) {
                 console.error('Error updating compliance setting:', error);
             }
@@ -117,8 +147,28 @@ const ComplianceSettingPage: React.FC = () => {
                     },
                     ...prev,
                 ]);
+                // Update badge counts before sending emails
+                await dispatch(fetchComplianceObligations());
+                let newQuarterlyBadge = 0, newReviewBadge = 0;
+                if (user?.isComplianceChampion && currentYear && currentQuarter) {
+                  newQuarterlyBadge = obligations.filter((ob: any) => {
+                    if (ob.status !== 'Active') return false;
+                    const update = ob.update?.find((u: any) => u.year === currentYear.toString() && u.quarter === currentQuarter);
+                    return !update || (update.assessmentStatus !== 'Submitted' && update.assessmentStatus !== 'Approved');
+                  }).length;
+                }
+                if (user?.isComplianceSuperUser && currentYear && currentQuarter) {
+                  newReviewBadge = obligations.filter((ob: any) => {
+                    if (ob.status !== 'Active') return false;
+                    const update = ob.update?.find((u: any) => u.year === currentYear.toString() && u.quarter === currentQuarter);
+                    return update && update.assessmentStatus === 'Submitted';
+                  }).length;
+                }
+                dispatch(updateBadgeCounts({ quarterlyBadge: newQuarterlyBadge, reviewBadge: newReviewBadge }));
                 // Check and send notification after creation
                 checkAndSendQuarterNotification(newYear, quarters);
+                // Update the store with the latest settings
+                await dispatch(fetchComplianceSettings());
             } catch (error) {
                 console.error('Error creating compliance setting:', error);
             }

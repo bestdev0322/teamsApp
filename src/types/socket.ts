@@ -1,7 +1,8 @@
 export enum SocketEvent {
   AGREEMENT_UPDATE = 'performance_agreement',
   ASSESSMENT_UPDATE = 'performance_assessment',
-  NOTIFICATION = 'notification'
+  NOTIFICATION = 'notification',
+  OBLIGATION_SUBMITTED = 'obligation_submitted'
 }
 
 export interface SocketMessage {

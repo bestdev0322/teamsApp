@@ -5,7 +5,8 @@ export enum SocketEvent {
   APPROVE_PERFORMANCE_ASSESSMENT = 'approve_performance_assessment',
   SEND_BACK_PERFORMANCE_AGREEMENT = 'send_back_performance_agreement',
   SEND_BACK_PERFORMANCE_ASSESSMENT = 'send_back_performance_assessment',
-  NOTIFICATION = 'notification'
+  NOTIFICATION = 'notification',
+  OBLIGATION_SUBMITTED = 'obligation_submitted'
 }
 
 export interface SocketData {

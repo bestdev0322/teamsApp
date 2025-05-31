@@ -7,6 +7,7 @@ import devPlanReducer from './slices/devPlanSlice';
 import trainingEmployeesReducer from './slices/trainingEmployeesSlice';
 import feedbackReducer from './slices/feedbackSlice';
 import complianceObligationsReducer from './slices/complianceObligationsSlice';
+import complianceSettingsReducer from './slices/complianceSettingsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -17,7 +18,8 @@ export const store = configureStore({
     devPlan: devPlanReducer,
     trainingEmployees: trainingEmployeesReducer,
     feedback: feedbackReducer,
-    complianceObligations: complianceObligationsReducer
+    complianceObligations: complianceObligationsReducer,
+    complianceSettings: complianceSettingsReducer
   },
 });
 

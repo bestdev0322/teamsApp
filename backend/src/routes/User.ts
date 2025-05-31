@@ -11,6 +11,34 @@ import Team from '../models/Team';
 
 const router = express.Router();
 
+// Get all compliance champions in the tenant
+router.get(
+  '/champions',
+  authenticateToken,
+  async (req: AuthenticatedRequest, res, next) => {
+    try {
+      const user = req.user;
+      if (!user || !user.tenantId) {
+        throw new ApiError('User not authenticated or missing tenant ID', 401);
+      }
+
+      const champions = await User.find({
+        tenantId: user.tenantId,
+        isComplianceChampion: true,
+        status: 'active'
+      }).select('name email');
+
+      res.json({
+        status: 'success',
+        data: champions
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+
 // Get user's role
 router.get(
   '/:microsoftId',
