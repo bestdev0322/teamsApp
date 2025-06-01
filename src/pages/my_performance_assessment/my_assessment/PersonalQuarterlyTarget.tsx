@@ -923,7 +923,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
                                     });
                                   }}
                                 >
-                                  Evaluate
+                                  Review
                                 </AccessButton>
                               ) : (
                                 <Typography
