@@ -475,7 +475,7 @@ const PerformanceEvaluations: React.FC = () => {
                                   size="small"
                                   onClick={() => handleAccess(kpi)}
                                 >
-                                  Evaluate
+                                  Review
                                 </AccessButton>
                               </StyledTableCell>
                             )}

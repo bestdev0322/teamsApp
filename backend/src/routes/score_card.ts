@@ -206,7 +206,7 @@ router.post('/annual-targets/create-from-existing', authenticateToken, async (re
 
         // Initialize quarterly targets
         quarterlyTarget: {
-          editable: false,
+          editable: sourceTarget.content.quarterlyTarget.editable,
           quarterlyTargets: ['Q1', 'Q2', 'Q3', 'Q4'].map(quarter => ({
             quarter,
             editable: sourceTarget.content.quarterlyTarget.quarterlyTargets.find(qt => qt.quarter === quarter)?.editable ?? false,
