@@ -323,7 +323,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
                                 <StyledHeaderCell>Key Performance Indicator</StyledHeaderCell>
                                 <StyledHeaderCell align="center">Baseline</StyledHeaderCell>
                                 <StyledHeaderCell align="center">Target</StyledHeaderCell>
-                                <StyledHeaderCell align="center">Rating Scale</StyledHeaderCell>
+                                <StyledHeaderCell align="center">Rating Agreement</StyledHeaderCell>
                                 <StyledHeaderCell align="center">Comments</StyledHeaderCell>
                             </TableRow>
                         </TableHead>

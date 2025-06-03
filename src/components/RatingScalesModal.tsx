@@ -49,7 +49,7 @@ const RatingScalesModal: React.FC<RatingScalesModalProps> = ({
     >
       <Box sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h6">Performance Rating Scales</Typography>
+          <Typography variant="h6">Performance Rating Agreement</Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
           </IconButton>
