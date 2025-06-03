@@ -71,8 +71,8 @@ const RatingScalesModal: React.FC<RatingScalesModalProps> = ({
                 <StyledTableCell sx={{ color: scale.color }}>
                   {scale.name}
                 </StyledTableCell>
-                <StyledTableCell align="center">{scale.min}%</StyledTableCell>
-                <StyledTableCell align="center">{scale.max}%</StyledTableCell>
+                <StyledTableCell align="center">{scale.min}</StyledTableCell>
+                <StyledTableCell align="center">{scale.max}</StyledTableCell>
               </TableRow>
             ))}
           </TableBody>
