@@ -93,7 +93,7 @@ const AddInitiativeModal: React.FC<AddInitiativeModalProps> = ({
   };
 
   const handleAddKPI = () => {
-    setKpis([...kpis, { indicator: '', weight: 0, baseline: '', target: '', ratingScales: annualTarget.content.ratingScales || [], ratingScore: 0, actualAchieved: '', evidence: '', attachments: []  }]);
+    setKpis([...kpis, { indicator: '', weight: 0, baseline: '', target: '', ratingScales: annualTarget.content.ratingScales || [], ratingScore: 0, actualAchieved: '', evidence: '', attachments: [] }]);
     setExpandedKPI(kpis.length);
   };
 
@@ -111,18 +111,18 @@ const AddInitiativeModal: React.FC<AddInitiativeModalProps> = ({
     if (!initiative) return false;
     if (kpis.length === 0) return false;
 
-    return kpis.every(kpi => 
-      kpi.indicator && 
-      kpi.weight > 0 && 
-      kpi.baseline && 
+    return kpis.every(kpi =>
+      kpi.indicator &&
+      kpi.weight > 0 &&
+      kpi.baseline &&
       kpi.target
     );
   };
 
   const validateDuplicate = (perspectiveId: number, objectiveName: string, initiativeName: string) => {
-    const exists = personalQuarterlyObjectives.some(obj => 
-      obj.perspectiveId === perspectiveId && 
-      obj.name === objectiveName && 
+    const exists = personalQuarterlyObjectives.some(obj =>
+      obj.perspectiveId === perspectiveId &&
+      obj.name === objectiveName &&
       obj.initiativeName === initiativeName
     );
     return exists;
@@ -130,17 +130,21 @@ const AddInitiativeModal: React.FC<AddInitiativeModalProps> = ({
 
   const validateTotalWeight = (newWeight: number): boolean => {
     const currentTotalWeight = personalQuarterlyObjectives.reduce((total, obj) => {
-      if (editingObjective && 
-          obj.name === editingObjective.name && 
-          obj.initiativeName === editingObjective.initiativeName && 
-          obj.perspectiveId === editingObjective.perspectiveId) {
+      if (editingObjective &&
+        obj.name === editingObjective.name &&
+        obj.initiativeName === editingObjective.initiativeName &&
+        obj.perspectiveId === editingObjective.perspectiveId) {
         return total;
       }
       const totalWeight = obj.KPIs.reduce((sum, kpi) => sum + kpi.weight, 0);
       return total + totalWeight;
     }, 0);
 
-    return (currentTotalWeight + newWeight) <= 100;
+    const potentialTotalWeight = currentTotalWeight + newWeight;
+    // Round potential total weight to 3 decimal places for validation display
+    const roundedPotentialTotalWeight = Math.round(potentialTotalWeight * 1000) / 1000;
+
+    return roundedPotentialTotalWeight <= 100;
   };
 
   const handleSave = () => {
@@ -175,7 +179,7 @@ const AddInitiativeModal: React.FC<AddInitiativeModalProps> = ({
       initiative,
       kpis
     });
-    
+
     onClose();
   };
 
@@ -301,20 +305,34 @@ const AddInitiativeModal: React.FC<AddInitiativeModalProps> = ({
                     </TableCell>
                     <TableCell align="center">
                       <TextField
-                        value={kpi.weight}
+                        value={kpi.weight === 0 ? '' : kpi.weight}
+                        type='number'
+                        inputProps={{
+                          step: "0.001", // Allow 3 decimal places
+                        }}
                         onChange={(e) => {
                           const newValue = e.target.value;
-                          if (newValue === "" || /^-?\d*$/.test(newValue)) {
+                          // Allow typing numbers with up to 3 decimal places
+                          if (newValue === "" || /^[0-9]*\.?[0-9]{0,3}$/.test(newValue)) {
+                            const numericValue = Number(newValue);
                             const newKpis = [...kpis];
                             newKpis[index] = {
                               ...newKpis[index],
-                              weight: Number(newValue)
+                              // If conversion results in NaN or value is outside 0-100, default to 0, otherwise use the numeric value
+                              weight: isNaN(numericValue) || numericValue < 0 || numericValue > 100 ? 0 : numericValue
                             };
                             setKpis(newKpis);
                           }
                         }}
+                        sx={{
+                          width: '80px',
+                          'input[type=number]': {
+                            '-moz-appearance': 'textfield', // Firefox
+                            '::-webkit-outer-spin-button': { '-webkit-appearance': 'none', margin: 0 }, // Chrome, Safari, Edge, Opera
+                            '::-webkit-inner-spin-button': { '-webkit-appearance': 'none', margin: 0 }, // Chrome, Safari, Edge, Opera
+                          },
+                        }}
                         variant="standard"
-                        sx={{ width: '80px' }}
                       />
                     </TableCell>
                     <TableCell align="center">

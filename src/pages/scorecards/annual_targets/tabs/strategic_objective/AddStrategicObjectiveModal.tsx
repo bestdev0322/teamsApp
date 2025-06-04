@@ -170,9 +170,12 @@ const AddStrategicObjectiveModal: React.FC<AddStrategicObjectiveModalProps> = ({
 
       const newTotalWeight = calculateTotalWeight(updatedObjectives);
 
-      if (newTotalWeight > 100) {
+      // Round total weight to 3 decimal places to avoid floating point issues
+      const roundedTotalWeight = Math.round(newTotalWeight * 1000) / 1000;
+
+      if (roundedTotalWeight > 100) {
         const newErrors: typeof errors = {};
-        newErrors.general = 'The current total weight is ' + newTotalWeight + '%, please adjust the weight of the KPIs to make it equal to 100%';
+        newErrors.general = 'The current total weight is ' + roundedTotalWeight + '%, please adjust the weight of the KPIs to make it equal to 100%';
         setErrors(newErrors);
         return;
       }
@@ -182,7 +185,7 @@ const AddStrategicObjectiveModal: React.FC<AddStrategicObjectiveModalProps> = ({
         content: {
           ...annualTarget.content,
           objectives: updatedObjectives,
-          totalWeight: newTotalWeight
+          totalWeight: roundedTotalWeight
         },
       }));
       handleClose();
@@ -347,28 +350,36 @@ const AddStrategicObjectiveModal: React.FC<AddStrategicObjectiveModalProps> = ({
                           </TableCell>
                           <TableCell align="center">
                             <TextField
+                              value={kpi.weight === 0 ? '' : kpi.weight}
+                              type='number'
                               inputProps={{
-                                inputMode: "numeric",
-                                pattern: "[0-9]*",
+                                step: "0.001"
                               }}
-                              value={kpi.weight}
                               onChange={(e) => {
                                 const newValue = e.target.value;
-                                // Allow empty value or valid number
-                                if (newValue === "" || /^-?\d*$/.test(newValue)) {
+                                // Allow typing numbers with up to 3 decimal places
+                                if (newValue === "" || /^[0-9]*\.?[0-9]{0,3}$/.test(newValue)) {
+                                  const numericValue = Number(newValue);
                                   const newKpis = [...kpis];
-                                  const newWeight = Number(newValue);
                                   newKpis[index] = {
                                     ...newKpis[index],
-                                    weight: newWeight
+                                    // If conversion results in NaN or value is outside 0-100, default to 0, otherwise use the numeric value
+                                    weight: isNaN(numericValue) || numericValue < 0 || numericValue > 100 ? 0 : numericValue
                                   };
                                   setKpis(newKpis);
                                 }
                               }}
+                              sx={{
+                                width: '80px',
+                                'input[type=number]': {
+                                  '-moz-appearance': 'textfield',
+                                  '::-webkit-outer-spin-button': { '-webkit-appearance': 'none', margin: 0 },
+                                  '::-webkit-inner-spin-button': { '-webkit-appearance': 'none', margin: 0 },
+                                },
+                              }}
                               variant="standard"
                               error={!!errors.kpis?.[index]?.weight}
                               helperText={errors.kpis?.[index]?.weight}
-                              sx={{ width: '80px' }}
                             />
                           </TableCell>
                           <TableCell align="center">

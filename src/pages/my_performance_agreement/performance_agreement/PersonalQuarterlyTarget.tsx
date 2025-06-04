@@ -689,7 +689,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
             color: calculateTotalWeight(personalQuarterlyObjectives) === 100 ? '#059669' : '#DC2626'
           }}
         >
-          Total Weight: {calculateTotalWeight(personalQuarterlyObjectives)}%
+          Total Weight: {Math.round(calculateTotalWeight(personalQuarterlyObjectives) * 1000) / 1000}%
           {calculateTotalWeight(personalQuarterlyObjectives) > 100 && (
             <Typography
               component="span"

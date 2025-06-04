@@ -136,7 +136,7 @@ const StrategicObjectiveTab: React.FC<StrategicObjectiveTabProps> = ({ targetNam
               fontWeight: 600
             }}
           >
-            Total Weight: {totalWeight}%
+            Total Weight: {Math.round(totalWeight * 1000) / 1000}%
           </Typography>
         </Box>
 

@@ -165,6 +165,9 @@ const QuarterlyObjectiveModal: React.FC<QuarterlyObjectiveModalProps> = ({
         }
       });
 
+      // Round total weight to 3 decimal places to avoid floating point issues
+      totalWeight = Math.round(totalWeight * 1000) / 1000;
+
       if (totalWeight > 100) {
         setErrors({ general: 'Total weight must be 100%' });
         return;
@@ -334,27 +337,36 @@ const QuarterlyObjectiveModal: React.FC<QuarterlyObjectiveModalProps> = ({
                           </TableCell>
                           <TableCell align="center">
                             <TextField
-                              value={kpi.weight}
+                              value={kpi.weight === 0 ? '' : kpi.weight}
+                              type='number'
                               inputProps={{
-                                inputMode: "numeric",
-                                pattern: "[0-9]*",
+                                step: "0.001"
                               }}
                               onChange={(e) => {
                                 const newValue = e.target.value;
-                                // Allow empty value or valid number
-                                if (newValue === "" || /^-?\d*$/.test(newValue)) {
+                                // Allow typing numbers with up to 3 decimal places
+                                if (newValue === "" || /^[0-9]*\.?[0-9]{0,3}$/.test(newValue)) {
+                                  const numericValue = Number(newValue);
                                   const newKpis = [...kpis];
                                   newKpis[index] = {
                                     ...newKpis[index],
-                                    weight: Number(e.target.value)
+                                    // If conversion results in NaN or value is outside 0-100, default to 0, otherwise use the numeric value
+                                    weight: isNaN(numericValue) || numericValue < 0 || numericValue > 100 ? 0 : numericValue
                                   };
                                   setKpis(newKpis);
                                 }
                               }}
+                              sx={{
+                                width: '80px',
+                                'input[type=number]': {
+                                  '::-webkit-outer-spin-button': { '-webkit-appearance': 'none', margin: 0 },
+                                  '::-webkit-inner-spin-button': { '-webkit-appearance': 'none', margin: 0 },
+                                  '-moz-appearance': 'textfield',
+                                },
+                              }}
                               variant="standard"
                               error={!!errors.kpis?.[index]?.weight}
                               helperText={errors.kpis?.[index]?.weight}
-                              sx={{ width: '80px' }}
                             />
                           </TableCell>
                           <TableCell align="center">

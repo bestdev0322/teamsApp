@@ -165,7 +165,7 @@ const QuarterlyTargetTable: React.FC = () => {
     let total = 0;
     objectives.forEach(objective => {
       objective.KPIs.forEach(kpi => {
-        total += Number(kpi.weight) || 0;
+        total = Math.round((total + Number(kpi.weight) || 0) * 1000) / 1000;
       });
     });
     return total;
