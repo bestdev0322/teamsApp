@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema<dUser>({
   isComplianceChampion: {
     type: Boolean,
     default: false
+  },
+  isRiskSuperUser: {
+    type: Boolean,
+    default: false
   }
 });
 

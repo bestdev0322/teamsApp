@@ -86,7 +86,8 @@ export class AuthService {
         isPerformanceCalibrationMember: false,
         isTeamOwner: false,
         isComplianceSuperUser: false,
-        isComplianceChampion: false
+        isComplianceChampion: false,
+        isRiskSuperUser: false,
       };
 
       if (userProfile) {
@@ -142,7 +143,8 @@ export class AuthService {
         isTeamOwner: await roleService.isTeamOwner(dbUser.teamId?.toString() || '', dbUser.MicrosoftId),
         teamId: dbUser?.teamId?.toString(),
         isComplianceSuperUser: !!dbUser.isComplianceSuperUser,
-        isComplianceChampion: !!dbUser.isComplianceChampion
+        isComplianceChampion: !!dbUser.isComplianceChampion,
+        isRiskSuperUser: !!dbUser.isRiskSuperUser
       };
 
       const token = await this.createAppToken({id: dbUser.MicrosoftId, email: dbUser.email, name: dbUser.name});
@@ -210,7 +212,8 @@ export class AuthService {
         isTeamOwner: await roleService.isTeamOwner(dbUser.teamId?.toString() || '', dbUser.MicrosoftId),
         teamId: dbUser?.teamId?.toString(),
         isComplianceSuperUser: !!dbUser.isComplianceSuperUser,
-        isComplianceChampion: !!dbUser.isComplianceChampion
+        isComplianceChampion: !!dbUser.isComplianceChampion,
+        isRiskSuperUser: !!dbUser.isRiskSuperUser
       };
 
       return userProfile;
@@ -311,7 +314,8 @@ export class AuthService {
           isPerformanceCalibrationMember: false,
           isTeamOwner: false,
           isComplianceSuperUser: false,
-          isComplianceChampion: false
+          isComplianceChampion: false,
+          isRiskSuperUser: false
         };
 
         if (!userProfile.id || !userProfile.email) {

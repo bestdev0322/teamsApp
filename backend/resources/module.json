@@ -13,5 +13,10 @@
     "moduleName": "Compliance",
     "description": "Compliance Management",
     "enabled": true
+  },
+  {
+    "moduleName": "Risk",
+    "description": "Risk Management",
+    "enabled": true
   }
 ]

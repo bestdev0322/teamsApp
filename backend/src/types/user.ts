@@ -21,6 +21,7 @@ export interface dUser {
   isPerformanceCalibrationMember?: boolean;
   isComplianceSuperUser?: boolean;
   isComplianceChampion?: boolean;
+  isRiskSuperUser?: boolean;
   status?: 'active' | 'inactive';
 }
 

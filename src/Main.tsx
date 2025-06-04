@@ -38,6 +38,7 @@ import Feedback from './pages/feedback';
 import PerformanceCalibration from './pages/performance_calibration';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ComplianceManagement from './pages/compliance_management';
+import RiskManagement from './pages/risk_management';
 const iconSize = 24;
 
 function Main() {
@@ -46,6 +47,7 @@ function Main() {
   const [isFeedbackModuleEnabled, setIsFeedbackModuleEnabled] = useState(false);
   const [isPerformanceCalibrationModuleEnabled, setIsPerformanceCalibrationModuleEnabled] = useState(false);
   const [isComplianceModuleEnabled, setIsComplianceModuleEnabled] = useState(false);
+  const [isRiskModuleEnabled, setIsRiskModuleEnabled] = useState(false);
 
   // Add socket subscription
   const { subscribe, unsubscribe } = useSocket(SocketEvent.NOTIFICATION, (data) => {
@@ -85,6 +87,15 @@ function Main() {
       }
     }
     checkComplianceModule();
+
+    const checkRiskModule = async () => {
+      const isModuleEnabled = await api.get('/module/Risk/is-enabled');
+      if (isModuleEnabled.data.data.isEnabled) {
+        setIsRiskModuleEnabled(true);
+      }
+    }
+    checkRiskModule();
+
     // Cleanup subscription
     return () => {
       unsubscribe(SocketEvent.NOTIFICATION);
@@ -98,6 +109,8 @@ function Main() {
   const [isTeamOwner, setIsTeamOwner] = useState(false);
   const [isComplianceSuperUser, setIsComplianceSuperUser] = useState(false);
   const [isComplianceChampion, setIsComplianceChampion] = useState(false);
+  const [isRiskSuperUser, setIsRiskSuperUser] = useState(false);
+
 
   useEffect(() => {
     if (user) {
@@ -106,6 +119,7 @@ function Main() {
       setIsTeamOwner(!!user?.isTeamOwner);
       setIsDevMember(!!user?.isDevMember);
       setIsPerformanceCalibrationMember(!!user?.isPerformanceCalibrationMember);
+      setIsRiskSuperUser(!!user?.isRiskSuperUser);
     }
   }, [user]);
 
@@ -217,7 +231,7 @@ function Main() {
       element: TeamsPage,
       title: "Teams",
       icon: <PeopleTeam24Regular fontSize={iconSize} />,
-      tabs: isComplianceModuleEnabled ? ['Teams', 'Super User', 'Compliance User'] : ['Teams', 'Super User'],
+      tabs: isComplianceModuleEnabled ? isRiskModuleEnabled ? ['Teams', 'Super User', 'Compliance User', 'Risk User'] : ['Teams', 'Super User', 'Compliance User'] : isRiskModuleEnabled ? ['Teams', 'Super User', 'Risk User'] : ['Teams', 'Super User'],
       show: isAppOwner || isSuperUser
     },
     {
@@ -237,6 +251,14 @@ function Main() {
         ['Compliance Reporting', 'Compliance Reviews', 'Quarterly Compliance Updates', 'Compliance Setting', 'Compliance Obligations', 'Compliance Areas', 'Compliance Champions'] :
         ['Compliance Reporting', 'Quarterly Compliance Updates'],
       show: (isComplianceSuperUser || isComplianceChampion) && isComplianceModuleEnabled
+    },
+    {
+      path: "/risk-management/*",
+      element: RiskManagement,
+      title: "Risk Management",
+      icon: <ShieldCheckmark24Regular fontSize={iconSize} />,
+      tabs: ['Risk Settings'],
+      show: (isRiskSuperUser) && isRiskModuleEnabled
     }
   ];
 

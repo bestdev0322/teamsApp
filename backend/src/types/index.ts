@@ -48,6 +48,7 @@ export interface UserProfile {
   teamId?: string;
   isComplianceSuperUser?: boolean;
   isComplianceChampion?: boolean;
+  isRiskSuperUser?: boolean;
 }
 
 // API Response types

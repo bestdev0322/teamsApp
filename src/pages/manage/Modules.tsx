@@ -45,12 +45,14 @@ const Modules: React.FC = () => {
   const [feedbackCompanyIds, setFeedbackCompanyIds] = useState<string[]>([]);
   const [pmCommitteeCompanyIds, setPmCommitteeCompanyIds] = useState<string[]>([]);
   const [complianceCompanyIds, setComplianceCompanyIds] = useState<string[]>([]);
+  const [riskCompanyIds, setRiskCompanyIds] = useState<string[]>([]);
 
   useEffect(() => {
     fetchCompanies();
     fetchFeedbackCompanies();
     fetchPmCommitteeCompanies();
     fetchComplianceCompanies();
+    fetchRiskCompanies();
     const fetchModules = async () => {
       const response = await api.get('/module');
       setModules(
@@ -107,6 +109,17 @@ const Modules: React.FC = () => {
     }
   };
 
+  const fetchRiskCompanies = async () => {
+    try {
+      const response = await api.get('/module/Risk/companies');
+      if (response.status === 200) {
+        setRiskCompanyIds(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching Risk companies:', error);
+    }
+  };
+
   const toggleModuleExpansion = (moduleId: string) => {
     setModules(modules.map(module =>
       module.id === moduleId
@@ -150,6 +163,17 @@ const Modules: React.FC = () => {
       } catch (error) {
         console.error('Error updating Compliance companies:', error);
       }
+    } else if (moduleId === '4') {
+      const isChecked = riskCompanyIds.some(fc => fc === companyId);
+      const newRiskCompanyIds = isChecked ? riskCompanyIds.filter(fc => fc !== companyId) : [...riskCompanyIds, companyId];
+      try {
+        const response = await api.post(`/module/Risk/companies`, { companies: newRiskCompanyIds });
+        if (response.status === 200) {
+          setRiskCompanyIds(newRiskCompanyIds);
+        }
+      } catch (error) {
+        console.error('Error updating Risk companies:', error);
+      }
     }
   };
 
@@ -163,6 +187,9 @@ const Modules: React.FC = () => {
       }
       case '3': {
         return complianceCompanyIds.some(cc => cc === companyId)
+      }
+      case '4': {
+        return riskCompanyIds.some(cc => cc === companyId)
       }
     }
   }
