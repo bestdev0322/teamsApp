@@ -16,6 +16,7 @@ import {
   Home24Regular,
   Settings24Regular,
   ShieldCheckmark24Regular,
+  ShieldAdd24Regular,
   PersonFeedback24Regular
 } from '@fluentui/react-icons';
 import { useAuth } from './contexts/AuthContext';
@@ -256,7 +257,7 @@ function Main() {
       path: "/risk-management/*",
       element: RiskManagement,
       title: "Risk Management",
-      icon: <ShieldCheckmark24Regular fontSize={iconSize} />,
+      icon: <ShieldAdd24Regular fontSize={iconSize} />,
       tabs: ['Risk Settings'],
       show: (isRiskSuperUser) && isRiskModuleEnabled
     }

@@ -6,16 +6,16 @@ import User from '../models/User';
 
 const router = express.Router();
 
-// router.get('/tenant', authenticateToken, checkLicenseStatus, async (_req: AuthenticatedRequest, res: Response) => {
-//     const { teamId } = _req.query;
-//     try {
-//         const complianceChampions = await User.find({ isComplianceChampion: true, tenantId: _req.user?.tenantId, teamId: teamId });
-//         res.json(complianceChampions);
-//     } catch (error) {
-//         console.error('Error fetching compliance champions:', error);
-//         res.status(500).json({ error: 'Failed to fetch compliance champions' });
-//     }
-// });
+router.get('/tenant', authenticateToken, checkLicenseStatus, async (_req: AuthenticatedRequest, res: Response) => {
+    const { teamId } = _req.query;
+    try {
+        const complianceChampions = await User.find({ isComplianceChampion: true, tenantId: _req.user?.tenantId, teamId: teamId });
+        res.json(complianceChampions);
+    } catch (error) {
+        console.error('Error fetching compliance champions:', error);
+        res.status(500).json({ error: 'Failed to fetch compliance champions' });
+    }
+});
 
 router.post('/tenant', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
     try {

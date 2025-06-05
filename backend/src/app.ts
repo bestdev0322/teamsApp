@@ -29,6 +29,14 @@ import complianceChampionRoutes from './routes/compliance_champions';
 import complianceAreaRoutes from './routes/compliance_area';
 import complianceObligationRoutes from './routes/compliance_obligations';
 import complianceSettingRoutes from './routes/compliance_setting';
+import RiskCategoriesRoutes from './routes/risk_category';
+import RiskImpactSettingsRoutes from './routes/risk_impact_setting';
+import RiskLikelihoodSettingsRoutes from './routes/risk_likelihood_setting';
+import RiskImpactResponseRoutes from './routes/risk_impact_response';
+import RiskControlEffectivenessRoutes from './routes/risk_control_effectiveness';
+import RiskChampionsRoutes from './routes/risk_champions';
+import RiskRatingRoutes from './routes/risk_rating';
+
 // import { applySecurityMiddleware } from './middleware/security';
 
 const app = express();
@@ -78,6 +86,13 @@ app.use('/api/module', authenticateToken, checkLicenseStatus, moduleRoutes);
 app.use('/api/submit-feedback', submitFeedbackRoutes);
 app.use('/api/users/performance-calibration', performanceCalibrationRoutes);
 app.use('/api/compliance-settings', authenticateToken, checkLicenseStatus, complianceSettingRoutes);
+app.use('/api/risk-categories', authenticateToken, checkLicenseStatus, RiskCategoriesRoutes);
+app.use('/api/risk-impact-settings', authenticateToken, checkLicenseStatus, RiskImpactSettingsRoutes);
+app.use('/api/risk-likelihood-settings', authenticateToken, checkLicenseStatus, RiskLikelihoodSettingsRoutes);
+app.use('/api/risk-impact-responses', authenticateToken, checkLicenseStatus, RiskImpactResponseRoutes);
+app.use('/api/risk-control-effectiveness', authenticateToken, checkLicenseStatus, RiskControlEffectivenessRoutes);
+app.use('/api/risk-champions', authenticateToken, checkLicenseStatus, RiskChampionsRoutes);
+app.use('/api/risk-ratings', authenticateToken, checkLicenseStatus, RiskRatingRoutes);
 
 // Connect to MongoDB
 mongoose.connect(config.mongoUri)

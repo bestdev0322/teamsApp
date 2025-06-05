@@ -22,6 +22,7 @@ export interface dUser {
   isComplianceSuperUser?: boolean;
   isComplianceChampion?: boolean;
   isRiskSuperUser?: boolean;
+  isRiskChampion?: boolean;
   status?: 'active' | 'inactive';
 }
 

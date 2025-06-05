@@ -185,8 +185,8 @@ export const removeTeamMember = createAsyncThunk(
 );
 
 // Add a champion to a team
-export const addChampion = createAsyncThunk(
-  'teams/addChampion',
+export const addComplianceChampion = createAsyncThunk(
+  'teams/addComplianceChampion',
   async ({ teamId, email }: { teamId: string, email: string }) => {
     await api.post(`/compliance-champions/tenant`, {teamId, email });
     // Refresh team members
@@ -196,10 +196,32 @@ export const addChampion = createAsyncThunk(
 );
 
 // Remove a champion from a team
-export const removeChampion = createAsyncThunk(
-  'teams/removeChampion',
+export const removeComplianceChampion = createAsyncThunk(
+  'teams/removeComplianceChampion',
   async ({ teamId, email }: { teamId: string, email: string }) => {
     await api.delete(`/compliance-champions/tenant/by-email/${email}`);
+    // Refresh team members
+    const response = await api.get(`/users/team/${teamId}`);
+    return { teamId, members: response.data.data || [] };
+  }
+);
+
+// Add a champion to a team
+export const addRiskChampion = createAsyncThunk(
+  'teams/addRiskChampion',
+  async ({ teamId, email }: { teamId: string, email: string }) => {
+    await api.post(`/risk-champions/tenant`, {teamId, email });
+    // Refresh team members
+    const response = await api.get(`/users/team/${teamId}`);
+    return { teamId, members: response.data.data || [] };
+  }
+);
+
+// Remove a champion from a team
+export const removeRiskChampion = createAsyncThunk(
+  'teams/removeRiskChampion',
+  async ({ teamId, email }: { teamId: string, email: string }) => {
+    await api.delete(`/risk-champions/tenant/by-email/${email}`);
     // Refresh team members
     const response = await api.get(`/users/team/${teamId}`);
     return { teamId, members: response.data.data || [] };

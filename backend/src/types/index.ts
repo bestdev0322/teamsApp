@@ -49,6 +49,7 @@ export interface UserProfile {
   isComplianceSuperUser?: boolean;
   isComplianceChampion?: boolean;
   isRiskSuperUser?: boolean;
+  isRiskChampion?: boolean;
 }
 
 // API Response types

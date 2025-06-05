@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, TableContainer, Paper, Table, TableHead, TableRow, TableBody } from '@mui/material';
-import { StyledHeaderCell, StyledTableCell } from '../../../components/StyledTableComponents';
-import ChampionMembers from './ChampionMembers';
-import { useAppDispatch } from '../../../hooks/useAppDispatch';
-import { useAppSelector } from '../../../hooks/useAppSelector';
-import { RootState } from '../../../store';
-import { fetchTeams, fetchTeamMembers, removeComplianceChampion, addComplianceChampion } from '../../../store/slices/teamsSlice';
-import { useAuth } from '../../../contexts/AuthContext';
-import PeoplePickerModal from '../../../components/PeoplePickerModal';
+import { StyledHeaderCell, StyledTableCell } from '../../../../components/StyledTableComponents';
+import RiskMembers from './RiskMembers';
+import { useAppDispatch } from '../../../../hooks/useAppDispatch';
+import { useAppSelector } from '../../../../hooks/useAppSelector';
+import { RootState } from '../../../../store';
+import { fetchTeams, fetchTeamMembers } from '../../../../store/slices/teamsSlice';
+import { useAuth } from '../../../../contexts/AuthContext';
+import PeoplePickerModal from '../../../../components/PeoplePickerModal';
+import { api } from '../../../../services/api';
 
-
-const Champions: React.FC = () => {
+const RiskChampions: React.FC = () => {
   const dispatch = useAppDispatch();
   const { user } = useAuth();
   const tenantId = user?.tenantId;
@@ -18,36 +18,46 @@ const Champions: React.FC = () => {
   const [teamsList, setTeamsList] = useState<any[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
+  // Initialize data
   useEffect(() => {
-    dispatch(fetchTeams(tenantId));
+    const initializeData = async () => {
+      if (tenantId) {
+        await dispatch(fetchTeams(tenantId));
+        setIsInitialized(true);
+      }
+    };
+    initializeData();
   }, [dispatch, tenantId]);
 
   // Set champions state when teams are fetched
   useEffect(() => {
-    if (teams && Array.isArray(teams)) {
-      setTeamsList(teams.map(team => ({
+    if (isInitialized && teams && Array.isArray(teams)) {
+      const updatedTeamsList = teams.map(team => ({
         _id: team._id,
         name: team.name
-      })));
+      }));
+      setTeamsList(updatedTeamsList);
+      
       // Fetch members for each team
       teams.forEach(team => {
         dispatch(fetchTeamMembers(team._id));
       });
     }
-  }, [teams, dispatch, tenantId]);
+  }, [teams, dispatch, isInitialized]);
 
+  // Update teams list with members
   useEffect(() => {
     if (teamMembers && typeof teamMembers === 'object') {
-      setTeamsList(teamsList.map(team => ({
-        ...team,
-        members: (teamMembers[team._id] || []).filter((member: any) => member?.isComplianceChampion === true)
-      })));
+      setTeamsList(prevTeams => 
+        prevTeams.map(team => ({
+          ...team,
+          members: (teamMembers[team._id] || []).filter((member: any) => member?.isRiskChampion === true)
+        }))
+      );
     }
   }, [teamMembers]);
-
-  useEffect(() => {
-  }, [teamsList]);
 
   const handleViewClick = (teamId: string) => {
     setSelectedTeamId(teamId);
@@ -57,39 +67,46 @@ const Champions: React.FC = () => {
     setSelectedTeamId(null);
   };
 
-  // Open PeoplePicker modal
   const handleAddChampion = () => {
     setIsPickerOpen(true);
   };
 
-  // Remove champion
   const handleRemoveMember = async (email: string) => {
     if (!selectedTeamId) return;
-    await dispatch(removeComplianceChampion({ teamId: selectedTeamId, email }));
-    await dispatch(fetchTeamMembers(selectedTeamId));
+    try {
+      await api.delete(`/risk-champions/tenant/by-email/${email}`);
+      await dispatch(fetchTeamMembers(selectedTeamId));
+    } catch (error) {
+      console.error('Error removing risk champion:', error);
+    }
   };
 
-  // Handle selection from PeoplePicker
   const handlePeopleSelected = async (selectedPeople: any[]) => {
     if (!selectedTeamId) return;
-    for (const person of selectedPeople) {
-      await dispatch(addComplianceChampion({ teamId: selectedTeamId, email: person.email }));
+    try {
+      for (const person of selectedPeople) {
+        await api.post('/risk-champions/tenant', {
+          email: person.email,
+          teamId: selectedTeamId
+        });
+      }
+      await dispatch(fetchTeamMembers(selectedTeamId));
+      setIsPickerOpen(false);
+    } catch (error) {
+      console.error('Error adding risk champions:', error);
     }
-    await dispatch(fetchTeamMembers(selectedTeamId));
-    setIsPickerOpen(false);
   };
 
   const selectedTeam = teamsList.find(c => c._id === selectedTeamId);
 
-  // Eligible members: not already champions
   const eligibleMembers = selectedTeam
-    ? (teamMembers[selectedTeam._id] || []).filter((m: any) => !m.isComplianceChampion).map(member => ({...member, displayName: member.name}))
+    ? (teamMembers[selectedTeam._id] || []).filter((m: any) => !m.isRiskChampion).map(member => ({...member, displayName: member.name}))
     : [];
 
   if (selectedTeamId && selectedTeam) {
     return (
       <>
-        <ChampionMembers
+        <RiskMembers
           champion={selectedTeam}
           onBack={handleBack}
           onAddChampion={handleAddChampion}
@@ -99,7 +116,7 @@ const Champions: React.FC = () => {
           open={isPickerOpen}
           onClose={() => setIsPickerOpen(false)}
           onSelectPeople={handlePeopleSelected}
-          title="Select Compliance Champions"
+          title="Select Risk Champions"
           multiSelect={true}
           tenantId={tenantId}
           eligibleMembers={eligibleMembers}
@@ -141,4 +158,4 @@ const Champions: React.FC = () => {
   );
 };
 
-export default Champions;
+export default RiskChampions;

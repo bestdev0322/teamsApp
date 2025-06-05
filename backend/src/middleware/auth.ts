@@ -34,13 +34,15 @@ export const authenticateToken = async (
     displayName: user.name,
     role: user.role,
     tenantId: user.tenantId,
-    jobTitle: user.jobTitle,
-    teamId: user.teamId,
-    isDevMember: user.isDevMember,
-    isPerformanceCalibrationMember: user.isPerformanceCalibrationMember,
+    jobTitle: user?.jobTitle,
+    teamId: user?.teamId,
+    isDevMember: user?.isDevMember,
+    isPerformanceCalibrationMember: user?.isPerformanceCalibrationMember,
     isTeamOwner: await roleService.isTeamOwner(user?.teamId?.toString() || null, user.MicrosoftId),
-    isComplianceSuperUser: user.isComplianceSuperUser,
-    isComplianceChampion: user.isComplianceChampion,
+    isComplianceSuperUser: user?.isComplianceSuperUser,
+    isComplianceChampion: user?.isComplianceChampion,
+    isRiskSuperUser: user?.isRiskSuperUser,
+    isRiskChampion: user?.isRiskChampion,
     status: user.status || 'inactive'
   }
   req.user = duser as UserProfile;

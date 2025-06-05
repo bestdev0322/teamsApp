@@ -76,6 +76,7 @@ router.post('/callback', async (req: Request, res: Response) => {
             isComplianceSuperUser: !!dbUser.isComplianceSuperUser,
             isComplianceChampion: !!dbUser.isComplianceChampion,
             isRiskSuperUser: !!dbUser.isRiskSuperUser,
+            isRiskChampion: !!dbUser.isRiskChampion,
           };
           const appToken = await authService.createAppToken({ id: dbUser.MicrosoftId, email: dbUser.email, name: dbUser.name });
           console.log('App token created successfully');

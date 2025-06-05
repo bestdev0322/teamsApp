@@ -88,6 +88,7 @@ export class AuthService {
         isComplianceSuperUser: false,
         isComplianceChampion: false,
         isRiskSuperUser: false,
+        isRiskChampion: false,
       };
 
       if (userProfile) {
@@ -144,7 +145,8 @@ export class AuthService {
         teamId: dbUser?.teamId?.toString(),
         isComplianceSuperUser: !!dbUser.isComplianceSuperUser,
         isComplianceChampion: !!dbUser.isComplianceChampion,
-        isRiskSuperUser: !!dbUser.isRiskSuperUser
+        isRiskSuperUser: !!dbUser.isRiskSuperUser,
+        isRiskChampion: !!dbUser.isRiskChampion
       };
 
       const token = await this.createAppToken({id: dbUser.MicrosoftId, email: dbUser.email, name: dbUser.name});
@@ -213,7 +215,8 @@ export class AuthService {
         teamId: dbUser?.teamId?.toString(),
         isComplianceSuperUser: !!dbUser.isComplianceSuperUser,
         isComplianceChampion: !!dbUser.isComplianceChampion,
-        isRiskSuperUser: !!dbUser.isRiskSuperUser
+        isRiskSuperUser: !!dbUser.isRiskSuperUser,
+        isRiskChampion: !!dbUser.isRiskChampion
       };
 
       return userProfile;
@@ -315,7 +318,8 @@ export class AuthService {
           isTeamOwner: false,
           isComplianceSuperUser: false,
           isComplianceChampion: false,
-          isRiskSuperUser: false
+          isRiskSuperUser: false,
+          isRiskChampion: false
         };
 
         if (!userProfile.id || !userProfile.email) {
