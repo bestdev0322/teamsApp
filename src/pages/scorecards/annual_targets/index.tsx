@@ -227,7 +227,7 @@ const AnnualTargets: React.FC = () => {
         sourceScorecard: '',
         startDate: '',
         endDate: '',
-        status: AnnualTargetStatus.Active,
+        status: AnnualTargetStatus.Inactive,
     });
     const { user } = useAuth();
 
@@ -289,7 +289,7 @@ const AnnualTargets: React.FC = () => {
                     sourceScorecard: '',
                     startDate: '',
                     endDate: '',
-                    status: AnnualTargetStatus.Active,
+                    status: AnnualTargetStatus.Inactive,
                 });
             }
         } catch (error) {
