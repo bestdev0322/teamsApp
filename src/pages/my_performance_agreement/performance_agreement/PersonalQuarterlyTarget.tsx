@@ -983,11 +983,13 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
                 onChange={(e) => setSourceScorecardId(e.target.value)}
                 label="Select Annual Target"
               >
-                {annualTargets.map((target) => (
-                  <MenuItem key={target._id} value={target._id}>
-                    {target.name}
-                  </MenuItem>
-                ))}
+                {annualTargets
+                  .filter(target => target._id !== annualTarget._id) // Exclude current year's target
+                  .map((target) => (
+                    <MenuItem key={target._id} value={target._id}>
+                      {target.name}
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
           </Box>

@@ -167,13 +167,11 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
             if (response.status === 200) {
               dispatch(fetchNotifications());
               showToast('Performance agreement sent back successfully', 'success');
-              onBack?.();
             }
           } catch (emailError) {
             console.error('Error sending email notification:', emailError);
             dispatch(fetchNotifications());
             showToast('Performance agreement sent back successfully, but email notification failed', 'success');
-            onBack?.();
           }
         } catch (error) {
           console.error('Error updating agreement status:', error);
@@ -182,6 +180,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           setIsSendingBack(false);
         }
       })();
+      onBack?.();
     }
   };
 
