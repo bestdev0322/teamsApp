@@ -149,7 +149,7 @@ const StrategicObjectiveTab: React.FC<StrategicObjectiveTabProps> = ({ targetNam
               <StyledHeaderCell>Key Performance Indicator</StyledHeaderCell>
               <StyledHeaderCell align="center">Baseline</StyledHeaderCell>
               <StyledHeaderCell align="center">Target</StyledHeaderCell>
-              <StyledHeaderCell align="center" className='noprint'>Rating Scale</StyledHeaderCell>
+              <StyledHeaderCell align="center" className='noprint'>Rating Agreement</StyledHeaderCell>
               <StyledHeaderCell align="center" className='noprint'>Actions</StyledHeaderCell>
             </TableRow>
           </TableHead>
