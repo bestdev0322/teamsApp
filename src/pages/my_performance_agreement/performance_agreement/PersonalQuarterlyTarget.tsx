@@ -144,14 +144,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         }
       }
 
-      if (quarter === 'Q1' && target.isEditable === false) {
-        return {
-          ...target,
-          supervisorId: event.target.value,
-          agreementStatus: AgreementStatus.Draft,
-          agreementStatusUpdatedAt: new Date(),
-        }
-      }
       return target;
     });
 
@@ -203,27 +195,28 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     setEditingObjective(null);
     setIsAddInitiativeModalOpen(false);
     const newPersonalQuarterlyTargets = personalPerformance?.quarterlyTargets.map((target: PersonalQuarterlyTarget) => {
-      if (target.quarter === quarter) {
-        return {
-          ...target,
-          agreementStatus: AgreementStatus.Draft,
-          agreementStatusUpdatedAt: new Date(),
-          supervisorId: selectedSupervisor,
-          objectives: newPersonalQuarterlyObjectives
-        }
-      }
-
       if (quarter === 'Q1' && target.isEditable === false) {
         return {
           ...target,
           agreementStatus: AgreementStatus.Draft,
           agreementStatusUpdatedAt: new Date(),
-          isEditable: calculateTotalWeight(newPersonalQuarterlyObjectives) === 100 ? true : false,
           supervisorId: selectedSupervisor,
-          objectives: newPersonalQuarterlyObjectives
+          objectives: newPersonalQuarterlyObjectives,
+          isEditable: calculateTotalWeight(newPersonalQuarterlyObjectives) >= 100 || target.quarter === 'Q1' ? true : false
+        }
+      } else {
+        if (target.quarter === quarter) {
+          return {
+            ...target,
+            agreementStatus: AgreementStatus.Draft,
+            agreementStatusUpdatedAt: new Date(),
+            supervisorId: selectedSupervisor,
+            objectives: newPersonalQuarterlyObjectives
+          }
+        } else {
+          return target;
         }
       }
-      return target;
     });
 
     await dispatch(updatePersonalPerformance({
@@ -250,8 +243,8 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      const agreementNotification = notifications.find((n: any) => 
-        n.type === 'resolve_agreement' && 
+      const agreementNotification = notifications.find((n: any) =>
+        n.type === 'resolve_agreement' &&
         n.annualTargetId === personalPerformance?.annualTargetId &&
         n.quarter === quarter
       );
@@ -265,20 +258,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           return {
             ...target,
             agreementStatus: AgreementStatus.Submitted,
-            agreementStatusUpdatedAt: new Date(),
-            supervisorId: selectedSupervisor,
-            objectives: personalQuarterlyObjectives
-          }
-        }
-
-        if (quarter === 'Q1' && target.isEditable === false && calculateTotalWeight(personalQuarterlyObjectives) <= 100) {
-          return {
-            ...target,
-            agreementStatus: AgreementStatus.Draft,
-            agreementStatusUpdatedAt: new Date(),
-            isEditable: calculateTotalWeight(personalQuarterlyObjectives) === 100 ? true : false,
-            supervisorId: selectedSupervisor,
-            objectives: personalQuarterlyObjectives
+            agreementStatusUpdatedAt: new Date()
           }
         }
 
@@ -327,9 +307,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         return {
           ...target,
           agreementStatus: target.isAgreementCommitteeSendBack ? AgreementStatus.CommitteeSendBack : AgreementStatus.Draft,
-          agreementStatusUpdatedAt: new Date(),
-          supervisorId: selectedSupervisor,
-          objectives: personalQuarterlyObjectives
+          agreementStatusUpdatedAt: new Date()
         }
       }
       return target;
@@ -405,13 +383,20 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
       // Update Redux state
       const newPersonalQuarterlyTargets = personalPerformance?.quarterlyTargets.map((target: PersonalQuarterlyTarget) => {
-        if (target.quarter === quarter) {
+        if (quarter === 'Q1' && target.isEditable === false) {
           return {
             ...target,
             objectives: updatedObjectives
           }
+        } else {
+          if (target.quarter === quarter) {
+            return {
+              ...target,
+              objectives: updatedObjectives
+            }
+          }
+          return target;
         }
-        return target;
       });
 
       await dispatch(updatePersonalPerformance({
@@ -458,7 +443,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     }
   };
 
-  const canAddFromExisting = quarter === 'Q1' && personalQuarterlyObjectives.length === 0;
+  const canAddFromExisting = quarter === 'Q1' && personalQuarterlyObjectives.length === 0 && annualTargets.length > 1 && !personalPerformance?.quarterlyTargets.find(target => target.quarter === 'Q2').isEditable;
 
   const hasAnyAgreementComment = () => {
     return personalQuarterlyObjectives.some(objective =>

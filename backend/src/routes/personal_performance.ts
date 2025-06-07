@@ -5,7 +5,6 @@ import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import User from '../models/User';
-import AnnualTarget from '../models/AnnualTarget';
 import { ApiError } from '../utils/apiError';
 import { graphService } from '../services/graphService';
 import Notification from '../models/Notification';
@@ -435,46 +434,41 @@ router.post('/copy-initiatives', authenticateToken, async (req: AuthenticatedReq
   try {
     const { sourceScorecardId, targetPerformanceId } = req.body;
 
-    // Find the source scorecard
-    const sourceScorecard = await AnnualTarget.findById(sourceScorecardId);
-    if (!sourceScorecard) {
-      throw new ApiError('Source scorecard not found', 404);
+    // Find the source performance agreement (previous year's performance)
+    const sourcePerformance = await PersonalPerformance.findOne({
+      annualTargetId: sourceScorecardId,
+      userId: req?.user?._id,
+      tenantId: req?.user?.tenantId
+    });
+    
+    if (!sourcePerformance) {
+      throw new ApiError('Source performance agreement not found', 404);
     }
+
     // Find the target personal performance
     const targetPerformance = await PersonalPerformance.findById(targetPerformanceId);
     if (!targetPerformance) {
       throw new ApiError('Target performance not found', 404);
     }
 
-    // Get Q1 objectives from source scorecard
-    const q1Objectives = sourceScorecard.content.objectives.map(obj => ({
-      perspectiveId: obj.perspectiveId,
-      name: obj.name,
-      initiativeName: obj.name, // Using objective name as initiative name by default
-      KPIs: obj.KPIs.map(kpi => ({
-        indicator: kpi.indicator,
-        weight: kpi.weight,
-        baseline: kpi.baseline,
-        target: kpi.target,
-        ratingScales: kpi.ratingScales,
-        ratingScore: -1,
-        actualAchieved: '',
-        evidence: '',
-        attachments: []
-      }))
-    }));
+    // Get Q1 objectives from source performance agreement
+    const sourceQ1Target = sourcePerformance.quarterlyTargets.find(target => target.quarter === 'Q1');
+    if (!sourceQ1Target) {
+      throw new ApiError('Source Q1 objectives not found', 404);
+    }
+
+    // Create a deep copy of the objectives
+    const q1Objectives = JSON.parse(JSON.stringify(sourceQ1Target.objectives));
+
     // Update all quarters with the same objectives
     const updatedQuarterlyTargets = targetPerformance.quarterlyTargets.map(target => {
-      // Create a deep copy of q1Objectives to avoid reference issues
-      const objectives = JSON.parse(JSON.stringify(q1Objectives));
-
       return {
         quarter: target.quarter,
-        agreementStatus: target.quarter === 'Q1' ? AgreementStatus.Draft : target.agreementStatus,
-        assessmentStatus: target.assessmentStatus,
-        isEditable: target.quarter === 'Q1' ? true : false,
+        agreementStatus: AgreementStatus.Draft,
+        assessmentStatus: AssessmentStatus.Draft,
+        isEditable: true,
         supervisorId: target.supervisorId || '',
-        objectives: objectives  // Use the deep copied objectives
+        objectives: q1Objectives  // Use the deep copied objectives
       };
     });
 
