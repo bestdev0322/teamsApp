@@ -22,12 +22,12 @@ const initialState: PersonalPerformanceState = {
 // Async thunks
 export const fetchPersonalPerformances = createAsyncThunk(
   'personalPerformance/fetchPersonalPerformances',
-  async (payload: { annualTargetId: string}) => {
+  async (payload: { annualTargetId?: string }) => {
     try {
       const response = await api.get(`/personal-performance/personal-performances`, {
-        params: {
+        params: payload.annualTargetId ? {
           annualTargetId: payload.annualTargetId,
-        }
+        } : {}
       });
 
       if (response.status === 200) {

@@ -49,6 +49,7 @@ import { exportPdf } from '../../../utils/exportPdf';
 import { useToast } from '../../../contexts/ToastContext';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 import { fetchNotifications } from '../../../store/slices/notificationSlice';
+import { fetchPersonalPerformances } from '../../../store/slices/personalPerformanceSlice';
 
 
 
@@ -89,6 +90,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   // Add state for the dialog
   const [sourceScorecardId, setSourceScorecardId] = useState('');
   const annualTargets = useAppSelector((state: RootState) => state.scorecard.annualTargets);
+  const personalPerformances = useAppSelector((state: RootState) => state.personalPerformance.personalPerformances);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
   const [viewSendBackModalOpen, setViewSendBackModalOpen] = useState(false);
@@ -118,6 +120,12 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
       setStatus(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.agreementStatus);
     }
   }, [personalPerformance, companyUsers, quarter]);
+
+  useEffect(() => {
+    if (isAddFromExistingOpen) {
+      dispatch(fetchPersonalPerformances({}));
+    }
+  }, [isAddFromExistingOpen, dispatch]);
 
   const fetchCompanyUsers = async () => {
     try {
@@ -361,7 +369,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   const canEdit = () => {
     const quarterlyTarget = personalPerformance?.quarterlyTargets.find(target => target.quarter === quarter);
     return isWithinPeriod() &&
-      quarterlyTarget?.isEditable !== false &&
+      quarterlyTarget?.isEditable  &&
       !isSubmitted && !isApproved
   };
 
@@ -969,7 +977,15 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
                 label="Select Annual Target"
               >
                 {annualTargets
-                  .filter(target => target._id !== annualTarget._id) // Exclude current year's target
+                  .filter(target => {
+                    if (target._id === annualTarget._id) return false;
+                    const userPerformance = personalPerformances.find(
+                      perf => perf.annualTargetId === target._id
+                    );
+                    return userPerformance?.quarterlyTargets.some(
+                      qt => qt.quarter === 'Q1' && qt.objectives.length > 0
+                    );
+                  })
                   .map((target) => (
                     <MenuItem key={target._id} value={target._id}>
                       {target.name}
