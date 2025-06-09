@@ -149,6 +149,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           supervisorId: event.target.value,
           agreementStatus: AgreementStatus.Draft,
           agreementStatusUpdatedAt: new Date(),
+          objectives: personalQuarterlyObjectives
         }
       }
 
@@ -163,7 +164,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     }));
 
     setStatus(AgreementStatus.Draft);
-
   };
 
   const handleEdit = (objective: PersonalQuarterlyTargetObjective) => {
@@ -266,7 +266,9 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           return {
             ...target,
             agreementStatus: AgreementStatus.Submitted,
-            agreementStatusUpdatedAt: new Date()
+            agreementStatusUpdatedAt: new Date(),
+            supervisorId: selectedSupervisor,
+            objectives: personalQuarterlyObjectives
           }
         }
 
@@ -315,7 +317,8 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         return {
           ...target,
           agreementStatus: target.isAgreementCommitteeSendBack ? AgreementStatus.CommitteeSendBack : AgreementStatus.Draft,
-          agreementStatusUpdatedAt: new Date()
+          agreementStatusUpdatedAt: new Date(),
+          objectives: personalQuarterlyObjectives
         }
       }
       return target;

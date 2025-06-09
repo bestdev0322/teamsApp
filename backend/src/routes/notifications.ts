@@ -94,7 +94,6 @@ router.post('/agreement/recall', authenticateToken, async (req: AuthenticatedReq
     }
     const user = await User.findOne({ MicrosoftId: req.user?.id });
 
-
     const existingNotification = await Notification.findOne({
       senderId: user?._id,
       recipientId,
@@ -107,33 +106,39 @@ router.post('/agreement/recall', authenticateToken, async (req: AuthenticatedReq
     if (existingNotification) {
       await Notification.deleteOne({ _id: existingNotification._id });
     }
+
     socketService.emitToUser(recipientUser.MicrosoftId, SocketEvent.NOTIFICATION, {});
 
-    // Send recall email to supervisor
-    const tenantId = req.user?.tenantId;
-    const fromUserId = req.user?.id;
-    const supervisorEmail = recipientUser.email;
-    const supervisorFirstName = recipientUser.name.split(' ')[0];
-    const userFullName = req.user?.displayName;
-    const subject = `Performance Agreement ${quarter} - RECALL`;
-    const body = `
-      Dear ${supervisorFirstName},<br><br>
-      ${userFullName} has recalled his performance agreement for ${quarter}.<br><br>
-      Thank You.<br>
-      Performance Management Team
-    `;
-    await graphService.sendMail(
-      tenantId as string,
-      fromUserId as string,
-      supervisorEmail,
-      subject,
-      body
-    );
+    try {
+      // Send recall email to supervisor
+      const tenantId = req.user?.tenantId;
+      const fromUserId = req.user?.id;
+      const supervisorEmail = recipientUser.email;
+      const supervisorFirstName = recipientUser.name.split(' ')[0];
+      const userFullName = req.user?.displayName;
+      const subject = `Performance Agreement ${quarter} - RECALL`;
+      const body = `
+        Dear ${supervisorFirstName},<br><br>
+        ${userFullName} has recalled his performance agreement for ${quarter}.<br><br>
+        Thank You.<br>
+        Performance Management Team
+      `;
+      await graphService.sendMail(
+        tenantId as string,
+        fromUserId as string,
+        supervisorEmail,
+        subject,
+        body
+      );
+    } catch (emailError) {
+      console.error('Error sending email notification:', emailError);
+      // Continue with the response even if email fails
+    }
 
-    return res.status(200).json({ message: 'Notification deleted successfully' });
+    return res.status(200).json({ message: 'Notification recalled successfully' });
   } catch (error) {
-    console.error('Error deleting notification:', error);
-    return res.status(500).json({ error: 'Failed to delete notification' });
+    console.error('Error recalling notification:', error);
+    return res.status(500).json({ error: 'Failed to recall notification' });
   }
 });
 
