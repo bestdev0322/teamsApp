@@ -1,5 +1,5 @@
 import { License, LicenseStatus } from '../types';
-import { LicenseModel } from '../models/license';
+import LicenseModel from '../models/license';
 import { Types } from 'mongoose';
 
 interface PopulatedLicense extends Omit<License, 'companyId'> {

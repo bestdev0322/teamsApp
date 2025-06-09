@@ -30,17 +30,6 @@ const licenseSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Drop the licenseKey index if it exists
 const LicenseModel = mongoose.model<License & mongoose.Document>('License', licenseSchema);
 
-// Drop the index in a non-blocking way
-LicenseModel.collection.dropIndex('licenseKey_1')
-  .then(() => console.log('Dropped licenseKey index'))
-  .catch(err => {
-    // Ignore if index doesn't exist
-    if (err.code !== 27) {
-      console.error('Error dropping index:', err);
-    }
-  });
-
-export { LicenseModel }; 
+export default LicenseModel; 
