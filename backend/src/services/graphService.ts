@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as msal from '@azure/msal-node';
 import { ApiError } from '../utils/apiError';
+import { config } from '../config';
 
 interface GraphResponse {
   value: any[];
@@ -20,15 +21,15 @@ export class GraphService {
     }
 
     // Fetch new token
-      const config = new msal.ConfidentialClientApplication({
+      const msal_config = new msal.ConfidentialClientApplication({
         auth: {
-          clientId: process.env.AZURE_CLIENT_ID!,
-          clientSecret: process.env.AZURE_CLIENT_SECRET!,
+          clientId: config.azure.clientId!,
+          clientSecret: config.azure.clientSecret!,
           authority: `https://login.microsoftonline.com/${tenantId}`
         }
       });
 
-      const result = await config.acquireTokenByClientCredential({
+      const result = await msal_config.acquireTokenByClientCredential({
         scopes: ['https://graph.microsoft.com/.default']
       });
 
@@ -144,12 +145,12 @@ export class GraphService {
     // Include state parameter to handle the redirect back to the app
     const state = Buffer.from(JSON.stringify({
       tenantId,
-      returnUrl: process.env.APP_URL || 'http://localhost:3000'
+      returnUrl: config.frontend
     })).toString('base64');
 
     const baseUrl = `https://login.microsoftonline.com/${tenantId}/adminconsent`;
     const params = new URLSearchParams({
-      client_id: process.env.AZURE_CLIENT_ID!,
+      client_id: config.azure.clientId!,
       redirect_uri: process.env.REDIRECT_URI || 'http://localhost:3001/api/auth/consent-callback',
       state,
       scope: 'https://graph.microsoft.com/.default'

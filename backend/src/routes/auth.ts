@@ -19,7 +19,7 @@ router.get('/login', async (_req: Request, res: Response) => {
 router.post('/callback', async (req: Request, res: Response) => {
   try {
     const { code, token, redirect_uri } = req.body;
-    console.log(token, 'token');
+    console.log('Received auth request:', { hasCode: !!code, hasToken: !!token });
 
     // Handle Teams SSO token
     if (token) {
@@ -111,9 +111,29 @@ router.post('/callback', async (req: Request, res: Response) => {
     // Handle standard login code
     if (code) {
       console.log('Processing standard login code...');
-      const result = await authService.handleCallback(code, redirect_uri);
+      try {
+        const result = await authService.handleCallback(code, redirect_uri);
+        return res.json(result);
+      } catch (error: any) {
+        console.error('Code exchange error:', {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status
+        });
 
-      return res.json(result);
+        // Handle specific error cases
+        if (error.response?.data?.error === 'invalid_grant') {
+          return res.status(400).json({ 
+            error: 'invalid_grant',
+            message: 'Authorization code has expired or was already used. Please try logging in again.'
+          });
+        }
+
+        return res.status(500).json({ 
+          error: 'Authentication failed',
+          message: error.message || 'Failed to exchange authorization code'
+        });
+      }
     }
 
     console.error('No token or code provided in request');

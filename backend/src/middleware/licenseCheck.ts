@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from './auth';
 import { licenseService } from '../services/licenseService';
 import { CompanyModel } from '../models/company';
 import { UserRole } from '../types/user';
+import { config } from '../config'
 
 export const checkLicenseStatus = async (
   req: AuthenticatedRequest,
@@ -11,7 +12,7 @@ export const checkLicenseStatus = async (
 ): Promise<void> => {
   try {
     // Skip for app owners or system routes
-    if (req.user?.role === UserRole.APP_OWNER || req.user?.email === process.env.APP_OWNER_EMAIL) {
+    if (req.user?.role === UserRole.APP_OWNER || req.user?.email === config.app_owner_email) {
       return next();
     }
 

@@ -1,13 +1,10 @@
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
-import * as dotenv from 'dotenv';
 import { UserProfile } from '../types';
 import { roleService } from './roleService';
 import { dUser, UserRole } from '../types/user';
 import { tokenPayload } from '../types';
-
-dotenv.config();
 
 export class AuthService {
   async getLoginUrl(state?: string): Promise<string> {
@@ -31,12 +28,12 @@ export class AuthService {
       const tokenResponse = await axios.post(
         `https://login.microsoftonline.com/organizations/oauth2/v2.0/token`,
         new URLSearchParams({
-          client_id: process.env.AZURE_CLIENT_ID!,
+          client_id: config.azure.clientId!,
           scope: 'openid profile email User.Read',
           code,
           redirect_uri: redirectUri,
           grant_type: 'authorization_code',
-          client_secret: process.env.AZURE_CLIENT_SECRET!
+          client_secret: config.azure.clientSecret!
         }),
         {
           headers: {
@@ -238,7 +235,7 @@ export class AuthService {
   async getTeamsConsentUrl(tenantId: string, redirectUri: string, state?: string): Promise<string> {
     const authUrl = `https://login.microsoftonline.com/${tenantId}/adminconsent`;
     const params = new URLSearchParams({
-      client_id: process.env.AZURE_CLIENT_ID!,
+      client_id: config.azure.clientId!,
       redirect_uri: redirectUri,
       ...(state && { state })
     });
@@ -264,8 +261,8 @@ export class AuthService {
         const tokenResponse = await axios.post(
           `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`,
           new URLSearchParams({
-            client_id: process.env.AZURE_CLIENT_ID!,
-            client_secret: process.env.AZURE_CLIENT_SECRET!,
+            client_id: config.azure.clientId!,
+            client_secret: config.azure.clientSecret!,
             grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
             assertion: token,
             scope: 'https://graph.microsoft.com/.default',
@@ -411,7 +408,7 @@ export class AuthService {
 
     return jwt.sign(
       tokenPayload,
-      process.env.JWT_SECRET || 'your-secret-key',
+      config.jwtSecret,
       { expiresIn: '1h' }
     );
   }

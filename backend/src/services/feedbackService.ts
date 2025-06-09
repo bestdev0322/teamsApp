@@ -1,6 +1,7 @@
 import PersonalPerformance from "../models/PersonalPerformance";
 import AnnualTarget from "../models/AnnualTarget";
 import { GraphService } from "./graphService";
+import { config } from "../config";
 
 export const sendFeedbackEmail = async (feedbackId: string, provider: { name: string, email: string }, user: { tenantId: string, MicrosoftId: string, name: string }) => {
     try {
@@ -24,7 +25,7 @@ export const sendFeedbackEmail = async (feedbackId: string, provider: { name: st
         const annualTarget = await AnnualTarget.findById(annualTargetId);
         const endDate = annualTarget?.content.assessmentPeriod[quarter as keyof typeof annualTarget.content.assessmentPeriod].endDate;
 
-        const feedbackLink = `${process.env.FRONTEND_URL}/feedback/submit?id=${feedbackId}`;
+        const feedbackLink = `${config.frontend}/feedback/submit?id=${feedbackId}`;
         const graphService = new GraphService();
 
         const emailContent = `

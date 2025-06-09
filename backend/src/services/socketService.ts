@@ -1,5 +1,6 @@
 import { Server as SocketServer, Socket } from 'socket.io';
 import { Server } from 'http';
+import { config } from '../config';
 import { SocketEvent } from '../types/socket';
 import { authService } from './authService';
 
@@ -11,7 +12,7 @@ class SocketService {
     this.io = new SocketServer(server, {
       cors: {
         origin: [
-          process.env.FRONTEND_URL || 'http://localhost:3000',
+          config.frontend,
           'https://app.teamscorecards.online'
         ],
         credentials: true

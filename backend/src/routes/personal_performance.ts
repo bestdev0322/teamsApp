@@ -10,6 +10,7 @@ import { graphService } from '../services/graphService';
 import Notification from '../models/Notification';
 import { socketService } from '../server';
 import { SocketEvent } from '../types/socket';
+import { config } from '../config';
 
 const router = express.Router();
 
@@ -365,7 +366,7 @@ router.get('/team-performances', authenticateToken, async (req: AuthenticatedReq
     })));
 
     const isSuperUser = req.user?.role === 'SuperUser';
-    const isAppOwner = req.user?.email === process.env.APP_OWNER_EMAIL;
+    const isAppOwner = req.user?.email === config.app_owner_email;
     
     return res.json(isSuperUser || isAppOwner ? orgPerformances : teamPerformances);
   } catch (error) {

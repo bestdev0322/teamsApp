@@ -44,7 +44,7 @@ const app = express();
 // Middleware
 app.use(cors({
   origin: [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
+    config.frontend,
     'https://app.teamscorecards.online'
   ],
   credentials: true,

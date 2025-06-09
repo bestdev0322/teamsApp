@@ -1,13 +1,8 @@
-import * as dotenv from 'dotenv';
 import { createServer } from 'http';
 import app from './app';
 import SocketService from './services/socketService';
 import { schedulerService } from './services/schedulerService';
-
-// Load environment variables
-dotenv.config();
-
-const port = process.env.PORT || 3001;
+import { config } from './config';
 
 // Create HTTP server
 const httpServer = createServer(app);
@@ -19,8 +14,8 @@ const socketService = new SocketService(httpServer);
 schedulerService.startComplianceReminderScheduler();
 
 // Start server
-httpServer.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+httpServer.listen(config.port, () => {
+  console.log(`Server is running on port ${config.port}`);
 });
 
 export { socketService };

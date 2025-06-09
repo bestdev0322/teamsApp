@@ -4,6 +4,7 @@ import { ApiError } from '../utils/apiError';
 import { SuperUserModel } from '../models/superUser';
 import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
+import { config } from '../config';
 
 export class RoleService {
   async createUser(
@@ -93,8 +94,7 @@ export class RoleService {
   }
 
   async getRoleByEmail(email: string): Promise<UserRole | null> {
-    console.log(process.env.APP_OWNER_EMAIL, 'process.env.APP_OWNER_EMAIL');
-    if(email===process.env.APP_OWNER_EMAIL){
+    if(email===config.app_owner_email){
       return UserRole.APP_OWNER;
     }
     const superUser = await SuperUserModel.findOne({ email });
