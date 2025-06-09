@@ -392,7 +392,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
       setPersonalQuarterlyObjectives(updatedObjectives);
 
-      // Update Redux state
+      // First update with the deleted objectives
       const newPersonalQuarterlyTargets = personalPerformance?.quarterlyTargets.map((target: PersonalQuarterlyTarget) => {
         if (quarter === 'Q1' && target.isEditable === false) {
           return {
@@ -410,11 +410,24 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         }
       });
 
+      // After updating objectives, check if there are any initiatives left
+      const hasAnyInitiatives = newPersonalQuarterlyTargets?.some(target => 
+        isEnabledTwoQuarterMode 
+          ? (target.quarter === 'Q1' || target.quarter === 'Q2') && target.objectives.length > 0
+          : target.objectives.length > 0
+      );
+
+      // Now update isEditable based on the check
+      const finalQuarterlyTargets = newPersonalQuarterlyTargets?.map(target => ({
+        ...target,
+        isEditable: target.quarter === 'Q1' ? true : hasAnyInitiatives
+      }));
+
       await dispatch(updatePersonalPerformance({
         _id: personalPerformance?._id || '',
         teamId: personalPerformance?.teamId || '',
         annualTargetId: personalPerformance?.annualTargetId || '',
-        quarterlyTargets: newPersonalQuarterlyTargets || []
+        quarterlyTargets: finalQuarterlyTargets || []
       }));
 
       setDeleteConfirmOpen(false);
