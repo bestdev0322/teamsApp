@@ -457,8 +457,19 @@ router.post('/copy-initiatives', authenticateToken, async (req: AuthenticatedReq
       throw new ApiError('Source Q1 objectives not found', 404);
     }
 
-    // Create a deep copy of the objectives
-    const q1Objectives = JSON.parse(JSON.stringify(sourceQ1Target.objectives));
+    // Create a copy of the objectives with only specific fields
+    const q1Objectives = sourceQ1Target.objectives.map(objective => ({
+      perspectiveId: objective.perspectiveId,
+      name: objective.name,
+      initiativeName: objective.initiativeName,
+      KPIs: objective.KPIs.map(kpi => ({
+        indicator: kpi.indicator,
+        baseline: kpi.baseline,
+        target: kpi.target,
+        weight: kpi.weight,
+        ratingScales: kpi.ratingScales
+      }))
+    }));
 
     // Update all quarters with the same objectives
     const updatedQuarterlyTargets = targetPerformance.quarterlyTargets.map(target => {
