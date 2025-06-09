@@ -23,6 +23,19 @@ export interface Risk {
     name: string;
   };
   status: 'Active' | 'Inactive';
+  impact?: {
+    _id: string;
+    impactName: string;
+  };
+  likelihood?: {
+    _id: string;
+    likelihoodName: string;
+  };
+  inherentRisk?: string;
+  riskResponse?: {
+    _id: string;
+    responseName: string;
+  };
 }
 
 // Define the shape of the form data for adding/editing a risk

@@ -13,6 +13,9 @@ router.get('/', authenticateToken, checkLicenseStatus, async (req: Authenticated
         const risks = await Risk.find({ tenantId: req.user?.tenantId })
             .populate('riskCategory', 'categoryName')
             .populate('riskOwner', 'name')
+            .populate('impact', 'impactName')
+            .populate('likelihood', 'likelihoodName')
+            .populate('riskResponse', 'responseName')
             .sort({ id: 1 });
         return res.json({ data: risks });
     } catch (error) {
@@ -36,8 +39,11 @@ router.post('/', authenticateToken, checkLicenseStatus, async (req: Authenticate
         } = req.body;
 
         // Validate ObjectIds
-        if (!mongoose.Types.ObjectId.isValid(riskCategory) || !mongoose.Types.ObjectId.isValid(riskOwner)) {
-            return res.status(400).json({ message: 'Invalid risk category or risk owner ID' });
+        if (!mongoose.Types.ObjectId.isValid(riskCategory) || !mongoose.Types.ObjectId.isValid(riskOwner) || 
+            (req.body.impact && !mongoose.Types.ObjectId.isValid(req.body.impact)) || 
+            (req.body.likelihood && !mongoose.Types.ObjectId.isValid(req.body.likelihood)) || 
+            (req.body.riskResponse && !mongoose.Types.ObjectId.isValid(req.body.riskResponse)) ) {
+            return res.status(400).json({ message: 'Invalid risk category, risk owner, impact, likelihood, or risk response ID' });
         }
 
         const risk = new Risk({
@@ -49,7 +55,11 @@ router.post('/', authenticateToken, checkLicenseStatus, async (req: Authenticate
             effectImpact,
             riskOwner,
             status,
-            tenantId: req.user?.tenantId
+            tenantId: req.user?.tenantId,
+            impact: req.body.impact,
+            likelihood: null,
+            inherentRisk: null,
+            riskResponse: null,
         });
 
         await risk.save();
@@ -81,8 +91,11 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
         } = req.body;
 
         // Validate ObjectIds
-        if (!mongoose.Types.ObjectId.isValid(riskCategory) || !mongoose.Types.ObjectId.isValid(riskOwner)) {
-            return res.status(400).json({ message: 'Invalid risk category or risk owner ID' });
+        if (!mongoose.Types.ObjectId.isValid(riskCategory) || !mongoose.Types.ObjectId.isValid(riskOwner) ||
+            (req.body.impact && !mongoose.Types.ObjectId.isValid(req.body.impact)) ||
+            (req.body.likelihood && !mongoose.Types.ObjectId.isValid(req.body.likelihood)) ||
+            (req.body.riskResponse && !mongoose.Types.ObjectId.isValid(req.body.riskResponse)) ) {
+            return res.status(400).json({ message: 'Invalid risk category, risk owner, impact, likelihood, or risk response ID' });
         }
 
         const risk = await Risk.findOneAndUpdate(
@@ -95,36 +108,64 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
                 cause,
                 effectImpact,
                 riskOwner,
-                status
+                status,
+                impact: req.body.impact,
+                likelihood: req.body.likelihood,
+                inherentRisk: req.body.inherentRisk,
+                riskResponse: req.body.riskResponse,
             },
             { new: true }
         ).populate('riskCategory', 'categoryName')
-         .populate('riskOwner', 'name');
+         .populate('riskOwner', 'name')
+         .sort({ _id: -1 });
 
         if (!risk) {
             return res.status(404).json({ message: 'Risk not found' });
         }
 
-        // Re-number risks based on status
-        const allRisks = await Risk.find({ tenantId: req.user?.tenantId }).sort({ no: 1 });
-        const activeRisks = allRisks.filter(r => r.status === 'Active');
-        const inactiveRisks = allRisks.filter(r => r.status === 'Inactive');
-
-        // Update numbers for active risks
-        for (let i = 0; i < activeRisks.length; i++) {
-            await Risk.findByIdAndUpdate(activeRisks[i]._id, { no: i + 1 });
-        }
-
-        // Update numbers for inactive risks
-        for (let i = 0; i < inactiveRisks.length; i++) {
-            await Risk.findByIdAndUpdate(inactiveRisks[i]._id, { no: activeRisks.length + i + 1 });
-        }
 
         return res.json({ data: risk });
     } catch (error) {
         console.error('Error updating risk:', error);
         return res.status(400).json({ message: 'Error updating risk' });
     }
+});
+
+// Update a risk's assessment fields
+router.put('/assessment/:id', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { impact, likelihood, inherentRisk, riskResponse } = req.body;
+
+    // Validate ObjectIds
+    if (impact && !mongoose.Types.ObjectId.isValid(impact)) {
+      return res.status(400).json({ message: 'Invalid impact ID' });
+    }
+    if (likelihood && !mongoose.Types.ObjectId.isValid(likelihood)) {
+      return res.status(400).json({ message: 'Invalid likelihood ID' });
+    }
+    if (riskResponse && !mongoose.Types.ObjectId.isValid(riskResponse)) {
+      return res.status(400).json({ message: 'Invalid risk response ID' });
+    }
+
+    const risk = await Risk.findOneAndUpdate(
+      { _id: req.params.id, tenantId: req.user?.tenantId },
+      { impact, likelihood, inherentRisk, riskResponse },
+      { new: true }
+    ).populate('riskCategory', 'categoryName')
+     .populate('riskOwner', 'name')
+     .populate('impact', 'impactName')
+     .populate('likelihood', 'likelihoodName')
+     .populate('riskResponse', 'responseName');
+
+    if (!risk) {
+      return res.status(404).json({ message: 'Risk not found' });
+    }
+
+    return res.json({ data: risk });
+  } catch (error) {
+    console.error('Error updating risk assessment:', error);
+    return res.status(400).json({ message: 'Error updating risk assessment' });
+  }
 });
 
 // Delete a risk
@@ -139,20 +180,8 @@ router.delete('/:id', authenticateToken, checkLicenseStatus, async (req: Authent
             return res.status(404).json({ message: 'Risk not found' });
         }
 
-        // Re-number remaining risks
-        const remainingRisks = await Risk.find({ tenantId: req.user?.tenantId }).sort({ no: 1 });
-        const activeRisks = remainingRisks.filter(r => r.status === 'Active');
-        const inactiveRisks = remainingRisks.filter(r => r.status === 'Inactive');
 
-        // Update numbers for active risks
-        for (let i = 0; i < activeRisks.length; i++) {
-            await Risk.findByIdAndUpdate(activeRisks[i]._id, { no: i + 1 });
-        }
 
-        // Update numbers for inactive risks
-        for (let i = 0; i < inactiveRisks.length; i++) {
-            await Risk.findByIdAndUpdate(inactiveRisks[i]._id, { no: activeRisks.length + i + 1 });
-        }
 
         return res.json({ message: 'Risk deleted successfully' });
     } catch (error) {

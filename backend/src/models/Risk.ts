@@ -11,6 +11,10 @@ export interface RiskDocument extends Document {
     riskOwner: Types.ObjectId;
     status: 'Active' | 'Inactive';
     tenantId: string;
+    impact?: Types.ObjectId;
+    likelihood?: Types.ObjectId;
+    inherentRisk?: string;
+    riskResponse?: Types.ObjectId;
 }
 
 const riskSchema = new Schema<RiskDocument>({
@@ -52,7 +56,26 @@ const riskSchema = new Schema<RiskDocument>({
     tenantId: {
         type: String,
         required: true,
-    }
+    },
+    impact: {
+        type: Schema.Types.ObjectId,
+        ref: 'RiskImpact',
+        required: false,
+    },
+    likelihood: {
+        type: Schema.Types.ObjectId,
+        ref: 'LikelihoodSetting',
+        required: false,
+    },
+    inherentRisk: {
+        type: String,
+        required: false,
+    },
+    riskResponse: {
+        type: Schema.Types.ObjectId,
+        ref: 'ImpactResponse',
+        required: false,
+    },
 }, {
     timestamps: true,
 });

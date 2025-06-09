@@ -258,7 +258,7 @@ function Main() {
       element: RiskManagement,
       title: "Risk Management",
       icon: <ShieldAdd24Regular fontSize={iconSize} />,
-      tabs: ['Risk Identification', 'Risk Settings'],
+      tabs: ['Risk Assessment', 'Risk Identification', 'Risk Settings'],
       show: (isRiskSuperUser) && isRiskModuleEnabled
     }
   ];
