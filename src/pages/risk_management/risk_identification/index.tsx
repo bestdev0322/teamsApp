@@ -323,7 +323,7 @@ const RiskIdentification: React.FC = () => {
                 <TableCell>{risk.effectImpact}</TableCell>
                 <TableCell>{risk.riskCategory?.categoryName || ''}</TableCell>
                 <TableCell>{risk.riskOwner?.name || ''}</TableCell>
-                <TableCell>
+                <TableCell data-color={risk.status === 'Active' ? '#53eb34' : '#eb4334'}>
                   <StatusBadge
                     status={risk.status === 'Active' ? 'active' : 'inactive' as Status}
                   />

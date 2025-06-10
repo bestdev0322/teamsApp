@@ -3,9 +3,9 @@ import {
   Dialog, DialogTitle, DialogContent, DialogActions,
   Button, TextField, MenuItem, Select, InputLabel, FormControl, SelectChangeEvent,
 } from '@mui/material';
-import { api } from '../../../services/api';
-import { useAuth } from '../../../contexts/AuthContext';
-import { Risk } from '../risk_identification/identificationModal'; // Reusing Risk interface
+import { api } from '../../../../services/api';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { Risk } from '../../risk_identification/identificationModal'; // Reusing Risk interface
 
 interface Team {
   _id: string;
@@ -117,49 +117,60 @@ export const TreatmentModal: React.FC<TreatmentModalProps> = ({ isOpen, onClose,
     setFormErrors({});
   }, [editingTreatment, risks, teams]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: '' }));
-  };
-
-  const handleDropdownChange = (e: SelectChangeEvent<string>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name as string]: value as string }));
-    setFormErrors((prev) => ({ ...prev, [name as string]: '' }));
-  };
-
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: '' }));
-  };
-
   const handleSubmit = () => {
     const errors: Partial<Record<keyof AddTreatmentFormData, string>> = {};
     let isValid = true;
 
+    // Risk Treatment validation
     if (!formData.riskTreatment.trim()) {
       errors.riskTreatment = 'Risk Treatment is required';
       isValid = false;
+    } else if (formData.riskTreatment.length < 10) {
+      errors.riskTreatment = 'Risk Treatment must be at least 10 characters long';
+      isValid = false;
+    } else if (formData.riskTreatment.length > 500) {
+      errors.riskTreatment = 'Risk Treatment must not exceed 500 characters';
+      isValid = false;
     }
+
+    // Selected Risk validation
     if (!formData.selectedRisk) {
       errors.selectedRisk = 'Select Risk is required';
       isValid = false;
     }
+
+    // Owner validation
     if (!formData.owner) {
       errors.owner = 'Owner is required';
       isValid = false;
     }
+
+    // Target Date validation
     if (!formData.targetDate) {
       errors.targetDate = 'Target Date is required';
       isValid = false;
+    } else {
+      const selectedDate = new Date(formData.targetDate);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      if (selectedDate < today) {
+        errors.targetDate = 'Target Date cannot be in the past';
+        isValid = false;
+      }
     }
+
+    // Status validation
     if (!formData.status) {
       errors.status = 'Status is required';
       isValid = false;
     }
-    // Progress Notes is optional, so no validation here unless explicitly required.
+
+    // Progress Notes validation
+    if (formData.progressNotes && formData.progressNotes.length > 1000) {
+      errors.progressNotes = 'Progress Notes must not exceed 1000 characters';
+      isValid = false;
+    }
 
     setFormErrors(errors);
 
@@ -167,6 +178,83 @@ export const TreatmentModal: React.FC<TreatmentModalProps> = ({ isOpen, onClose,
       onSave(formData);
       onClose();
     }
+  };
+
+  const validateField = (name: keyof AddTreatmentFormData, value: string) => {
+    let error = '';
+
+    switch (name) {
+      case 'riskTreatment':
+        if (!value.trim()) {
+          error = 'Risk Treatment is required';
+        } else if (value.length < 10) {
+          error = 'Risk Treatment must be at least 10 characters long';
+        } else if (value.length > 500) {
+          error = 'Risk Treatment must not exceed 500 characters';
+        }
+        break;
+
+      case 'selectedRisk':
+        if (!value) {
+          error = 'Select Risk is required';
+        }
+        break;
+
+      case 'owner':
+        if (!value) {
+          error = 'Owner is required';
+        }
+        break;
+
+      case 'targetDate':
+        if (!value) {
+          error = 'Target Date is required';
+        } else {
+          const selectedDate = new Date(value);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+
+          if (selectedDate < today) {
+            error = 'Target Date cannot be in the past';
+          }
+        }
+        break;
+
+      case 'status':
+        if (!value) {
+          error = 'Status is required';
+        }
+        break;
+
+      case 'progressNotes':
+        if (value && value.length > 1000) {
+          error = 'Progress Notes must not exceed 1000 characters';
+        }
+        break;
+    }
+
+    return error;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    const error = validateField(name as keyof AddTreatmentFormData, value);
+    setFormErrors((prev) => ({ ...prev, [name]: error }));
+  };
+
+  const handleDropdownChange = (e: SelectChangeEvent<string>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name as string]: value as string }));
+    const error = validateField(name as keyof AddTreatmentFormData, value as string);
+    setFormErrors((prev) => ({ ...prev, [name as string]: error }));
+  };
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    const error = validateField(name as keyof AddTreatmentFormData, value);
+    setFormErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   return (

@@ -316,30 +316,34 @@ const RiskAssessment: React.FC = () => {
                                 <TableCell>{risk.riskOwner?.name || ''}</TableCell>
                                 <TableCell>{risk.impact?.impactName || ''}</TableCell>
                                 <TableCell>{risk.likelihood?.likelihoodName || ''}</TableCell>
-                                <TableCell>
-                                    {risk.impact?.score && risk.likelihood?.score ? (
-                                        <Box>
-                                            {(() => {
-                                                const inherentRisk = calculateInherentRisk(risk.impact.score, risk.likelihood.score);
-                                                return inherentRisk ? (
-                                                    <Typography
-                                                        sx={{
-                                                            color: inherentRisk.color,
-                                                            fontWeight: 'bold',
-                                                            textAlign: 'center'
-                                                        }}
-                                                    >
-                                                        {risk.impact.score * risk.likelihood.score}-{inherentRisk.name}
-                                                    </Typography>
-                                                ) : (
-                                                    <Typography color="error">Invalid Score</Typography>
-                                                );
-                                            })()}
-                                        </Box>
-                                    ) : (
-                                        <Typography color="text.secondary">N/A</Typography>
-                                    )}
-                                </TableCell>
+                                {(() => {
+                                    const inherentRisk = risk.impact?.score && risk.likelihood?.score 
+                                        ? calculateInherentRisk(risk.impact.score, risk.likelihood.score)
+                                        : null;
+                                    return (
+                                        <TableCell data-color={inherentRisk?.color || ''}>
+                                            {risk.impact?.score && risk.likelihood?.score ? (
+                                                <Box>
+                                                    {inherentRisk ? (
+                                                        <Typography
+                                                            sx={{
+                                                                color: inherentRisk.color,
+                                                                fontWeight: 'bold',
+                                                                textAlign: 'center'
+                                                            }}
+                                                        >
+                                                            {risk.impact.score * risk.likelihood.score}-{inherentRisk.name}
+                                                        </Typography>
+                                                    ) : (
+                                                        <Typography color="error">Invalid Score</Typography>
+                                                    )}
+                                                </Box>
+                                            ) : (
+                                                <Typography color="text.secondary">N/A</Typography>
+                                            )}
+                                        </TableCell>
+                                    );
+                                })()}
                                 <TableCell>{risk.riskResponse?.responseName || ''}</TableCell>
                                 <TableCell className='noprint'>
                                     <Button
