@@ -35,6 +35,14 @@ interface RiskCategory {
     description: string;
 }
 
+interface RiskRating {
+    _id: string;
+    rating: string;
+    minScore: number;
+    maxScore: number;
+    color: string;
+}
+
 const RiskAssessment: React.FC = () => {
     const { user } = useAuth();
     const [risks, setRisks] = useState<Risk[]>([]);
@@ -46,10 +54,12 @@ const RiskAssessment: React.FC = () => {
     const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
     const [isExporting, setIsExporting] = useState(false);
     const tableRef = useRef<any>(null);
+    const [riskRatings, setRiskRatings] = useState<RiskRating[]>([]);
 
     useEffect(() => {
         fetchRisks();
         fetchRiskCategories();
+        fetchRiskRatings();
     }, [user?.tenantId]);
 
     const fetchRisks = async () => {
@@ -74,15 +84,26 @@ const RiskAssessment: React.FC = () => {
         }
     };
 
+    const fetchRiskRatings = async () => {
+        try {
+            const response = await api.get('/risk-ratings');
+            if (response.status === 200) {
+                setRiskRatings(response.data.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching risk ratings:', error);
+        }
+    };
+
     const handleReviewClick = (risk: Risk) => {
         setSelectedRiskForReview(risk);
         setIsReviewModalOpen(true);
     };
 
-    const handleSaveAssessment = async (riskId: string, impact: string, likelihood: string, inherentRisk: string, riskResponse: string) => {
+    const handleSaveAssessment = async (riskId: string, impact: string, likelihood: string, riskResponse: string) => {
         try {
             // Make API call to update the risk with assessment data
-            const response = await api.put(`/risks/assessment/${riskId}`, { impact, likelihood, inherentRisk, riskResponse });
+            const response = await api.put(`/risks/assessment/${riskId}`, { impact, likelihood, riskResponse });
             if (response.status === 200) {
                 fetchRisks(); // Refresh risks after saving assessment
             }
@@ -126,6 +147,12 @@ const RiskAssessment: React.FC = () => {
                 )}
             </Box>
         );
+    };
+
+    const calculateInherentRisk = (impactScore: number, likelihoodScore: number): { name: string; color: string } | null => {
+        const score = impactScore * likelihoodScore;
+        const rating = riskRatings.find(r => score >= r.minScore && score <= r.maxScore);
+        return rating ? { name: rating.rating, color: rating.color } : null;
     };
 
     const filteredRisks = risks.filter(risk => {
@@ -234,7 +261,7 @@ const RiskAssessment: React.FC = () => {
             </Box>
 
             <TableContainer component={Paper}>
-                <Table  ref={tableRef}>
+                <Table ref={tableRef}>
                     <TableHead>
                         <TableRow>
                             <TableCell>No.</TableCell>
@@ -267,7 +294,30 @@ const RiskAssessment: React.FC = () => {
                                 <TableCell>{risk.riskOwner?.name || ''}</TableCell>
                                 <TableCell>{risk.impact?.impactName || ''}</TableCell>
                                 <TableCell>{risk.likelihood?.likelihoodName || ''}</TableCell>
-                                <TableCell>{risk.inherentRisk || ''}</TableCell>
+                                <TableCell>
+                                    {risk.impact?.score && risk.likelihood?.score ? (
+                                        <Box>
+                                            {(() => {
+                                                const inherentRisk = calculateInherentRisk(risk.impact.score, risk.likelihood.score);
+                                                return inherentRisk ? (
+                                                    <Typography
+                                                        sx={{
+                                                            color: inherentRisk.color,
+                                                            fontWeight: 'bold',
+                                                            textAlign: 'center'
+                                                        }}
+                                                    >
+                                                        {risk.impact.score * risk.likelihood.score}-{inherentRisk.name}
+                                                    </Typography>
+                                                ) : (
+                                                    <Typography color="error">Invalid Score</Typography>
+                                                );
+                                            })()}
+                                        </Box>
+                                    ) : (
+                                        <Typography color="text.secondary">N/A</Typography>
+                                    )}
+                                </TableCell>
                                 <TableCell>{risk.riskResponse?.responseName || ''}</TableCell>
                                 <TableCell className='noprint'>
                                     <Button

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions,
-  Button, TextField, MenuItem, Select, InputLabel, FormControl, SelectChangeEvent, FormHelperText
+  Button, TextField, MenuItem, Select, InputLabel, FormControl, SelectChangeEvent, FormHelperText,
+  Typography
 } from '@mui/material';
 import { api } from '../../../services/api';
 import { Risk } from '../risk_identification/identificationModal';
@@ -9,7 +10,7 @@ import { Risk } from '../risk_identification/identificationModal';
 interface ReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (riskId: string, impact: string, likelihood: string, inherentRisk: string, riskResponse: string) => void;
+  onSave: (riskId: string, impact: string, likelihood: string, riskResponse: string) => void;
   risk?: Risk | null;
 }
 
@@ -36,7 +37,6 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose, onSav
 
   const [selectedImpact, setSelectedImpact] = useState<string>('');
   const [selectedLikelihood, setSelectedLikelihood] = useState<string>('');
-  const [inherentRisk, setInherentRisk] = useState<string>('');
   const [selectedRiskResponse, setSelectedRiskResponse] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -60,7 +60,6 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose, onSav
 
           setSelectedImpact(impactExists ? risk.impact?._id || '' : '');
           setSelectedLikelihood(likelihoodExists ? risk.likelihood?._id || '' : '');
-          setInherentRisk(risk.inherentRisk || '');
           setSelectedRiskResponse(responseExists ? risk.riskResponse?._id || '' : '');
         }
       } catch (error) {
@@ -77,7 +76,6 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose, onSav
     const newErrors: Record<string, string> = {};
     if (!selectedImpact) newErrors.impact = 'Impact is required';
     if (!selectedLikelihood) newErrors.likelihood = 'Likelihood is required';
-    if (!inherentRisk) newErrors.inherentRisk = 'Inherent Risk is required';
     if (!selectedRiskResponse) newErrors.riskResponse = 'Risk Response is required';
 
     if (Object.keys(newErrors).length > 0) {
@@ -86,7 +84,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose, onSav
     }
 
     if (risk?._id) {
-      onSave(risk._id, selectedImpact, selectedLikelihood, inherentRisk, selectedRiskResponse);
+      onSave(risk._id, selectedImpact, selectedLikelihood, selectedRiskResponse);
       onClose();
     }
   };
@@ -131,19 +129,9 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose, onSav
           </Select>
           {errors.likelihood && <FormHelperText>{errors.likelihood}</FormHelperText>}
         </FormControl>
-        <TextField
-          label="Inherent Risk"
-          name="inherentRisk"
-          value={inherentRisk}
-          onChange={(e) => {
-            setInherentRisk(e.target.value);
-            setErrors(prev => ({ ...prev, inherentRisk: '' }));
-          }}
-          fullWidth
-          margin="normal"
-          error={!!errors.inherentRisk}
-          helperText={errors.inherentRisk}
-        />
+        <Typography>
+
+        </Typography>
         <FormControl fullWidth margin="normal" error={!!errors.riskResponse}>
           <InputLabel>Risk Response</InputLabel>
           <Select

@@ -13,7 +13,6 @@ export interface RiskDocument extends Document {
     tenantId: string;
     impact?: Types.ObjectId;
     likelihood?: Types.ObjectId;
-    inherentRisk?: string;
     riskResponse?: Types.ObjectId;
 }
 
@@ -65,10 +64,6 @@ const riskSchema = new Schema<RiskDocument>({
     likelihood: {
         type: Schema.Types.ObjectId,
         ref: 'LikelihoodSetting',
-        required: false,
-    },
-    inherentRisk: {
-        type: String,
         required: false,
     },
     riskResponse: {

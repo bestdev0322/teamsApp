@@ -26,12 +26,13 @@ export interface Risk {
   impact?: {
     _id: string;
     impactName: string;
+    score: number;
   };
   likelihood?: {
     _id: string;
     likelihoodName: string;
+    score: number;
   };
-  inherentRisk?: string;
   riskResponse?: {
     _id: string;
     responseName: string;

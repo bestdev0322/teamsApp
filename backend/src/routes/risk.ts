@@ -13,10 +13,10 @@ router.get('/', authenticateToken, checkLicenseStatus, async (req: Authenticated
         const risks = await Risk.find({ tenantId: req.user?.tenantId })
             .populate('riskCategory', 'categoryName')
             .populate('riskOwner', 'name')
-            .populate('impact', 'impactName')
-            .populate('likelihood', 'likelihoodName')
+            .populate('impact', 'impactName score')
+            .populate('likelihood', 'likelihoodName score')
             .populate('riskResponse', 'responseName')
-            .sort({ id: 1 });
+            .sort({ _id: 1 });
         return res.json({ data: risks });
     } catch (error) {
         console.error('Error fetching risks:', error);
@@ -58,7 +58,6 @@ router.post('/', authenticateToken, checkLicenseStatus, async (req: Authenticate
             tenantId: req.user?.tenantId,
             impact: req.body.impact,
             likelihood: null,
-            inherentRisk: null,
             riskResponse: null,
         });
 
@@ -111,13 +110,12 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
                 status,
                 impact: req.body.impact,
                 likelihood: req.body.likelihood,
-                inherentRisk: req.body.inherentRisk,
                 riskResponse: req.body.riskResponse,
             },
             { new: true }
         ).populate('riskCategory', 'categoryName')
          .populate('riskOwner', 'name')
-         .sort({ _id: -1 });
+         .sort({ _id: 1 });
 
         if (!risk) {
             return res.status(404).json({ message: 'Risk not found' });
@@ -134,7 +132,7 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
 // Update a risk's assessment fields
 router.put('/assessment/:id', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { impact, likelihood, inherentRisk, riskResponse } = req.body;
+    const { impact, likelihood, riskResponse } = req.body;
 
     // Validate ObjectIds
     if (impact && !mongoose.Types.ObjectId.isValid(impact)) {
@@ -149,7 +147,7 @@ router.put('/assessment/:id', authenticateToken, checkLicenseStatus, async (req:
 
     const risk = await Risk.findOneAndUpdate(
       { _id: req.params.id, tenantId: req.user?.tenantId },
-      { impact, likelihood, inherentRisk, riskResponse },
+      { impact, likelihood, riskResponse },
       { new: true }
     ).populate('riskCategory', 'categoryName')
      .populate('riskOwner', 'name')
