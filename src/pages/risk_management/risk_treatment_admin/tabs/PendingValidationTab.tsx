@@ -21,6 +21,8 @@ import { ValidationModal, ValidationFormData } from './validationModal';
 import { api } from '../../../../services/api';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import { formatDate } from '../../../../utils/date';
+import { useToast } from '../../../../contexts/ToastContext';
+import ProgressHistoryModal from '../../my_risk_treatment/ProgressHistoryModal';
 
 interface RiskTreatment {
     _id: string;
@@ -42,6 +44,8 @@ interface RiskTreatment {
     convertedToControl?: boolean;
     validationNotes?: string;
     validationDate?: string;
+    progressHistory?: any[];
+    progressNotes?: string;
 }
 
 interface PendingValidationTabProps {
@@ -56,6 +60,10 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
     const [selectedTreatmentForValidation, setSelectedTreatmentForValidation] = useState<RiskTreatment | null>(null);
     const [isNotesModalOpen, setIsNotesModalOpen] = useState(false);
     const [selectedNotes, setSelectedNotes] = useState<string>('');
+    const { showToast } = useToast();
+    const [progressModalOpen, setProgressModalOpen] = useState(false);
+    const [selectedProgressHistory, setSelectedProgressHistory] = useState([]);
+    const [selectedTreatmentForProgressHistory, setSelectedTreatmentForProgressHistory] = useState<RiskTreatment | null>(null);
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -69,6 +77,7 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
     const handleSaveValidation = async (data: ValidationFormData) => {
         if (!selectedTreatmentForValidation) return;
         try {
+            showToast('Validating now...', 'info');
             const response = await api.put(`/risk-treatments/validate/${selectedTreatmentForValidation._id}`, {
                 convertedToControl: data.convertedToControl,
                 validationNotes: data.validationNotes,
@@ -78,9 +87,11 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
             });
             if (response.status === 200) {
                 fetchRiskTreatments();
+                showToast('Email sent successfully', 'success');
             }
         } catch (error) {
             console.error('Error saving validation:', error);
+            showToast('Error during validation', 'error');
         } finally {
             setIsValidationModalOpen(false);
         }
@@ -94,6 +105,27 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
     const handleCloseNotesModal = () => {
         setIsNotesModalOpen(false);
         setSelectedNotes('');
+    };
+
+    const handleOpenProgressModal = (treatment: RiskTreatment) => {
+        setSelectedProgressHistory(treatment.progressHistory || []);
+        setSelectedTreatmentForProgressHistory(treatment);
+        setProgressModalOpen(true);
+    };
+
+    const handleDeleteProgressNote = async (index: number) => {
+        if (!selectedTreatmentForProgressHistory) return;
+        try {
+            await api.delete(`/risk-treatments/${selectedTreatmentForProgressHistory._id}/progress-history/${index}`);
+            fetchRiskTreatments();
+            setSelectedProgressHistory(prev => {
+                const arr = [...prev];
+                arr.splice(index, 1);
+                return arr;
+            });
+        } catch (error) {
+            showToast('Error deleting progress note', 'error');
+        }
     };
 
     const filteredRiskTreatments = riskTreatments.filter(treatment =>
@@ -131,6 +163,7 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
                             <TableCell sx={{ width: '5%' }}>Convert to Control</TableCell>
                             <TableCell sx={{ width: '10%' }}>Validation Notes</TableCell>
                             <TableCell sx={{ width: '15%' }}>Date</TableCell>
+                            <TableCell align="center">Progress Notes</TableCell>
                             <TableCell align="center" sx={{ width: '5%' }} className='noprint'>Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -153,6 +186,15 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
                                     ) : null}
                                 </TableCell>
                                 <TableCell>{treatment.validationDate ? formatDate(new Date(treatment.validationDate)) : ''}</TableCell>
+                                <TableCell align="center">
+                                    {treatment.progressHistory && treatment.progressHistory.length > 0 ? (
+                                        <IconButton size="small" onClick={() => handleOpenProgressModal(treatment)}>
+                                            <DescriptionOutlinedIcon />
+                                        </IconButton>
+                                    ) : (
+                                        treatment.progressNotes || ''
+                                    )}
+                                </TableCell>
                                 <TableCell align="center" className='noprint'>
                                     <Button
                                         variant="contained"
@@ -182,6 +224,12 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
                     <Button onClick={handleCloseNotesModal}>Close</Button>
                 </DialogActions>
             </Dialog>
+            <ProgressHistoryModal
+                open={progressModalOpen}
+                onClose={() => setProgressModalOpen(false)}
+                progressHistory={selectedProgressHistory}
+                onDelete={handleDeleteProgressNote}
+            />
         </Box>
     );
 };

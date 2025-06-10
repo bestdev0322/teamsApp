@@ -108,13 +108,28 @@ const RiskTreatmentAdmin: React.FC = () => {
     const handleSaveTreatment = async (data: AddTreatmentFormData) => {
         try {
             if (editingTreatment) {
-                const response = await api.put(`/risk-treatments/${editingTreatment._id}`, {
+                let updatePayload: any = {
                     risk: data.selectedRisk,
                     treatment: data.riskTreatment,
                     treatmentOwner: data.owner,
                     targetDate: data.targetDate,
                     status: data.status
-                });
+                };
+                // If status changed from Completed to Planned/In Progress, clear validation fields
+                if (
+                    editingTreatment.status === 'Completed' &&
+                    (data.status === 'Planned' || data.status === 'In Progress')
+                ) {
+                    updatePayload = {
+                        ...updatePayload,
+                        convertedToControl: false,
+                        validationNotes: '',
+                        validationDate: null,
+                        frequency: '',
+                        controlName: '',
+                    };
+                }
+                const response = await api.put(`/risk-treatments/${editingTreatment._id}`, updatePayload);
                 if (response.status === 200) {
                     fetchRiskTreatments();
                 }

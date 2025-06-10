@@ -117,6 +117,7 @@ const RiskTreatmentTab: React.FC<RiskTreatmentTabProps> = ({
     };
 
     const filteredRiskTreatments = riskTreatments.filter(treatment =>
+        treatment.status !== 'Completed' &&
         Object.values(treatment).some(value =>
             String(value).toLowerCase().includes(searchTerm.toLowerCase())
         )

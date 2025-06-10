@@ -1,5 +1,10 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+interface ProgressHistoryEntry {
+  progressNotes: string;
+  updatedAt: Date;
+}
+
 export interface IRiskTreatment extends Document {
   risk: mongoose.Types.ObjectId; // Reference to the Risk being treated
   treatment: string;
@@ -12,7 +17,19 @@ export interface IRiskTreatment extends Document {
   validationDate?: Date;        // New field for pending validation tab
   controlName?: string;         // New field for converted control
   frequency?: string;          // New field for converted control
+  progressHistory: ProgressHistoryEntry[];
 }
+
+const ProgressHistorySchema = new Schema({
+  progressNotes: {
+    type: String,
+    required: true,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  }
+});
 
 const RiskTreatmentSchema: Schema = new Schema({
   risk: {
@@ -61,6 +78,10 @@ const RiskTreatmentSchema: Schema = new Schema({
   frequency: {
     type: String,
     required: false,
+  },
+  progressHistory: {
+    type: [ProgressHistorySchema],
+    default: [],
   },
 }, { timestamps: true });
 

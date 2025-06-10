@@ -298,7 +298,7 @@ const RiskAssessment: React.FC = () => {
                             <TableCell>Likelihood</TableCell>
                             <TableCell>Inherent Risk</TableCell>
                             <TableCell>Risk Response</TableCell>
-                            <TableCell className='noprint'>Review</TableCell>
+                            <TableCell className='noprint' align="center">Review</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -345,7 +345,7 @@ const RiskAssessment: React.FC = () => {
                                     );
                                 })()}
                                 <TableCell>{risk.riskResponse?.responseName || ''}</TableCell>
-                                <TableCell className='noprint'>
+                                <TableCell className='noprint' align="center">
                                     <Button
                                         variant="contained"
                                         size="small"

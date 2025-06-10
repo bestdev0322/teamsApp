@@ -117,15 +117,6 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
     if (!formData.validationDate) {
       errors.validationDate = 'Validation Date is required';
       isValid = false;
-    } else {
-        const selectedDate = new Date(formData.validationDate);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        if (selectedDate > today) {
-            errors.validationDate = 'Validation Date cannot be in the future';
-            isValid = false;
-        }
     }
 
     setFormErrors(errors);
