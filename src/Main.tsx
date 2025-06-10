@@ -111,7 +111,7 @@ function Main() {
   const [isComplianceSuperUser, setIsComplianceSuperUser] = useState(false);
   const [isComplianceChampion, setIsComplianceChampion] = useState(false);
   const [isRiskSuperUser, setIsRiskSuperUser] = useState(false);
-
+  const [isRiskChampion, setIsRiskChampion] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -121,6 +121,7 @@ function Main() {
       setIsDevMember(!!user?.isDevMember);
       setIsPerformanceCalibrationMember(!!user?.isPerformanceCalibrationMember);
       setIsRiskSuperUser(!!user?.isRiskSuperUser);
+      setIsRiskChampion(!!user?.isRiskChampion);
     }
   }, [user]);
 
@@ -258,8 +259,10 @@ function Main() {
       element: RiskManagement,
       title: "Risk Management",
       icon: <ShieldAdd24Regular fontSize={iconSize} />,
-      tabs: ['Risk Treatment Admin', 'Risk Assessment', 'Risk Identification', 'Risk Settings'],
-      show: (isRiskSuperUser) && isRiskModuleEnabled
+      tabs: isRiskSuperUser ?
+        ['My Risk Treatments', 'Risk Treatment Admin', 'Risk Assessment', 'Risk Identification', 'Risk Settings'] :
+        ['My Risk Treatments'],
+      show: (isRiskSuperUser || isRiskChampion) && isRiskModuleEnabled
     }
   ];
 

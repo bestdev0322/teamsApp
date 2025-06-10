@@ -10,7 +10,6 @@ import {
     TableRow,
     TextField,
     Button,
-    Checkbox,
     Dialog,
     DialogTitle,
     DialogContent,
@@ -18,10 +17,10 @@ import {
     IconButton,
     Typography,
 } from '@mui/material';
-import { format } from 'date-fns';
 import { ValidationModal, ValidationFormData } from './validationModal';
 import { api } from '../../../../services/api';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
+import { formatDate } from '../../../../utils/date';
 
 interface RiskTreatment {
     _id: string;
@@ -97,14 +96,6 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
         setSelectedNotes('');
     };
 
-    const formatDate = (dateString: string) => {
-        try {
-            return format(new Date(dateString), 'MMM dd, yyyy');
-        } catch (error) {
-            return dateString;
-        }
-    };
-
     const filteredRiskTreatments = riskTreatments.filter(treatment =>
         treatment.status === 'Completed' &&
         treatment.convertedToControl === false &&
@@ -151,7 +142,7 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
                                 <TableCell>{treatment.risk?.riskCategory?.categoryName || ''}</TableCell>
                                 <TableCell>{treatment.treatment}</TableCell>
                                 <TableCell>{treatment.treatmentOwner?.name || ''}</TableCell>
-                                <TableCell>{formatDate(treatment.targetDate)}</TableCell>
+                                <TableCell>{formatDate(new Date(treatment.targetDate))}</TableCell>
                                 <TableCell>{treatment.status}</TableCell>
                                 <TableCell>{treatment.convertedToControl ? 'Yes' : 'No'}</TableCell>
                                 <TableCell>
@@ -161,7 +152,7 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
                                         </IconButton>
                                     ) : null}
                                 </TableCell>
-                                <TableCell>{treatment.validationDate ? formatDate(treatment.validationDate) : ''}</TableCell>
+                                <TableCell>{treatment.validationDate ? formatDate(new Date(treatment.validationDate)) : ''}</TableCell>
                                 <TableCell align="center" className='noprint'>
                                     <Button
                                         variant="contained"

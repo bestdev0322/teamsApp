@@ -63,6 +63,33 @@ router.get('/', authenticateToken, checkLicenseStatus, async (req: Authenticated
   }
 });
 
+// Get only risk treatments assigned to the current user
+router.get('/my-treatments', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const tenantId = req.user?.tenantId;
+    const teamId = req.user?.teamId;
+    if (!tenantId || !teamId) {
+      return res.status(400).json({ message: 'Tenant ID or Team ID not found in request' });
+    }
+    // Find risk treatments assigned to the current user
+    const riskTreatments = await RiskTreatment.find({ tenantId, treatmentOwner: teamId })
+      .populate({
+        path: 'risk',
+        select: 'riskNameElement riskCategory',
+        populate: {
+          path: 'riskCategory',
+          select: 'categoryName',
+        },
+      })
+      .populate('treatmentOwner', 'name');
+
+    return res.json({ data: riskTreatments });
+  } catch (error) {
+    console.error('Error fetching my risk treatments:', error);
+    return res.status(500).json({ message: 'Error fetching my risk treatments' });
+  }
+});
+
 // Get a single risk treatment by ID
 router.get('/:id', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -204,7 +231,7 @@ router.put('/validate/:id', authenticateToken, checkLicenseStatus, async (req: A
     // Find the team to get champions
     const team = await Team.findById(riskTreatment.treatmentOwner?._id);
     const teamChampions = await User.find({ isRiskChampion: true, tenantId, teamId: team?._id });
-    console.log(teamChampions, 'teamChampions', team?._id, 'team?._id')
+
     if (teamChampions && Array.isArray(teamChampions) && teamChampions.length > 0) {
       // Find users who are champions
       const risk = updatedRiskTreatment?.risk as { riskNameElement?: string };
@@ -212,7 +239,7 @@ router.put('/validate/:id', authenticateToken, checkLicenseStatus, async (req: A
       const treatmentName = riskTreatment.treatment;
       const subject = 'Risk Treatment';
       let body = '';
-      console.log(teamChampions, 'teamChampions')
+      
       if (convertedToControl === 'Yes') {
         body = `Dear Team,<br/><br/>Please note that <b>${treatmentName}</b> for <b>${riskName}</b> has been converted to a control.<br/><br/>Regards,<br/>Risk Management Team`;
       } else {
