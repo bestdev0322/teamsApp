@@ -18,7 +18,6 @@ export interface AddTreatmentFormData {
   owner: string;
   targetDate: string;
   status: string;
-  progressNotes: string;
 }
 
 interface TreatmentModalProps {
@@ -42,7 +41,6 @@ interface TreatmentModalProps {
     };
     targetDate: string;
     status: 'Planned' | 'In Progress' | 'Completed';
-    progressNotes: string;
   } | null;
 }
 
@@ -61,8 +59,7 @@ export const TreatmentModal: React.FC<TreatmentModalProps> = ({ isOpen, onClose,
     selectedRisk: '',
     owner: '',
     targetDate: '',
-    status: 'Planned',
-    progressNotes: '',
+    status: 'Planned'
   });
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof AddTreatmentFormData, string>>>({});
 
@@ -102,7 +99,6 @@ export const TreatmentModal: React.FC<TreatmentModalProps> = ({ isOpen, onClose,
         owner: initialOwner,
         targetDate: editingTreatment.targetDate,
         status: editingTreatment.status,
-        progressNotes: editingTreatment.progressNotes || '',
       });
     } else if (!editingTreatment) {
       setFormData({
@@ -111,7 +107,6 @@ export const TreatmentModal: React.FC<TreatmentModalProps> = ({ isOpen, onClose,
         owner: '',
         targetDate: '',
         status: 'Planned',
-        progressNotes: '',
       });
     }
     setFormErrors({});
@@ -163,12 +158,6 @@ export const TreatmentModal: React.FC<TreatmentModalProps> = ({ isOpen, onClose,
     // Status validation
     if (!formData.status) {
       errors.status = 'Status is required';
-      isValid = false;
-    }
-
-    // Progress Notes validation
-    if (formData.progressNotes && formData.progressNotes.length > 1000) {
-      errors.progressNotes = 'Progress Notes must not exceed 1000 characters';
       isValid = false;
     }
 
@@ -226,11 +215,6 @@ export const TreatmentModal: React.FC<TreatmentModalProps> = ({ isOpen, onClose,
         }
         break;
 
-      case 'progressNotes':
-        if (value && value.length > 1000) {
-          error = 'Progress Notes must not exceed 1000 characters';
-        }
-        break;
     }
 
     return error;
@@ -335,16 +319,7 @@ export const TreatmentModal: React.FC<TreatmentModalProps> = ({ isOpen, onClose,
           </Select>
           {formErrors.status && <div style={{ color: '#d32f2f', fontSize: '0.75rem', marginLeft: '14px', marginTop: '3px' }}>{formErrors.status}</div>}
         </FormControl>
-        <TextField
-          label="Progress Notes"
-          name="progressNotes"
-          value={formData.progressNotes}
-          onChange={handleChange}
-          fullWidth
-          margin="normal"
-          multiline
-          rows={3}
-        />
+        
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>

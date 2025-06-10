@@ -6,8 +6,12 @@ export interface IRiskTreatment extends Document {
   treatmentOwner: mongoose.Types.ObjectId; // Reference to the Team (owner)
   targetDate: Date;
   status: 'Planned' | 'In Progress' | 'Completed';
-  progressNotes: string;
   tenantId: string;
+  convertedToControl?: boolean; // New field for pending validation tab
+  validationNotes?: string;     // New field for pending validation tab
+  validationDate?: Date;        // New field for pending validation tab
+  controlName?: string;         // New field for converted control
+  frequency?: string;          // New field for converted control
 }
 
 const RiskTreatmentSchema: Schema = new Schema({
@@ -34,13 +38,29 @@ const RiskTreatmentSchema: Schema = new Schema({
     enum: ['Planned', 'In Progress', 'Completed'],
     default: 'Planned',
   },
-  progressNotes: {
-    type: String,
-    default: '',
-  },
   tenantId: {
     type: String,
     required: true
+  },
+  convertedToControl: {
+    type: Boolean,
+    default: false,
+  },
+  validationNotes: {
+    type: String,
+    required: false,    
+  },
+  validationDate: {
+    type: Date,
+    required: false,
+  },
+  controlName: {
+    type: String,
+    required: false,
+  },
+  frequency: {
+    type: String,
+    required: false,
   },
 }, { timestamps: true });
 

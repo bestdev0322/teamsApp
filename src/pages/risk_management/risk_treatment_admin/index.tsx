@@ -5,6 +5,8 @@ import { TreatmentModal, AddTreatmentFormData } from './tabs/treatmentModal';
 import { api } from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import RiskTreatmentTab from './tabs/RiskTreatmentTab';
+import PendingValidationTab from './tabs/PendingValidationTab';
+import ControlsTab from './tabs/ControlsTab';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -12,6 +14,7 @@ interface TabPanelProps {
     value: number;
 }
 
+// TabPanel component
 const TabPanel = (props: TabPanelProps) => {
     const { children, value, index, ...other } = props;
 
@@ -50,6 +53,9 @@ interface RiskTreatment {
     targetDate: string;
     status: 'Planned' | 'In Progress' | 'Completed';
     progressNotes: string;
+    convertedToControl?: boolean;
+    validationNotes?: string;
+    validationDate?: string;
 }
 
 const RiskTreatmentAdmin: React.FC = () => {
@@ -107,8 +113,7 @@ const RiskTreatmentAdmin: React.FC = () => {
                     treatment: data.riskTreatment,
                     treatmentOwner: data.owner,
                     targetDate: data.targetDate,
-                    status: data.status,
-                    progressNotes: data.progressNotes,
+                    status: data.status
                 });
                 if (response.status === 200) {
                     fetchRiskTreatments();
@@ -120,8 +125,7 @@ const RiskTreatmentAdmin: React.FC = () => {
                     treatmentOwner: data.owner,
                     targetDate: data.targetDate,
                     status: data.status,
-                    progressNotes: data.progressNotes,
-                    tenantId: user?.tenantId,
+                    tenantId: user?.tenantId
                 };
                 const response = await api.post(`/risk-treatments`, newTreatmentData);
                 if (response.status === 201) {
@@ -159,11 +163,14 @@ const RiskTreatmentAdmin: React.FC = () => {
             </TabPanel>
 
             <TabPanel value={currentTab} index={1}>
-                <Typography>Content for Pending Validation tab goes here.</Typography>
+                <PendingValidationTab 
+                    riskTreatments={riskTreatments}
+                    fetchRiskTreatments={fetchRiskTreatments}
+                />
             </TabPanel>
 
             <TabPanel value={currentTab} index={2}>
-                <Typography>Content for Controls tab goes here.</Typography>
+                <ControlsTab riskTreatments={riskTreatments} fetchRiskTreatments={fetchRiskTreatments} />
             </TabPanel>
         </Box>
     );

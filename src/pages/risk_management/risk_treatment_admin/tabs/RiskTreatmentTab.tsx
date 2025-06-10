@@ -38,7 +38,6 @@ interface RiskTreatment {
     };
     targetDate: string;
     status: 'Planned' | 'In Progress' | 'Completed';
-    progressNotes: string;
 }
 
 interface RiskTreatmentTabProps {
@@ -168,14 +167,13 @@ const RiskTreatmentTab: React.FC<RiskTreatmentTabProps> = ({
                 <Table ref={tableRef}>
                     <TableHead>
                         <TableRow>
-                            <TableCell sx={{ width: '5%' }}>No.</TableCell>
-                            <TableCell sx={{ width: '10%' }}>Risk Name</TableCell>
-                            <TableCell sx={{ width: '10%' }}>Risk Category</TableCell>
+                            <TableCell sx={{ width: '10%' }}>No.</TableCell>
+                            <TableCell sx={{ width: '15%' }}>Risk Name</TableCell>
+                            <TableCell sx={{ width: '15%' }}>Risk Category</TableCell>
                             <TableCell sx={{ width: '15%' }}>Risk Treatment</TableCell>
                             <TableCell sx={{ width: '15%' }}>Treatment Owner</TableCell>
                             <TableCell sx={{ width: '10%' }}>Target Date</TableCell>
                             <TableCell sx={{ width: '10%' }}>Status</TableCell>
-                            <TableCell sx={{ width: '15%' }}>Progress Notes</TableCell>
                             <TableCell align="center" sx={{ width: '10%' }} className='noprint'>Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -189,7 +187,6 @@ const RiskTreatmentTab: React.FC<RiskTreatmentTabProps> = ({
                                 <TableCell>{treatment.treatmentOwner?.name || ''}</TableCell>
                                 <TableCell>{formatDate(treatment.targetDate)}</TableCell>
                                 <TableCell>{treatment.status}</TableCell>
-                                <TableCell>{treatment.progressNotes}</TableCell>
                                 <TableCell align="center" className='noprint'>
                                     <IconButton color="primary" size="small" onClick={() => onEditTreatment(treatment)}>
                                         <EditIcon fontSize="small" />
