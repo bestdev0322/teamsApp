@@ -237,11 +237,6 @@ const RiskAssessment: React.FC = () => {
     return (
         <Box sx={{ p: 3 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h5" component="h1">
-                    Risk Assessment
-                </Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
                 <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
                     <FormControl size="small" sx={{ width: 200 }}>
                         <InputLabel>Risk Category</InputLabel>

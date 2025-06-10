@@ -37,6 +37,7 @@ import RiskControlEffectivenessRoutes from './routes/risk_control_effectiveness'
 import RiskChampionsRoutes from './routes/risk_champions';
 import RiskRatingRoutes from './routes/risk_rating';
 import RiskRoutes from './routes/risk';
+import RiskTreatmentRoutes from './routes/risk_treatment';
 
 // import { applySecurityMiddleware } from './middleware/security';
 
@@ -95,6 +96,7 @@ app.use('/api/risk-control-effectiveness', authenticateToken, checkLicenseStatus
 app.use('/api/risk-champions', authenticateToken, checkLicenseStatus, RiskChampionsRoutes);
 app.use('/api/risk-ratings', authenticateToken, checkLicenseStatus, RiskRatingRoutes);
 app.use('/api/risks', RiskRoutes);
+app.use('/api/risk-treatments', authenticateToken, checkLicenseStatus, RiskTreatmentRoutes);
 
 // Connect to MongoDB
 mongoose.connect(config.mongoUri)
