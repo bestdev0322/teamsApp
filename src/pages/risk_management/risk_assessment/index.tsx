@@ -18,6 +18,7 @@ import {
     MenuItem,
     SelectChangeEvent,
     Chip,
+    Link,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -128,22 +129,34 @@ const RiskAssessment: React.FC = () => {
     };
 
     const renderDescription = (description: string, id: string) => {
+        if (isExporting) {
+            return description;
+        }
+
         const isExpanded = expandedDescriptions[id];
-        const displayText = isExpanded ? description : `${description.substring(0, 100)}...`;
+        const shouldTruncate = description.length > 100;
+        const displayText = isExpanded
+            ? description
+            : shouldTruncate
+                ? description.slice(0, 100) + '...'
+                : description;
 
         return (
-            <Box>
-                <Typography variant="body2">
-                    {displayText}
-                </Typography>
-                {description.length > 100 && (
-                    <IconButton
-                        size="small"
+            <Box sx={{
+                width: '100%',
+                wordBreak: 'break-word',
+                whiteSpace: 'pre-wrap'
+            }}>
+                {displayText}
+                {shouldTruncate && (
+                    <Link
+                        component="button"
+                        variant="body2"
                         onClick={() => toggleDescription(id)}
-                        sx={{ mt: 0.5 }}
+                        sx={{ ml: 1, textDecoration: 'underline' }}
                     >
-                        {isExpanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                    </IconButton>
+                        {isExpanded ? 'Show less' : 'Show more'}
+                    </Link>
                 )}
             </Box>
         );
@@ -156,9 +169,23 @@ const RiskAssessment: React.FC = () => {
     };
 
     const filteredRisks = risks.filter(risk => {
-        const matchesSearch = risk.riskNameElement.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            risk.strategicObjective.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            risk.riskDescription.toLowerCase().includes(searchTerm.toLowerCase());
+        const inherentRisk = risk.impact?.score && risk.likelihood?.score 
+            ? calculateInherentRisk(risk.impact.score, risk.likelihood.score)
+            : null;
+        const inherentRiskText = inherentRisk ? `${risk.impact.score * risk.likelihood.score}-${inherentRisk.name}` : '';
+
+        const matchesSearch = risk?.riskNameElement.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            risk?.strategicObjective.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            risk?.riskCategory?.categoryName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            risk?.riskDescription.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            risk?.cause.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            risk?.effectImpact.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            risk?.riskOwner?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            risk?.impact?.impactName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            risk?.likelihood?.likelihoodName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            risk?.riskResponse?.responseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            inherentRiskText.toLowerCase().includes(searchTerm.toLowerCase());
+
         const matchesCategory = selectedCategory === 'all' || (risk.riskCategory && risk.riskCategory._id === selectedCategory);
         return matchesSearch && matchesCategory;
     }).filter(risk => risk.status === 'Active'); // Simple sort by no for now

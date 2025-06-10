@@ -18,6 +18,7 @@ import {
   MenuItem,
   SelectChangeEvent,
   Chip,
+  Link,
 } from '@mui/material';
 import { StatusBadge } from '../../../components/StatusBadge';
 import EditIcon from '@mui/icons-material/Edit';
@@ -141,22 +142,34 @@ const RiskIdentification: React.FC = () => {
   };
 
   const renderDescription = (description: string, id: string) => {
+    if (isExporting) {
+      return description;
+    }
+
     const isExpanded = expandedDescriptions[id];
-    const displayText = isExpanded ? description : `${description.substring(0, 100)}...`;
+    const shouldTruncate = description.length > 100;
+    const displayText = isExpanded
+      ? description
+      : shouldTruncate
+        ? description.slice(0, 100) + '...'
+        : description;
 
     return (
-      <Box>
-        <Typography variant="body2">
-          {displayText}
-        </Typography>
-        {description.length > 100 && (
-          <IconButton
-            size="small"
+      <Box sx={{
+        width: '100%',
+        wordBreak: 'break-word',
+        whiteSpace: 'pre-wrap'
+      }}>
+        {displayText}
+        {shouldTruncate && (
+          <Link
+            component="button"
+            variant="body2"
             onClick={() => toggleDescription(id)}
-            sx={{ mt: 0.5 }}
+            sx={{ ml: 1, textDecoration: 'underline' }}
           >
             {isExpanded ? 'Show less' : 'Show more'}
-          </IconButton>
+          </Link>
         )}
       </Box>
     );
