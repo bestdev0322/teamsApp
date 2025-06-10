@@ -18,7 +18,7 @@ import {
     Button,
 } from '@mui/material';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
-import { ValidationModal, ValidationFormData } from './validationModal';
+import { ValidationModal, ValidationFormData } from '../components/validationModal';
 import { api } from '../../../../services/api';
 import { formatDate } from '../../../../utils/date';
 import { useToast } from '../../../../contexts/ToastContext';

@@ -17,7 +17,7 @@ import {
     IconButton,
     Typography,
 } from '@mui/material';
-import { ValidationModal, ValidationFormData } from './validationModal';
+import { ValidationModal, ValidationFormData } from '../components/validationModal';
 import { api } from '../../../../services/api';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import { formatDate } from '../../../../utils/date';

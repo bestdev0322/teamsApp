@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
 import { StyledTab, StyledTabs } from '../../../components/StyledTab';
-import { TreatmentModal, AddTreatmentFormData } from './tabs/treatmentModal';
+import { TreatmentModal, AddTreatmentFormData } from './components/treatmentModal';
 import { api } from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import RiskTreatmentTab from './tabs/RiskTreatmentTab';

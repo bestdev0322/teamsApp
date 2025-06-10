@@ -18,7 +18,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { ExportButton } from '../../../../components/Buttons';
 import { exportExcel, exportPdf } from '../../../../utils/exportUtils';
-import { TreatmentModal, AddTreatmentFormData } from './treatmentModal';
+import { TreatmentModal, AddTreatmentFormData } from '../components/treatmentModal';
 import { format } from 'date-fns';
 
 interface RiskTreatment {
