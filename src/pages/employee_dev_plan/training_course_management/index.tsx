@@ -241,7 +241,7 @@ const TrainingCoursesManagement: React.FC = () => {
         />
         
         <Box sx={{ display: 'flex', gap: 2 }}>
-          {(isSuperUser || isAppOwner) && (
+          {
             <>
               <input
                 type="file"
@@ -273,7 +273,7 @@ const TrainingCoursesManagement: React.FC = () => {
                 Add Course
               </Button>
             </>
-          )}
+          }
         </Box>
       </Box>
 
