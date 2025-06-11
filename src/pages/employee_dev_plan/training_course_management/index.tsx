@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -63,13 +63,7 @@ const TrainingCoursesManagement: React.FC = () => {
   const isSuperUser = user?.role === 'SuperUser';
   const isAppOwner = user?.role === 'AppOwner';
 
-  useEffect(() => {
-    if (user?.tenantId) {
-      fetchCourses();
-    }
-  }, [user?.tenantId]);
-
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       setLoading(true);
       const response = await courseAPI.getAll(user?.tenantId || '');
@@ -88,7 +82,13 @@ const TrainingCoursesManagement: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.tenantId]);
+
+  useEffect(() => {
+    if (user?.tenantId) {
+      fetchCourses();
+    }
+  }, [user?.tenantId, fetchCourses]);
 
   const handleAddCourse = () => {
     setIsAddModalOpen(true);
