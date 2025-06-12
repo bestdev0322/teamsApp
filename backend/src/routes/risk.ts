@@ -86,7 +86,8 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
             cause,
             effectImpact,
             riskOwner,
-            status
+            status,
+            residualScores
         } = req.body;
 
         // Validate ObjectIds
@@ -111,6 +112,7 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
                 impact: req.body.impact,
                 likelihood: req.body.likelihood,
                 riskResponse: req.body.riskResponse,
+                residualScores: [...residualScores]
             },
             { new: true }
         ).populate('riskCategory', 'categoryName')
@@ -185,6 +187,49 @@ router.delete('/:id', authenticateToken, checkLicenseStatus, async (req: Authent
     } catch (error) {
         console.error('Error deleting risk:', error);
         return res.status(400).json({ message: 'Error deleting risk' });
+    }
+});
+
+// Add new residual score to a risk
+router.post('/:id/residual-score', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+        const { score, year, quarter } = req.body;
+
+        if (!score || !year || !quarter) {
+            return res.status(400).json({ message: 'Score, year, and quarter are required' });
+        }
+
+        const newScore = { score, year, quarter };
+
+        const risk = await Risk.findOne({ _id: req.params.id, tenantId: req.user?.tenantId });
+        if (!risk) {
+            return res.status(404).json({ message: 'Risk not found' });
+        }
+        console.log(year, quarter,risk.residualScores)
+        // Check if a score already exists for this year and quarter
+        const existingScoreIndex = risk.residualScores.findIndex(
+            rs => rs.year === year.toString() && rs.quarter === quarter
+        );
+
+        if (existingScoreIndex !== -1) {
+            // Update existing score
+            risk.residualScores[existingScoreIndex] = newScore;
+        } else {
+            // Add new score
+            risk.residualScores.push(newScore);
+        }
+
+        // Save the document, bypassing full validation. This is a workaround
+        // if existing risk documents in the DB are missing required fields.
+        await risk.save({ validateBeforeSave: false });
+
+        return res.json({
+            message: 'Residual score added successfully',
+            data: risk // Return the updated risk document
+        });
+    } catch (error) {
+        console.error('Error adding residual score:', error);
+        return res.status(400).json({ message: 'Error adding residual score' });
     }
 });
 

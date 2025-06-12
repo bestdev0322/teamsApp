@@ -66,7 +66,7 @@ const RiskTreatmentSchema: Schema = new Schema({
   },
   validationNotes: {
     type: String,
-    required: false,    
+    required: false,
   },
   validationDate: {
     type: Date,
@@ -84,11 +84,21 @@ const RiskTreatmentSchema: Schema = new Schema({
     type: [ProgressHistorySchema],
     default: [],
   },
-  effectiveness: {
-    type: Schema.Types.ObjectId,
-    ref: 'ControlEffectiveness',
-    required: false,
-  },
+  effectiveness: [{
+    effectiveness: {
+      type: Schema.Types.ObjectId,
+      ref: 'ControlEffectiveness',
+      required: false,
+    },
+    year: {
+      type: String,
+      required: false
+    },
+    quarter: {
+      type: String,
+      required: false
+    }
+  }],
 }, { timestamps: true });
 
 export default mongoose.model<IRiskTreatment>('RiskTreatment', RiskTreatmentSchema); 

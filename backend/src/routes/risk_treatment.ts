@@ -197,7 +197,7 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
       controlName,
       effectiveness
     };
-
+    console.log(updateObj, 'here')
     const updatedRiskTreatment = await RiskTreatment.findOneAndUpdate(
       { _id: id, tenantId },
       updateObj,

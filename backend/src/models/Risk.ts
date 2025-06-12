@@ -1,5 +1,11 @@
 import { Schema, model, Document, Types } from 'mongoose';
 
+interface ResidualScore {
+    score: number;
+    year: string;
+    quarter: string;
+}
+
 export interface RiskDocument extends Document {
     _id: string;
     riskNameElement: string;
@@ -14,6 +20,7 @@ export interface RiskDocument extends Document {
     impact?: Types.ObjectId;
     likelihood?: Types.ObjectId;
     riskResponse?: Types.ObjectId;
+    residualScores: ResidualScore[];
 }
 
 const riskSchema = new Schema<RiskDocument>({
@@ -71,6 +78,23 @@ const riskSchema = new Schema<RiskDocument>({
         ref: 'ImpactResponse',
         required: false,
     },
+    residualScores: {
+        type: [{
+            score: {
+                type: Number,
+                required: true
+            },
+            year: {
+                type: String,
+                required: true,
+            },
+            quarter: {
+                type: String,
+                required: true,
+            }
+        }],
+        default: []
+    }
 }, {
     timestamps: true,
 });
