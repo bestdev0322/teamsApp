@@ -1,15 +1,7 @@
 import { Box, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, Select, MenuItem, CircularProgress } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { api } from '../../../../services/api';
-
-const getRiskColor = (level) => {
-    switch (level) {
-        case 'High': return '#DC2626';
-        case 'Medium': return '#F59E42';
-        case 'Low': return '#059669';
-        default: return undefined;
-    }
-};
+import {useToast} from '../../../../contexts/ToastContext'
 
 const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
     const [risks, setRisks] = useState([]);
@@ -20,6 +12,7 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
     const [selectedTreatment, setSelectedTreatment] = useState(null);
     const [selectedEffectiveness, setSelectedEffectiveness] = useState('');
     const [saving, setSaving] = useState(false);
+    const { showToast } = useToast();
 
     useEffect(() => {
         fetchAll();
@@ -38,6 +31,7 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
             setEffectivenessOptions(effRes.data.data || []);
         } catch (e) {
             // handle error
+            showToast('Failed to fetch risk data.', 'error');
         }
         setLoading(false);
     };
@@ -125,7 +119,7 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
                                     <TableCell>No.</TableCell>
                                     <TableCell>Risk Name</TableCell>
                                     <TableCell>Risk Category</TableCell>
-                                    <TableCell>Owner</TableCell>
+                                    <TableCell>Risk Owner</TableCell>
                                     <TableCell>Inherent Risk</TableCell>
                                     <TableCell>Residual Risk</TableCell>
                                     <TableCell>Residual Risk Control</TableCell>
