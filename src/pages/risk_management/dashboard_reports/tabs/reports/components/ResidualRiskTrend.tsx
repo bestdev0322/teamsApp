@@ -5,6 +5,8 @@ import { ExportButton } from '../../../../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { exportPdf } from '../../../../../../utils/exportPdf';
 import { exportExcel } from '../../../../../../utils/exportExcel';
+import { calculateRiskResidualLevel } from "../../../../residual_risk_assessments/residual_assessment/ResidualDetailView";
+
 
 const riskColor = (level: string) => {
     switch (level) {
@@ -17,10 +19,15 @@ const riskColor = (level: string) => {
 
 const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
 
-const ResidualRiskTrend: React.FC = () => {
+interface ResidualRiskTrendPageProps {
+    currentYear: string;
+}
+
+const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) => {
     const [risks, setRisks] = useState([]);
     const [riskTreatments, setRiskTreatments] = useState([]);
     const [riskRatings, setRiskRatings] = useState([]);
+    const [effectivenessOptions, setEffectivenessOptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const tableRef = React.useRef<any>(null);
 
@@ -31,14 +38,16 @@ const ResidualRiskTrend: React.FC = () => {
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const [risksRes, treatmentsRes, ratingsRes] = await Promise.all([
+            const [risksRes, treatmentsRes, ratingsRes, effRes] = await Promise.all([
                 api.get('/risks'),
                 api.get('/risk-treatments'),
                 api.get('/risk-ratings'),
+                api.get('/risk-control-effectiveness'),
             ]);
             setRisks(risksRes.data.data || []);
             setRiskTreatments(treatmentsRes.data.data || []);
             setRiskRatings(ratingsRes.data.data || []);
+            setEffectivenessOptions(effRes.data.data || []);
         } catch (e) {
             // handle error
         }
@@ -50,12 +59,6 @@ const ResidualRiskTrend: React.FC = () => {
         const score = impactScore * likelihoodScore;
         const rating = riskRatings.find(r => score >= r.minScore && score <= r.maxScore);
         return rating ? { name: rating.rating, color: rating.color } : null;
-    };
-
-    // Calculate residual risk (for now, same as inherent risk, unless you have effectiveness data per quarter)
-    const calculateRiskResidualLevel = (impactScore, likelihoodScore) => {
-        // TODO: If you have effectiveness per quarter, adjust this logic
-        return calculateRiskInherentLevel(impactScore, likelihoodScore);
     };
 
     // Group treatments by risk id
@@ -121,17 +124,19 @@ const ResidualRiskTrend: React.FC = () => {
                                     <TableCell>{risk.riskNameElement}</TableCell>
                                     <TableCell>{risk.riskCategory?.categoryName}</TableCell>
                                     {quarters.map((q, qIdx) => {
+                                        const treatments = treatmentsByRisk[risk._id] || [];
                                         // For now, use the same risk scores for all quarters
                                         const impactScore = risk.impact?.score || 0;
                                         const likelihoodScore = risk.likelihood?.score || 0;
                                         const inherent = impactScore && likelihoodScore ? calculateRiskInherentLevel(impactScore, likelihoodScore) : null;
-                                        const residual = impactScore && likelihoodScore ? calculateRiskResidualLevel(impactScore, likelihoodScore) : null;
+                                        const residual = calculateRiskResidualLevel(risk, { year: currentYear, quarter: q }, riskRatings, effectivenessOptions, treatments);
+
                                         return (
                                             <React.Fragment key={qIdx}>
                                                 <TableCell align="center" data-color={inherent?.color}>
                                                     <Typography sx={{ color: inherent?.color, fontWeight: 'bold' }}>{inherent?.name || ''}</Typography>
                                                 </TableCell>
-                                                <TableCell align="center" data-color={inherent?.color}>
+                                                <TableCell align="center" data-color={residual?.color}>
                                                     <Typography sx={{ color: residual?.color, fontWeight: 'bold' }}>{residual?.name || ''}</Typography>
                                                 </TableCell>
                                             </React.Fragment>

@@ -7,8 +7,14 @@ import { ExportButton } from '../../../../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { exportPdf } from '../../../../../../utils/exportPdf';
 import { exportExcel } from '../../../../../../utils/exportExcel';
+import { calculateRiskResidualLevel } from "../../../../residual_risk_assessments/residual_assessment/ResidualDetailView";
 
-const RiskRegister = ({ currentQuarter }) => {
+interface RiskRegisterPageProps {
+    currentYear: string;
+    currentQuarter: string;
+}
+
+const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQuarter }) => {
     const [risks, setRisks] = useState([]);
     const [riskTreatments, setRiskTreatments] = useState([]);
     const [effectivenessOptions, setEffectivenessOptions] = useState([]);
@@ -49,44 +55,11 @@ const RiskRegister = ({ currentQuarter }) => {
         return rating ? { name: rating.rating, color: rating.color } : null;
     };
 
-    // Calculate residual risk as in risk_assessment/index.tsx
-    const calculateRiskResidualLevel = (impactScore, likelihoodScore, effectivenesses, riskRatings) => {
-        let residual = Number(impactScore * likelihoodScore);
-        effectivenesses.forEach(effectiveness => {
-            const effectivenessOption = effectivenessOptions.find(e => e._id === (effectiveness?._id || effectiveness));
-            if (effectivenessOption) {
-                residual = residual * (1 - (Number(effectivenessOption.factor) / 100));
-            }
-        });
-        const rating = riskRatings.find(r => Math.round(residual * 1000) / 1000 >= r.minScore && Math.round(residual) <= r.maxScore);
-        return rating ? { name: rating.rating, color: rating.color } : null;
-    };
-
     // Fetch risk ratings for color mapping
     const [riskRatings, setRiskRatings] = useState([]);
     useEffect(() => {
         api.get('/risk-ratings').then(res => setRiskRatings(res.data.data || []));
     }, []);
-
-    // Open modal for a treatment
-    const handleAssess = (treatment) => {
-        setSelectedTreatment(treatment);
-        setSelectedEffectiveness(treatment.effectiveness ? (treatment.effectiveness._id || treatment.effectiveness) : '');
-        setModalOpen(true);
-    };
-
-    const handleSaveEffectiveness = async () => {
-        if (!selectedTreatment || !selectedEffectiveness) return;
-        setSaving(true);
-        try {
-            await api.put(`/risk-treatments/${selectedTreatment._id}`, { effectiveness: selectedEffectiveness });
-            await fetchAll();
-            setModalOpen(false);
-        } catch (e) {
-            // handle error
-        }
-        setSaving(false);
-    };
 
     // Group treatments by risk id
     const treatmentsByRisk = {};
@@ -160,13 +133,14 @@ const RiskRegister = ({ currentQuarter }) => {
                             </TableHead>
                             <TableBody>
                                 {risks.filter(risk => risk.status === 'Active').map((risk, idx) => {
-                                    console.log(risk, 'risk')
                                     const treatments = treatmentsByRisk[risk._id] || [];
                                     // Calculate inherent/residual risk
                                     const impactScore = risk.impact?.score || 0;
                                     const likelihoodScore = risk.likelihood?.score || 0;
                                     const inherent = impactScore && likelihoodScore ? calculateRiskInherentLevel(impactScore, likelihoodScore, riskRatings) : null;
-                                    const residual = calculateRiskResidualLevel(impactScore, likelihoodScore, treatments.filter(t => t.convertedToControl === true).map(t => t?.effectiveness ?? ''), riskRatings);
+                                    console.log(risk.residualScores.length && risk.residualScores, 'risk')
+                                    const residual = calculateRiskResidualLevel(risk, { year: currentYear, quarter: currentQuarter }, riskRatings, effectivenessOptions, treatments);
+                                    console.log(residual, 'res')
                                     // Initial residual risk = inherent risk
                                     return treatments.length === 0 ?
                                         <TableRow key={risk._id}>
@@ -218,10 +192,20 @@ const RiskRegister = ({ currentQuarter }) => {
                                                 <TableCell sx={{ color: getStatusColor(getStatusFromTreatment(treatment)) }} data-color={getStatusColor(getStatusFromTreatment(treatment))}>{getStatusFromTreatment(treatment)}</TableCell>
                                                 <TableCell>{treatment.treatmentOwner?.name}</TableCell>
                                                 <TableCell>
-                                                    {treatment.effectiveness ? (
-                                                        effectivenessOptions.find(e => e._id === (treatment.effectiveness._id || treatment.effectiveness))?.controlEffectiveness + ' (' + effectivenessOptions.find(e => e._id === (treatment.effectiveness._id || treatment.effectiveness))?.factor + '%)'
-                                                    ) : ''}
-                                                </TableCell>
+                                                {(() => {
+                                                    const currentEffectiveness = treatment.effectiveness?.find(eff =>
+                                                        eff.year === currentYear && eff.quarter === currentQuarter
+                                                    );
+                                                    if (!currentEffectiveness) return '';
+                                                    let effObj = null;
+                                                    if (typeof currentEffectiveness.effectiveness === 'object' && currentEffectiveness.effectiveness !== null && '_id' in currentEffectiveness.effectiveness) {
+                                                        effObj = effectivenessOptions.find(e => e._id === currentEffectiveness.effectiveness._id);
+                                                    } else {
+                                                        effObj = effectivenessOptions.find(e => e._id === currentEffectiveness.effectiveness);
+                                                    }
+                                                    return effObj ? `${effObj.controlEffectiveness} (${effObj.factor}%)` : '';
+                                                })()}
+                                            </TableCell>
                                                 <TableCell>
                                                     {formatDate(new Date(treatment.targetDate))}
                                                 </TableCell>
@@ -233,30 +217,6 @@ const RiskRegister = ({ currentQuarter }) => {
                     </TableContainer>
                 )}
             </Box>
-            {/* Assess Modal */}
-            <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth>
-                <DialogTitle>Add Control Effectivenes %</DialogTitle>
-                <DialogContent>
-                    <FormControl fullWidth sx={{ mt: 2 }}>
-                        <InputLabel>Effectiveness</InputLabel>
-                        <Select
-                            value={selectedEffectiveness}
-                            label="Effectiveness"
-                            onChange={e => setSelectedEffectiveness(e.target.value)}
-                        >
-                            {effectivenessOptions.map(opt => (
-                                <MenuItem key={opt._id} value={opt._id}>{opt.controlEffectiveness} ({opt.factor}%)</MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setModalOpen(false)} disabled={saving}>Cancel</Button>
-                    <Button onClick={handleSaveEffectiveness} variant="contained" disabled={!selectedEffectiveness || saving}>
-                        {saving ? <CircularProgress size={20} /> : 'Save'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
         </Box>
     );
 };

@@ -101,9 +101,9 @@ const Reports: React.FC = () => {
 
             {showReports && (
                 viewMode === 'risk-register' ? (
-                    <RiskRegister currentQuarter={selectedQuarter} />
+                    <RiskRegister currentYear={year} currentQuarter={selectedQuarter} />
                 ) : (
-                    <ResidualRiskTrend />
+                    <ResidualRiskTrend currentYear={year} />
                 )
             )}
         </Box>

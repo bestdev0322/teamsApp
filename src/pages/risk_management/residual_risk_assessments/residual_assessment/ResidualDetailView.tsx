@@ -1,7 +1,66 @@
 import { Box, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, Select, MenuItem, CircularProgress } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { api } from '../../../../services/api';
-import { useToast } from '../../../../contexts/ToastContext'
+import { useToast } from '../../../../contexts/ToastContext';
+
+// Calculate residual risk level based on current and previous quarter's score
+export const calculateRiskResidualLevel = (
+    risk: any,
+    currentQuarter: { year: string; quarter: string },
+    riskRatings: any[],
+    effectivenessOptions?: any[],
+    allTreatmentsForThisRisk?: any[]
+) => {
+    let previousQuarterScore: number | null = null;
+    const currentYear = parseInt(currentQuarter.year);
+    const currentQuarterNum = parseInt(currentQuarter.quarter.replace('Q', ''));
+
+    const relevantResidualScores = (risk.residualScores || [])
+        .filter(rs => {
+            const rsYear = parseInt(rs.year);
+            const rsQuarterNum = parseInt(rs.quarter.replace('Q', ''));
+            return rsYear < currentYear || (rsYear === currentYear && rsQuarterNum < currentQuarterNum);
+        })
+        .sort((a, b) => {
+            const aYear = parseInt(a.year);
+            const bYear = parseInt(b.year);
+            const aQuarterNum = parseInt(a.quarter.replace('Q', ''));
+            const bQuarterNum = parseInt(b.quarter.replace('Q', ''));
+            if (aYear !== bYear) return bYear - aYear; // Most recent year first
+            return bQuarterNum - aQuarterNum; // Most recent quarter first
+        });
+    if (relevantResidualScores.length > 0) {
+        previousQuarterScore = relevantResidualScores[0].score;
+    }
+
+    let currentCalculatedResidual = previousQuarterScore !== null ? previousQuarterScore : Number(risk.impact?.score || 0) * Number(risk.likelihood?.score || 0);
+
+    allTreatmentsForThisRisk?.filter(t => t.convertedToControl === true).forEach(treatment => {
+        // Find the effectiveness for the current quarter
+        const currentEffectiveness = treatment.effectiveness?.find(eff =>
+            eff.year === currentQuarter.year.toString() && eff.quarter === currentQuarter.quarter
+        );
+
+        if (currentEffectiveness) {
+            const effectivenessOption = effectivenessOptions?.find(e => {
+                if (!currentEffectiveness.effectiveness) return false;
+                if (typeof currentEffectiveness.effectiveness === 'object' && currentEffectiveness.effectiveness !== null && '_id' in currentEffectiveness.effectiveness)
+                    return e._id === currentEffectiveness.effectiveness._id;
+                return e._id === currentEffectiveness.effectiveness;
+            });
+            if (effectivenessOption && effectivenessOption.factor !== undefined && effectivenessOption.factor !== null) {
+                currentCalculatedResidual = currentCalculatedResidual * (1 - (Number(effectivenessOption.factor) / 100));
+            }
+        }
+    });
+
+    currentCalculatedResidual = Math.round(currentCalculatedResidual * 100) / 100
+
+    const rating = riskRatings.find(r =>
+        currentCalculatedResidual >= r.minScore && currentCalculatedResidual <= r.maxScore
+    );
+    return rating ? { name: rating.rating, color: rating.color, score: currentCalculatedResidual } : null;
+};
 
 const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
     const [risks, setRisks] = useState([]);
@@ -41,65 +100,6 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
         const score = impactScore * likelihoodScore;
         const rating = riskRatings.find(r => score >= r.minScore && score <= r.maxScore);
         return rating ? { name: rating.rating, color: rating.color, score: score } : null;
-    };
-
-    // Calculate residual risk level based on current and previous quarter's score
-    const calculateRiskResidualLevel = (
-        risk: any,
-        allTreatmentsForThisRisk: any[],
-        currentQuarter: { year: string; quarter: string },
-        riskRatings: any[],
-        effectivenessOptions: any[]
-    ) => {
-        let previousQuarterScore: number | null = null;
-        const currentYear = parseInt(currentQuarter.year);
-        const currentQuarterNum = parseInt(currentQuarter.quarter.replace('Q', ''));
-
-        const relevantResidualScores = (risk.residualScores || [])
-            .filter(rs => {
-                const rsYear = parseInt(rs.year);
-                const rsQuarterNum = parseInt(rs.quarter.replace('Q', ''));
-                return rsYear < currentYear || (rsYear === currentYear && rsQuarterNum < currentQuarterNum);
-            })
-            .sort((a, b) => {
-                const aYear = parseInt(a.year);
-                const bYear = parseInt(b.year);
-                const aQuarterNum = parseInt(a.quarter.replace('Q', ''));
-                const bQuarterNum = parseInt(b.quarter.replace('Q', ''));
-                if (aYear !== bYear) return bYear - aYear; // Most recent year first
-                return bQuarterNum - aQuarterNum; // Most recent quarter first
-            });
-        if (relevantResidualScores.length > 0) {
-            previousQuarterScore = relevantResidualScores[0].score;
-        }
-
-        let currentCalculatedResidual = previousQuarterScore !== null ? previousQuarterScore : Number(risk.impact?.score || 0) * Number(risk.likelihood?.score || 0);
-
-        allTreatmentsForThisRisk.filter(t => t.convertedToControl === true).forEach(treatment => {
-            // Find the effectiveness for the current quarter
-            const currentEffectiveness = treatment.effectiveness?.find(eff =>
-                eff.year === currentQuarter.year.toString() && eff.quarter === currentQuarter.quarter
-            );
-
-            if (currentEffectiveness) {
-                const effectivenessOption = effectivenessOptions.find(e => {
-                    if (!currentEffectiveness.effectiveness) return false;
-                    if (typeof currentEffectiveness.effectiveness === 'object' && currentEffectiveness.effectiveness !== null && '_id' in currentEffectiveness.effectiveness)
-                        return e._id === currentEffectiveness.effectiveness._id;
-                    return e._id === currentEffectiveness.effectiveness;
-                });
-                if (effectivenessOption && effectivenessOption.factor !== undefined && effectivenessOption.factor !== null) {
-                    currentCalculatedResidual = currentCalculatedResidual * (1 - (Number(effectivenessOption.factor) / 100));
-                }
-            }
-        });
-
-        currentCalculatedResidual = Math.round(currentCalculatedResidual * 100) / 100
-
-        const rating = riskRatings.find(r =>
-            currentCalculatedResidual >= r.minScore && currentCalculatedResidual <= r.maxScore
-        );
-        return rating ? { name: rating.rating, color: rating.color, score: currentCalculatedResidual } : null;
     };
 
     // Fetch risk ratings for color mapping
@@ -160,10 +160,10 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
 
             const calculatedOverallResidual = calculateRiskResidualLevel(
                 parentRisk,
-                updatedTreatmentsForCalc,
                 currentQuarter,
                 riskRatings,
-                effectivenessOptions
+                effectivenessOptions,
+                updatedTreatmentsForCalc
             );
             const newOverallResidualScore = calculatedOverallResidual?.score;
 
@@ -257,7 +257,7 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
                                 {risks.filter(risk => risk.status === 'Active').map((risk, idx) => {
                                     const treatments = treatmentsByRisk[risk._id] || [];
                                     const inherent = calculateRiskInherentLevel(risk.impact?.score, risk.likelihood?.score, riskRatings);
-                                    const residual = calculateRiskResidualLevel(risk, treatments, currentQuarter, riskRatings, effectivenessOptions);
+                                    const residual = calculateRiskResidualLevel(risk, currentQuarter, riskRatings, effectivenessOptions, treatments);
                                     return treatments.length === 0 ? null : treatments.filter(t => t.convertedToControl === true).map((treatment, tIdx) => (
                                         <TableRow key={treatment._id}>
                                             {tIdx === 0 && (
