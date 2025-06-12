@@ -32,17 +32,6 @@ router.post('/', authenticateToken, checkLicenseStatus, async (req: Authenticate
              return res.status(400).json({ success: false, error: 'Max Score must be greater than Min Score' });
         }
 
-        // Check for overlapping score ranges
-        const existingRatings = await RiskRating.find({ tenantId });
-        for (const existing of existingRatings) {
-             if ((minScore >= existing.minScore && minScore <= existing.maxScore) ||
-                (maxScore >= existing.minScore && maxScore <= existing.maxScore) ||
-                (existing.minScore >= minScore && existing.minScore <= maxScore) ||
-                (existing.maxScore >= minScore && existing.maxScore <= maxScore)) {
-                return res.status(400).json({ success: false, error: 'Score range overlaps with existing rating' });
-            }
-        }
-
         const newRiskRating = new RiskRating({
             rating,
             minScore,
@@ -72,17 +61,6 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
          // Basic validation: max score must be greater than min score
         if (maxScore <= minScore) {
              return res.status(400).json({ success: false, error: 'Max Score must be greater than Min Score' });
-        }
-
-         // Check for overlapping score ranges, excluding the current rating being updated
-        const existingRatings = await RiskRating.find({ tenantId, _id: { $ne: id } });
-        for (const existing of existingRatings) {
-             if ((minScore >= existing.minScore && minScore <= existing.maxScore) ||
-                (maxScore >= existing.minScore && maxScore <= existing.maxScore) ||
-                (existing.minScore >= minScore && existing.minScore <= maxScore) ||
-                (existing.maxScore >= minScore && existing.maxScore <= maxScore)) {
-                return res.status(400).json({ success: false, error: 'Score range overlaps with existing rating' });
-            }
         }
 
         const updatedRiskRating = await RiskRating.findOneAndUpdate(

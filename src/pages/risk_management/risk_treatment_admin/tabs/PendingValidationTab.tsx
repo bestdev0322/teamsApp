@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
     Box,
     Paper,
@@ -23,6 +23,8 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import { formatDate } from '../../../../utils/date';
 import { useToast } from '../../../../contexts/ToastContext';
 import ProgressHistoryModal from '../../my_risk_treatment/ProgressHistoryModal';
+import { useSocket } from '../../../../hooks/useSocket';
+import { SocketEvent } from '../../../../types/socket';
 
 interface RiskTreatment {
     _id: string;
@@ -53,7 +55,7 @@ interface PendingValidationTabProps {
     fetchRiskTreatments: () => void;
 }
 
-const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatments, fetchRiskTreatments }) => {
+const PendingValidationTab: React.FC<PendingValidationTabProps & { pendingCount: number }> = ({ riskTreatments, fetchRiskTreatments, pendingCount }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const tableRef = useRef<any>(null);
     const [isValidationModalOpen, setIsValidationModalOpen] = useState(false);
@@ -64,6 +66,8 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
     const [progressModalOpen, setProgressModalOpen] = useState(false);
     const [selectedProgressHistory, setSelectedProgressHistory] = useState([]);
     const [selectedTreatmentForProgressHistory, setSelectedTreatmentForProgressHistory] = useState<RiskTreatment | null>(null);
+    const { emit, subscribe } = useSocket(SocketEvent.RISK_VALIDATED, () => {});
+    const { subscribe: subscribeTreatmentUpdated } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => {});
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -87,6 +91,7 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
             });
             if (response.status === 200) {
                 fetchRiskTreatments();
+                emit({ tenantId: selectedTreatmentForValidation.treatmentOwner?._id });
                 showToast('Email sent successfully', 'success');
             }
         } catch (error) {
@@ -136,6 +141,35 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
         )
     );
 
+    // Group rows by riskNameElement and categoryName
+    function groupRows(data) {
+        const groups = [];
+        let lastKey = '';
+        let rowIndex = 0;
+        data.forEach((t, idx) => {
+            const key = `${t.risk?.riskNameElement}||${t.risk?.riskCategory?.categoryName}`;
+            if (key !== lastKey) {
+                const count = data.filter(x => `${x.risk?.riskNameElement}||${x.risk?.riskCategory?.categoryName}` === key).length;
+                groups.push({ ...t, rowSpan: count, show: true, idx });
+                lastKey = key;
+                rowIndex = 1;
+            } else {
+                groups.push({ ...t, rowSpan: 0, show: false, idx });
+                rowIndex++;
+            }
+        });
+        return groups;
+    }
+
+    const groupedTreatments = groupRows(filteredRiskTreatments);
+
+    useEffect(() => {
+        const unsub = subscribeTreatmentUpdated(SocketEvent.RISK_TREATMENT_UPDATED, () => {
+            fetchRiskTreatments();
+        });
+        return () => unsub();
+    }, []);
+
     return (
         <Box sx={{ p: 0 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -168,11 +202,17 @@ const PendingValidationTab: React.FC<PendingValidationTabProps> = ({ riskTreatme
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredRiskTreatments.map((treatment, index) => (
+                        {groupedTreatments.map((treatment, index) => (
                             <TableRow key={treatment._id}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell>{treatment.risk?.riskNameElement || ''}</TableCell>
-                                <TableCell>{treatment.risk?.riskCategory?.categoryName || ''}</TableCell>
+                                {treatment.show && (
+                                    <TableCell rowSpan={treatment.rowSpan}>{index + 1}</TableCell>
+                                )}
+                                {treatment.show && (
+                                    <TableCell rowSpan={treatment.rowSpan}>{treatment.risk?.riskNameElement || ''}</TableCell>
+                                )}
+                                {treatment.show && (
+                                    <TableCell rowSpan={treatment.rowSpan}>{treatment.risk?.riskCategory?.categoryName || ''}</TableCell>
+                                )}
                                 <TableCell>{treatment.treatment}</TableCell>
                                 <TableCell>{treatment.treatmentOwner?.name || ''}</TableCell>
                                 <TableCell>{formatDate(new Date(treatment.targetDate))}</TableCell>

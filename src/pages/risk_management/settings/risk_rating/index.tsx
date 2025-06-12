@@ -81,22 +81,6 @@ const RiskRatingSettings: React.FC = () => {
       isValid = false;
     }
 
-    // Check for overlapping score ranges
-    const overlapping = ratings.some(existing => {
-        if (isEdit && (rating as RiskRating)._id && existing._id === (rating as RiskRating)._id) return false; // Exclude current item in edit mode
-        return (
-            (rating.minScore >= existing.minScore && rating.minScore <= existing.maxScore) ||
-            (rating.maxScore >= existing.minScore && rating.maxScore <= existing.maxScore) ||
-            (existing.minScore >= rating.minScore && existing.minScore <= rating.maxScore) ||
-            (existing.maxScore >= rating.minScore && existing.maxScore <= rating.maxScore)
-        );
-    });
-
-    if (overlapping) {
-        newErrors.minScore = newErrors.maxScore = 'Score range overlaps with existing rating';
-        isValid = false;
-    }
-
     if (!rating.color) {
         newErrors.color = 'Color is required';
         isValid = false;

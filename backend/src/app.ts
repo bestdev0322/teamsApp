@@ -38,6 +38,7 @@ import RiskChampionsRoutes from './routes/risk_champions';
 import RiskRatingRoutes from './routes/risk_rating';
 import RiskRoutes from './routes/risk';
 import RiskTreatmentRoutes from './routes/risk_treatment';
+import ResidualRiskAssessmentCycleRoutes from './routes/residual_risk_assessment_cycle';
 
 // import { applySecurityMiddleware } from './middleware/security';
 
@@ -97,6 +98,7 @@ app.use('/api/risk-champions', authenticateToken, checkLicenseStatus, RiskChampi
 app.use('/api/risk-ratings', authenticateToken, checkLicenseStatus, RiskRatingRoutes);
 app.use('/api/risks', RiskRoutes);
 app.use('/api/risk-treatments', authenticateToken, checkLicenseStatus, RiskTreatmentRoutes);
+app.use('/api/residual-risk-assessment-cycle', authenticateToken, checkLicenseStatus, ResidualRiskAssessmentCycleRoutes);
 
 // Connect to MongoDB
 mongoose.connect(config.mongoUri)

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, IconButton, Tabs, Tab, Dialog, DialogTitle, DialogContent, Chip
+  Box, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, IconButton, Tabs, Tab, Dialog, DialogTitle, DialogContent, Chip, Badge
 } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
 import CloseIcon from '@mui/icons-material/Close';
@@ -10,6 +10,8 @@ import { formatDate } from '../../../utils/date';
 import ProgressHistoryModal from './ProgressHistoryModal';
 import { StyledTab, StyledTabs } from '../../../components/StyledTab';
 import { useToast } from '../../../contexts/ToastContext';
+import { useSocket } from '../../../hooks/useSocket';
+import { SocketEvent } from '../../../types/socket';
 
 interface ProgressHistoryEntry {
   progressNotes: string;
@@ -45,9 +47,19 @@ const MyRiskTreatments: React.FC = () => {
   const [validationModalOpen, setValidationModalOpen] = useState(false);
   const [selectedValidationNotes, setSelectedValidationNotes] = useState<string>('');
   const { showToast } = useToast();
+  const { emit, subscribe } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => { });
+  const { subscribe: subscribeValidated } = useSocket(SocketEvent.RISK_VALIDATED, () => { });
 
   useEffect(() => {
     fetchRiskTreatments();
+  }, []);
+
+  useEffect(() => {
+    // Subscribe to RISK_VALIDATED to refetch on real-time event
+    const unsub = subscribeValidated(SocketEvent.RISK_VALIDATED, () => {
+      fetchRiskTreatments();
+    });
+    return () => unsub();
   }, []);
 
   const fetchRiskTreatments = async () => {
@@ -74,15 +86,14 @@ const MyRiskTreatments: React.FC = () => {
         status: data.status,
         progressNotes: data.progressNotes,
       };
-
       updatePayload.convertedToControl = false;
       updatePayload.validationNotes = '';
       updatePayload.validationDate = null;
       updatePayload.frequency = '';
       updatePayload.controlName = '';
-
       await api.put(`/risk-treatments/my-treatments/${editingTreatment._id}`, updatePayload);
       fetchRiskTreatments();
+      emit({ tenantId: editingTreatment.treatmentOwner?._id }); // Emit to super users
       showToast('Email sent successfully', 'success');
     } catch (error) {
       console.error('Error updating risk treatment:', error);
@@ -108,18 +119,51 @@ const MyRiskTreatments: React.FC = () => {
       Object.values(t).some(value => String(value).toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  // Group rows by riskNameElement and categoryName
+  function groupRows(data) {
+    const groups = [];
+    let lastKey = '';
+    let rowIndex = 0;
+    data.forEach((t, idx) => {
+      const key = `${t.risk?.riskNameElement}||${t.risk?.riskCategory?.categoryName}`;
+      if (key !== lastKey) {
+        const count = data.filter(x => `${x.risk?.riskNameElement}||${x.risk?.riskCategory?.categoryName}` === key).length;
+        groups.push({ ...t, rowSpan: count, show: true, idx });
+        lastKey = key;
+        rowIndex = 1;
+      } else {
+        groups.push({ ...t, rowSpan: 0, show: false, idx });
+        rowIndex++;
+      }
+    });
+    return groups;
+  }
+
+  const groupedTreatments = groupRows(filteredTreatments);
+
   // Validation Status logic
   const getValidationStatus = (t: RiskTreatment) => {
-    if (t.status !== 'Completed') return 'Completed';
-    if (!t.validationNotes) return 'Pending';
-    if (t.validationNotes && t.convertedToControl === false) return 'Not Completed';
+    if (!t.validationNotes && t.status === 'Completed') return 'Pending';
+    if (t.validationNotes && t.convertedToControl === false && t.status === 'Completed') return 'Not Completed';
     return '';
   };
 
   return (
     <Box sx={{ p: 3 }}>
       <StyledTabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 2 }}>
-        <StyledTab label="My Risk Treatments" />
+        <StyledTab
+          label={
+            <Badge
+              color="error"
+              badgeContent={riskTreatments.filter(t => t.status !== 'Completed' || (t.status === 'Completed' && t.convertedToControl !== true)).length}
+              invisible={riskTreatments.filter(t => t.status !== 'Completed' || (t.status === 'Completed' && t.convertedToControl !== true)).length === 0}
+              sx={{ ml: 1, '& .MuiBadge-badge': { right: -10, top: -5, fontSize: '0.75rem', minWidth: 20, height: 20, padding: '0 6px' } }}
+            >
+              My Risk Treatments
+            </Badge>
+          }
+          sx={{ overflow: 'visible' }}
+        />
         <StyledTab label="My Controls" />
       </StyledTabs>
       <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
@@ -154,11 +198,17 @@ const MyRiskTreatments: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredTreatments.map((t, idx) => (
+            {groupedTreatments.map((t, idx) => (
               <TableRow key={t._id}>
-                <TableCell>{idx + 1}</TableCell>
-                <TableCell>{t.risk?.riskNameElement || ''}</TableCell>
-                <TableCell>{t.risk?.riskCategory?.categoryName || ''}</TableCell>
+                {t.show && (
+                  <TableCell rowSpan={t.rowSpan}>{idx + 1}</TableCell>
+                )}
+                {t.show && (
+                  <TableCell rowSpan={t.rowSpan}>{t.risk?.riskNameElement || ''}</TableCell>
+                )}
+                {t.show && (
+                  <TableCell rowSpan={t.rowSpan}>{t.risk?.riskCategory?.categoryName || ''}</TableCell>
+                )}
                 <TableCell>{t.treatment}</TableCell>
                 <TableCell>{t.treatmentOwner?.name || ''}</TableCell>
                 <TableCell>{formatDate(new Date(t.targetDate))}</TableCell>
@@ -185,7 +235,6 @@ const MyRiskTreatments: React.FC = () => {
                       const status = getValidationStatus(t);
                       if (status === 'Pending') return <Chip label="Pending" color="warning" size="small" />;
                       if (status === 'Not Completed') return <Chip label="Not Completed" color="error" size="small" />;
-                      if (status === 'Completed') return <Chip label="Completed" color="success" size="small" />;
                       return null;
                     })()}
                   </TableCell>
@@ -234,3 +283,4 @@ const MyRiskTreatments: React.FC = () => {
 };
 
 export default MyRiskTreatments;
+

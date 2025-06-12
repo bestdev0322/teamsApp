@@ -272,7 +272,7 @@ const ControlEffectivenessSettings: React.FC = () => {
             <TableRow>
               <StyledHeaderCell sx={{ width: '0.3vw' }}>Control Effectiveness</StyledHeaderCell>
               <StyledHeaderCell sx={{ width: '0.4vw' }}>Description</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.2vw' }} align='center'>Effectiveness</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '0.2vw' }} align='center'>Effectiveness(%)</StyledHeaderCell>
               <StyledHeaderCell sx={{ width: '0.1vw' }} align="center" className='noprint'>Actions</StyledHeaderCell>
             </TableRow>
           </TableHead>
@@ -313,7 +313,7 @@ const ControlEffectivenessSettings: React.FC = () => {
                       value={newFactor}
                       onChange={e => setNewFactor(Number(e.target.value))}
                       onKeyPress={handleKeyPress}
-                      placeholder="Enter effectiveness"
+                      placeholder="Enter effectiveness (%)"
                       fullWidth
                       variant="standard"
                       inputProps={{ min: 0 }}
@@ -403,7 +403,7 @@ const ControlEffectivenessSettings: React.FC = () => {
                   <>
                     <StyledTableCell sx={{ width: '30%' }}>{setting.controlEffectiveness}</StyledTableCell>
                     <StyledTableCell sx={{ width: '40%' }}>{renderDescription(setting)}</StyledTableCell>
-                    <StyledTableCell sx={{ width: '20%' }} align='center'>{setting.factor}</StyledTableCell>
+                    <StyledTableCell sx={{ width: '20%' }} align='center'>{setting.factor}%</StyledTableCell>
                     <StyledTableCell sx={{ width: '10%' }} align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
                         <IconButton color="primary" onClick={() => handleEditClick(setting)} size="small">

@@ -134,6 +134,28 @@ const ControlsTab: React.FC<ControlsTabProps> = ({ riskTreatments, fetchRiskTrea
         )
     );
 
+    // Group rows by riskNameElement and categoryName
+    function groupRows(data) {
+        const groups = [];
+        let lastKey = '';
+        let rowIndex = 0;
+        data.forEach((t, idx) => {
+            const key = `${t.risk?.riskNameElement}||${t.risk?.riskCategory?.categoryName}`;
+            if (key !== lastKey) {
+                const count = data.filter(x => `${x.risk?.riskNameElement}||${x.risk?.riskCategory?.categoryName}` === key).length;
+                groups.push({ ...t, rowSpan: count, show: true, idx });
+                lastKey = key;
+                rowIndex = 1;
+            } else {
+                groups.push({ ...t, rowSpan: 0, show: false, idx });
+                rowIndex++;
+            }
+        });
+        return groups;
+    }
+
+    const groupedTreatments = groupRows(filteredRiskTreatments);
+
     return (
         <Box sx={{ p: 0 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
@@ -167,11 +189,17 @@ const ControlsTab: React.FC<ControlsTabProps> = ({ riskTreatments, fetchRiskTrea
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredRiskTreatments.map((treatment, index) => (
+                        {groupedTreatments.map((treatment, index) => (
                             <TableRow key={treatment._id}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell>{treatment.risk?.riskNameElement || ''}</TableCell>
-                                <TableCell>{treatment.risk?.riskCategory?.categoryName || ''}</TableCell>
+                                {treatment.show && (
+                                    <TableCell rowSpan={treatment.rowSpan}>{index + 1}</TableCell>
+                                )}
+                                {treatment.show && (
+                                    <TableCell rowSpan={treatment.rowSpan}>{treatment.risk?.riskNameElement || ''}</TableCell>
+                                )}
+                                {treatment.show && (
+                                    <TableCell rowSpan={treatment.rowSpan}>{treatment.risk?.riskCategory?.categoryName || ''}</TableCell>
+                                )}
                                 <TableCell>{treatment.treatment}</TableCell>
                                 <TableCell>{treatment.frequency || ''}</TableCell>
                                 <TableCell>{treatment.treatmentOwner?.name || ''}</TableCell>

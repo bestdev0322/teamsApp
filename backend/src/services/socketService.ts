@@ -79,20 +79,15 @@ class SocketService {
 
       // Handle obligation submission events
       socket.on(SocketEvent.OBLIGATION_SUBMITTED, async (data) => {
-        console.log('Server received SocketEvent.OBLIGATION_SUBMITTED:', data);
-        // data: { tenantId, year, quarter, submittedBy }
         try {
           const { tenantId, year, quarter, submittedBy } = data.data;
-          console.log('Server OBLIGATION_SUBMITTED handler: Received tenantId:', tenantId);
           if (!tenantId) {
             console.log('Server OBLIGATION_SUBMITTED handler: tenantId is missing, returning.');
             return;
           }
           // Dynamically import User model to avoid circular deps
-          console.log('Server OBLIGATION_SUBMITTED handler: Searching for super users in tenant:', tenantId);
           const User = require('../models/User').default;
           const superUsers = await User.find({ tenantId, isComplianceSuperUser: true });
-          console.log('Server OBLIGATION_SUBMITTED handler: Found super users:', superUsers.map((u: any) => u.MicrosoftId)); // Log just MicrosoftIds
           superUsers.forEach((superUser: any) => {
             console.log('Server forwarding SocketEvent.OBLIGATION_SUBMITTED to super user:', superUser.MicrosoftId);
             this.emitToUser(superUser.MicrosoftId, SocketEvent.OBLIGATION_SUBMITTED, {

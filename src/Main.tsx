@@ -260,8 +260,8 @@ function Main() {
       title: "Risk Management",
       icon: <ShieldAdd24Regular fontSize={iconSize} />,
       tabs: isRiskSuperUser ?
-        ['My Risk Treatments', 'Risk Treatment Admin', 'Risk Assessment', 'Risk Identification', 'Risk Settings'] :
-        ['My Risk Treatments'],
+        ['Residual Risk Assessment', 'My Risk Treatments', 'Risk Treatment Admin', 'Risk Assessment', 'Risk Identification', 'Risk Settings'] :
+        ['Residual Risk Assessment', 'My Risk Treatments'],
       show: (isRiskSuperUser || isRiskChampion) && isRiskModuleEnabled
     }
   ];

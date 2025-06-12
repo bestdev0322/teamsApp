@@ -7,6 +7,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import RiskTreatmentTab from './tabs/RiskTreatmentTab';
 import PendingValidationTab from './tabs/PendingValidationTab';
 import ControlsTab from './tabs/ControlsTab';
+import Badge from '@mui/material/Badge';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -154,12 +155,27 @@ const RiskTreatmentAdmin: React.FC = () => {
         }
     };
 
+    // Calculate pending validation count (risks with validationNotes in pending table)
+    const pendingValidationCount = riskTreatments.filter(t => t.status === 'Completed' && t.convertedToControl === false && !t.validationNotes).length;
+
     return (
         <Box sx={{ p: 3 }}>
             <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
                 <StyledTabs value={currentTab} onChange={handleTabChange} aria-label="risk treatment tabs">
                     <StyledTab label="Risk Treatment" />
-                    <StyledTab label="Pending Validation" />
+                    <StyledTab
+                        label={
+                            <Badge
+                                color="error"
+                                badgeContent={pendingValidationCount}
+                                invisible={pendingValidationCount === 0}
+                                sx={{ ml: 1, '& .MuiBadge-badge': { right: -10, top: -5, fontSize: '0.75rem', minWidth: 20, height: 20, padding: '0 6px' } }}
+                            >
+                                Pending Validation
+                            </Badge>
+                        }
+                        sx={{ overflow: 'visible' }}
+                    />
                     <StyledTab label="Controls" />
                 </StyledTabs>
             </Box>
@@ -178,9 +194,10 @@ const RiskTreatmentAdmin: React.FC = () => {
             </TabPanel>
 
             <TabPanel value={currentTab} index={1}>
-                <PendingValidationTab 
+                <PendingValidationTab
                     riskTreatments={riskTreatments}
                     fetchRiskTreatments={fetchRiskTreatments}
+                    pendingCount={pendingValidationCount}
                 />
             </TabPanel>
 

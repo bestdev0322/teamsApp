@@ -147,7 +147,8 @@ router.get('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
           select: 'categoryName',
         },
       })
-      .populate('treatmentOwner', 'name');
+      .populate('treatmentOwner', 'name')
+      .populate('effectiveness', 'controlEffectiveness factor');
 
     if (!riskTreatment) {
       return res.status(404).json({ message: 'Risk treatment not found' });
@@ -175,7 +176,8 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
       validationNotes,
       validationDate,
       frequency,
-      controlName
+      controlName,
+      effectiveness
     } = req.body;
 
     if (!tenantId) {
@@ -192,7 +194,8 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
       validationNotes,
       validationDate,
       frequency,
-      controlName
+      controlName,
+      effectiveness
     };
 
     const updatedRiskTreatment = await RiskTreatment.findOneAndUpdate(
@@ -208,7 +211,8 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
           select: 'categoryName',
         },
       })
-      .populate('treatmentOwner', 'name');
+      .populate('treatmentOwner', 'name')
+      .populate('effectiveness', 'controlEffectiveness factor');
 
     if (!updatedRiskTreatment) {
       return res.status(404).json({ message: 'Risk treatment not found' });

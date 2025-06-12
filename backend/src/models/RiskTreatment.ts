@@ -18,6 +18,7 @@ export interface IRiskTreatment extends Document {
   controlName?: string;         // New field for converted control
   frequency?: string;          // New field for converted control
   progressHistory: ProgressHistoryEntry[];
+  effectiveness: mongoose.Types.ObjectId; // Reference to the Effectiveness being treated
 }
 
 const ProgressHistorySchema = new Schema({
@@ -82,6 +83,11 @@ const RiskTreatmentSchema: Schema = new Schema({
   progressHistory: {
     type: [ProgressHistorySchema],
     default: [],
+  },
+  effectiveness: {
+    type: Schema.Types.ObjectId,
+    ref: 'ControlEffectiveness',
+    required: false,
   },
 }, { timestamps: true });
 
