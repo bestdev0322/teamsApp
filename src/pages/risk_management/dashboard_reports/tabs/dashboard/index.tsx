@@ -77,7 +77,7 @@ const Dashboard: React.FC = () => {
                     </StyledFormControl>
                 )}
 
-                <StyledFormControl sx={{ flex: 1, width: { xs: '100%' } }}>
+                {viewMode !== 'risk-treatments-distribution' && <StyledFormControl sx={{ flex: 1, width: { xs: '100%' } }}>
                     <InputLabel>Quarter</InputLabel>
                     <Select
                         value={selectedQuarter}
@@ -88,7 +88,7 @@ const Dashboard: React.FC = () => {
                             <MenuItem key={q} value={q}>{q}</MenuItem>
                         ))}
                     </Select>
-                </StyledFormControl>
+                </StyledFormControl>}
 
                 <ViewButton
                     variant="contained"
@@ -103,7 +103,7 @@ const Dashboard: React.FC = () => {
                 viewMode === 'heatmap' ? (
                     <Heatmap />
                 ) : (
-                    <TreatmentsDistribution />
+                    <TreatmentsDistribution year={year} quarter={selectedQuarter} />
                 )
             )}
         </Box>
