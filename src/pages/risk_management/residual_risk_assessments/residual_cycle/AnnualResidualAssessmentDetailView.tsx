@@ -32,10 +32,33 @@ const AnnualComplianceDetailView: React.FC<AnnualComplianceDetailViewProps> = ({
 
   const handleSaveQuarter = () => {
     if (!editQuarter) return;
-    if (new Date(editEnd) <= new Date(editStart)) {
+    const newStart = new Date(editStart);
+    const newEnd = new Date(editEnd);
+
+    if (newEnd <= newStart) {
       setError('End date must be after start date');
       return;
     }
+
+    // Check for overlaps with other quarters
+    const hasOverlap = quarters.some(q => {
+      // Skip the quarter being edited
+      if (q.quarter === editQuarter.quarter) {
+        return false;
+      }
+
+      const existingStart = new Date(q.start);
+      const existingEnd = new Date(q.end);
+
+      // Overlap condition: [start1, end1] overlaps with [start2, end2] if (start1 <= end2) && (end1 >= start2)
+      return (newStart < existingEnd) && (newEnd > existingStart);
+    });
+
+    if (hasOverlap) {
+      setError('This quarter\'s dates overlap with another quarter.');
+      return;
+    }
+
     onEditQuarter(editQuarter, editStart, editEnd);
     setQuarterModalOpen(false);
     setEditQuarter(null);

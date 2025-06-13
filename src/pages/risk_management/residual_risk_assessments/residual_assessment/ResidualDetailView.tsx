@@ -49,7 +49,7 @@ export const calculateRiskResidualLevel = (
                 return e._id === currentEffectiveness.effectiveness;
             });
             if (effectivenessOption && effectivenessOption.factor !== undefined && effectivenessOption.factor !== null) {
-                currentCalculatedResidual = currentCalculatedResidual * (1 - (Number(effectivenessOption.factor) / 100));
+                currentCalculatedResidual = Math.round(currentCalculatedResidual * (1 - (Number(effectivenessOption.factor) / 100)));
             }
         }
     });
@@ -233,8 +233,6 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
                 Back
             </Button>
             <Typography variant="h6">Residual Risk Assessment Detail</Typography>
-            <Typography>Year: {currentQuarter.year}</Typography>
-            <Typography>Quarter: {currentQuarter.quarter}</Typography>
             <Box mt={4}>
                 {loading ? <CircularProgress /> : (
                     <TableContainer component={Paper}>
@@ -248,6 +246,7 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
                                     <TableCell>Inherent Risk</TableCell>
                                     <TableCell>Residual Risk</TableCell>
                                     <TableCell>Residual Risk Control</TableCell>
+                                    <TableCell>Control Type</TableCell>
                                     <TableCell>Owner</TableCell>
                                     <TableCell>Effectiveness</TableCell>
                                     <TableCell>Action</TableCell>
@@ -268,17 +267,18 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
                                                     <TableCell rowSpan={treatments.filter(t => t.convertedToControl === true).length}>{risk.riskOwner?.name}</TableCell>
                                                     <TableCell rowSpan={treatments.filter(t => t.convertedToControl === true).length}>
                                                         {inherent ? (
-                                                            <Typography sx={{ color: inherent.color, fontWeight: 'bold', textAlign: 'center' }}>{inherent.name}</Typography>
+                                                            <Typography sx={{ color: inherent.color, fontWeight: 'bold', textAlign: 'center' }}>{inherent.score} - {inherent.name}</Typography>
                                                         ) : ''}
                                                     </TableCell>
                                                     <TableCell rowSpan={treatments.filter(t => t.convertedToControl === true).length}>
                                                         {residual ? (
-                                                            <Typography sx={{ color: residual.color, fontWeight: 'bold', textAlign: 'center' }}>{residual.name}</Typography>
+                                                            <Typography sx={{ color: residual.color, fontWeight: 'bold', textAlign: 'center' }}>{residual.score} - {residual.name}</Typography>
                                                         ) : ''}
                                                     </TableCell>
                                                 </>
                                             )}
                                             <TableCell>{treatment.treatment}</TableCell>
+                                            <TableCell>{treatment.controlType}</TableCell>
                                             <TableCell>{treatment.treatmentOwner?.name}</TableCell>
                                             <TableCell>
                                                 {(() => {

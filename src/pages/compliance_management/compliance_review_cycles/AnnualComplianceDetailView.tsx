@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import { formatDate } from '../../../utils/date';
 
 interface Quarter {
     quarter: string;
@@ -19,24 +20,52 @@ const AnnualComplianceDetailView: React.FC<AnnualComplianceDetailViewProps> = ({
   const [editQuarter, setEditQuarter] = useState<Quarter | null>(null);
   const [editStart, setEditStart] = useState('');
   const [editEnd, setEditEnd] = useState('');
+  const [error, setError] = useState('');
 
   const handleEditQuarter = (q: Quarter) => {
     setEditQuarter(q);
     setEditStart(q.start);
     setEditEnd(q.end);
     setQuarterModalOpen(true);
+    setError('');
   };
 
   const handleSaveQuarter = () => {
     if (!editQuarter) return;
+    const newStart = new Date(editStart);
+    const newEnd = new Date(editEnd);
+
+    if (newEnd <= newStart) {
+      setError('End date must be after start date');
+      return;
+    }
+
+    const hasOverlap = quarters.some(q => {
+      if (q.quarter === editQuarter.quarter) {
+        return false;
+      }
+
+      const existingStart = new Date(q.start);
+      const existingEnd = new Date(q.end);
+
+      return (newStart < existingEnd) && (newEnd > existingStart);
+    });
+
+    if (hasOverlap) {
+      setError('This quarter\'s dates overlap with another quarter.');
+      return;
+    }
+
     onEditQuarter(editQuarter, editStart, editEnd);
     setQuarterModalOpen(false);
     setEditQuarter(null);
+    setError('');
   };
 
   const handleCancelQuarter = () => {
     setQuarterModalOpen(false);
     setEditQuarter(null);
+    setError('');
   };
 
   return (
@@ -71,8 +100,8 @@ const AnnualComplianceDetailView: React.FC<AnnualComplianceDetailViewProps> = ({
             {quarters.map(q => (
               <TableRow key={q.quarter} hover>
                 <TableCell>{q.quarter}</TableCell>
-                <TableCell>{q.start}</TableCell>
-                <TableCell>{q.end}</TableCell>
+                <TableCell>{formatDate(new Date(q.start))}</TableCell>
+                <TableCell>{formatDate(new Date(q.end))}</TableCell>
                 <TableCell>
                   <IconButton color="primary" size="small" onClick={() => handleEditQuarter(q)}>
                     <EditIcon fontSize="small" />
@@ -91,16 +120,18 @@ const AnnualComplianceDetailView: React.FC<AnnualComplianceDetailViewProps> = ({
             <TextField
               label="Start Date"
               type="date"
-              value={editStart}
+              value={formatDate(new Date(editStart))}
               onChange={e => setEditStart(e.target.value)}
               InputLabelProps={{ shrink: true }}
             />
             <TextField
               label="End Date"
               type="date"
-              value={editEnd}
+              value={formatDate(new Date(editEnd))}
               onChange={e => setEditEnd(e.target.value)}
               InputLabelProps={{ shrink: true }}
+              error={!!error}
+              helperText={error}
             />
           </Box>
         </DialogContent>

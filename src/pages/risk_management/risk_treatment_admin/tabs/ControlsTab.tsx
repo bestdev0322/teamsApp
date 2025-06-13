@@ -23,31 +23,7 @@ import { api } from '../../../../services/api';
 import { formatDate } from '../../../../utils/date';
 import { useToast } from '../../../../contexts/ToastContext';
 import ProgressHistoryModal from '../../my_risk_treatment/ProgressHistoryModal';
-
-interface RiskTreatment {
-    _id: string;
-    risk: {
-        _id: string;
-        riskNameElement: string;
-        riskCategory: {
-            _id: string;
-            categoryName: string;
-        };
-    };
-    treatment: string;
-    treatmentOwner: {
-        _id: string;
-        name: string;
-    };
-    targetDate: string;
-    status: 'Planned' | 'In Progress' | 'Completed';
-    convertedToControl?: boolean;
-    validationNotes?: string;
-    validationDate?: string;
-    frequency?: string;
-    progressHistory?: string[];
-    progressNotes?: string;
-}
+import { RiskTreatment } from '../index';
 
 interface ControlsTabProps {
     riskTreatments: RiskTreatment[];
@@ -93,6 +69,7 @@ const ControlsTab: React.FC<ControlsTabProps> = ({ riskTreatments, fetchRiskTrea
                 convertedToControl: data.convertedToControl,
                 validationNotes: data.validationNotes,
                 validationDate: data.validationDate,
+                controlType: data.controlType,
                 controlName: data.controlName,
                 frequency: data.frequency,
             });
@@ -176,15 +153,16 @@ const ControlsTab: React.FC<ControlsTabProps> = ({ riskTreatments, fetchRiskTrea
                             <TableCell sx={{ width: '5%' }}>No.</TableCell>
                             <TableCell sx={{ width: '10%' }}>Risk Name</TableCell>
                             <TableCell sx={{ width: '10%' }}>Risk Category</TableCell>
-                            <TableCell sx={{ width: '15%' }}>Control Name</TableCell>
-                            <TableCell sx={{ width: '10%' }}>Frequency</TableCell>
-                            <TableCell sx={{ width: '15%' }}>Owner</TableCell>
-                            <TableCell sx={{ width: '10%' }}>Target Date</TableCell>
-                            <TableCell sx={{ width: '10%' }}>Status</TableCell>
-                            <TableCell sx={{ width: '10%' }}>Convert to Control</TableCell>
-                            <TableCell sx={{ width: '15%' }}>Validation Notes</TableCell>
-                            <TableCell sx={{ width: '10%' }}>Validation Date</TableCell>
-                            <TableCell align="center">Progress Notes</TableCell>
+                            <TableCell sx={{ width: '12%' }}>Control Name</TableCell>
+                            <TableCell sx={{ width: '8%' }}>Control Type</TableCell>
+                            <TableCell sx={{ width: '8%' }}>Frequency</TableCell>
+                            <TableCell sx={{ width: '12%' }}>Owner</TableCell>
+                            <TableCell sx={{ width: '8%' }}>Target Date</TableCell>
+                            <TableCell sx={{ width: '5%' }}>Status</TableCell>
+                            <TableCell sx={{ width: '8%' }}>Convert to Control</TableCell>
+                            <TableCell sx={{ width: '7%' }}>Validation Notes</TableCell>
+                            <TableCell sx={{ width: '7%' }}>Validation Date</TableCell>
+                            <TableCell align="center" sx={{ width: '5%' }}>Progress Notes</TableCell>
                             <TableCell align="center" sx={{ width: '5%' }} className='noprint'>Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -201,6 +179,7 @@ const ControlsTab: React.FC<ControlsTabProps> = ({ riskTreatments, fetchRiskTrea
                                     <TableCell rowSpan={treatment.rowSpan}>{treatment.risk?.riskCategory?.categoryName || ''}</TableCell>
                                 )}
                                 <TableCell>{treatment.treatment}</TableCell>
+                                <TableCell>{treatment.controlType}</TableCell>
                                 <TableCell>{treatment.frequency || ''}</TableCell>
                                 <TableCell>{treatment.treatmentOwner?.name || ''}</TableCell>
                                 <TableCell>{formatDate(new Date(treatment.targetDate))}</TableCell>

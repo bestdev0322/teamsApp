@@ -44,6 +44,7 @@ interface RiskTreatment {
     targetDate: string;
     status: 'Planned' | 'In Progress' | 'Completed';
     convertedToControl?: boolean;
+    controlType?: string;
     validationNotes?: string;
     validationDate?: string;
     progressHistory?: any[];
@@ -87,6 +88,7 @@ const PendingValidationTab: React.FC<PendingValidationTabProps & { pendingCount:
                 validationNotes: data.validationNotes,
                 validationDate: data.validationDate,
                 controlName: data.controlName,
+                controlType: data.controlType,
                 frequency: data.frequency,
             });
             if (response.status === 200) {
@@ -195,7 +197,8 @@ const PendingValidationTab: React.FC<PendingValidationTabProps & { pendingCount:
                             <TableCell sx={{ width: '10%' }}>Target Date</TableCell>
                             <TableCell sx={{ width: '10%' }}>Status</TableCell>
                             <TableCell sx={{ width: '5%' }}>Convert to Control</TableCell>
-                            <TableCell sx={{ width: '10%' }}>Validation Notes</TableCell>
+                            <TableCell sx={{ width: '5%' }}>Control Type</TableCell>
+                            <TableCell sx={{ width: '5%' }}>Validation Notes</TableCell>
                             <TableCell sx={{ width: '15%' }}>Date</TableCell>
                             <TableCell align="center">Progress Notes</TableCell>
                             <TableCell align="center" sx={{ width: '5%' }} className='noprint'>Actions</TableCell>
@@ -218,6 +221,7 @@ const PendingValidationTab: React.FC<PendingValidationTabProps & { pendingCount:
                                 <TableCell>{formatDate(new Date(treatment.targetDate))}</TableCell>
                                 <TableCell>{treatment.status}</TableCell>
                                 <TableCell>{treatment.convertedToControl ? 'Yes' : 'No'}</TableCell>
+                                <TableCell>{treatment.controlType}</TableCell>
                                 <TableCell>
                                     {treatment.validationNotes ? (
                                         <IconButton onClick={() => handleShowNotes(treatment.validationNotes)} size="small">

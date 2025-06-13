@@ -36,7 +36,7 @@ const TabPanel = (props: TabPanelProps) => {
     );
 };
 
-interface RiskTreatment {
+export interface RiskTreatment {
     _id: string;
     risk: {
         _id: string;
@@ -47,6 +47,7 @@ interface RiskTreatment {
         };
     };
     treatment: string;
+    controlType: string;
     treatmentOwner: {
         _id: string;
         name: string;
@@ -57,6 +58,7 @@ interface RiskTreatment {
     convertedToControl?: boolean;
     validationNotes?: string;
     validationDate?: string;
+    progressHistory?: string[];
 }
 
 const RiskTreatmentAdmin: React.FC = () => {

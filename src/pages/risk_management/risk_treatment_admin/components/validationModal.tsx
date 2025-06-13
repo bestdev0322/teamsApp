@@ -20,6 +20,7 @@ const frequencyOptions = [
 
 export interface ValidationFormData {
   convertedToControl: string; // Changed to string for Yes/No dropdown
+  controlType: string;
   controlName: string;
   frequency: string;
   validationNotes: string;
@@ -33,6 +34,7 @@ interface ValidationModalProps {
   editingTreatment?: {
     _id: string;
     convertedToControl?: boolean;
+    controlType?: string;
     validationNotes?: string;
     validationDate?: string;
     controlName?: string; // New field
@@ -43,6 +45,7 @@ interface ValidationModalProps {
 export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClose, onSave, editingTreatment }) => {
   const [formData, setFormData] = useState<ValidationFormData>({
     convertedToControl: 'No',
+    controlType: '',
     controlName: '',
     frequency: '',
     validationNotes: '',
@@ -54,20 +57,22 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
     if (isOpen && editingTreatment) {
       setFormData({
         convertedToControl: editingTreatment.convertedToControl ? 'Yes' : 'No',
+        controlType: editingTreatment.controlType || '',
         controlName: editingTreatment.controlName || '',
         frequency: editingTreatment.frequency || '',
         validationNotes: editingTreatment.validationNotes || '',
         validationDate: editingTreatment.validationDate ? format(new Date(editingTreatment.validationDate), 'yyyy-MM-dd') : '',
       });
     } else if (isOpen && !editingTreatment) {
-        // Set default date to today for new validation
-        setFormData({
-            convertedToControl: 'No',
-            controlName: '',
-            frequency: '',
-            validationNotes: '',
-            validationDate: format(new Date(), 'yyyy-MM-dd'),
-        });
+      // Set default date to today for new validation
+      setFormData({
+        convertedToControl: 'No',
+        controlType: '',
+        controlName: '',
+        frequency: '',
+        validationNotes: '',
+        validationDate: format(new Date(), 'yyyy-MM-dd'),
+      });
     }
     setFormErrors({});
   }, [isOpen, editingTreatment]);
@@ -97,21 +102,26 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
     }
 
     if (formData.convertedToControl === 'Yes') {
-        if (!formData.controlName.trim()) {
-            errors.controlName = 'Control Name is required when converting to control';
-            isValid = false;
-        } else if (formData.controlName.length > 255) {
-            errors.controlName = 'Control Name must not exceed 255 characters';
-            isValid = false;
-        }
+      if (!formData.controlType.trim()) {
+        errors.controlType = 'Frequency is required when converting to control';
+        isValid = false;
+      }
 
-        if (!formData.frequency.trim()) {
-            errors.frequency = 'Frequency is required when converting to control';
-            isValid = false;
-        } else if (formData.frequency.length > 255) {
-            errors.frequency = 'Frequency must not exceed 255 characters';
-            isValid = false;
-        }
+      if (!formData.controlName.trim()) {
+        errors.controlName = 'Control Name is required when converting to control';
+        isValid = false;
+      } else if (formData.controlName.length > 255) {
+        errors.controlName = 'Control Name must not exceed 255 characters';
+        isValid = false;
+      }
+
+      if (!formData.frequency.trim()) {
+        errors.frequency = 'Frequency is required when converting to control';
+        isValid = false;
+      } else if (formData.frequency.length > 255) {
+        errors.frequency = 'Frequency must not exceed 255 characters';
+        isValid = false;
+      }
     }
 
     if (!formData.validationDate) {
@@ -158,6 +168,20 @@ export const ValidationModal: React.FC<ValidationModalProps> = ({ isOpen, onClos
         </FormControl>
         {formData.convertedToControl === 'Yes' && (
           <>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Control Type</InputLabel>
+              <Select
+                name="controlType"
+                value={formData.controlType}
+                onChange={handleDropdownChange}
+                label="Control Type"
+              >
+                <MenuItem value="Preventive">Preventive</MenuItem>
+                <MenuItem value="Detective">Detective</MenuItem>
+                <MenuItem value="Corrective">Corrective</MenuItem>
+                <MenuItem value="Mitigating">Mitigating</MenuItem>
+              </Select>
+            </FormControl>
             <TextField
               label="Control Name"
               name="controlName"
