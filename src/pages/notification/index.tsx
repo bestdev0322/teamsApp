@@ -120,7 +120,7 @@ const NotificationPage: React.FC<PageProps> = ({ title, icon, tabs }) => {
                                 ?.filter((quarter) => quarter?.editable)
                                 ?.map((quarter) => quarter?.quarter) || [];
                               
-                              return isEnabledTwoQuarterMode(quarters, user?.isTeamOwner || user?.role === 'SuperUser')
+                              return isEnabledTwoQuarterMode(quarters, user?.isTeamOwner)
                                 ? QUARTER_ALIAS[notification.quarter as keyof typeof QUARTER_ALIAS] 
                                 : notification.quarter;
                             })()
@@ -155,7 +155,7 @@ const NotificationPage: React.FC<PageProps> = ({ title, icon, tabs }) => {
                   const quarters = target?.content?.quarterlyTarget?.quarterlyTargets
                     ?.filter((quarter) => quarter?.editable)
                     ?.map((quarter) => quarter?.quarter) || [];
-                  return isEnabledTwoQuarterMode(quarters, user?.isTeamOwner || user?.role === 'SuperUser');
+                  return isEnabledTwoQuarterMode(quarters, user?.isTeamOwner);
                 })()}
                 onBack={() => {
                   setSelectedNotification(null);
@@ -176,7 +176,7 @@ const NotificationPage: React.FC<PageProps> = ({ title, icon, tabs }) => {
                     const quarters = target?.content?.quarterlyTarget?.quarterlyTargets
                       ?.filter((quarter) => quarter?.editable)
                       ?.map((quarter) => quarter?.quarter) || [];
-                    return isEnabledTwoQuarterMode(quarters, user?.isTeamOwner || user?.role === 'SuperUser');
+                    return isEnabledTwoQuarterMode(quarters, user?.isTeamOwner);
                   })()}
                   onBack={() => {
                     setSelectedNotification(null);
@@ -194,7 +194,7 @@ const NotificationPage: React.FC<PageProps> = ({ title, icon, tabs }) => {
                     const quarters = target?.content?.quarterlyTarget?.quarterlyTargets
                       ?.filter((quarter) => quarter?.editable)
                       ?.map((quarter) => quarter?.quarter) || [];
-                    return isEnabledTwoQuarterMode(quarters, user?.isTeamOwner || user?.role === 'SuperUser');
+                    return isEnabledTwoQuarterMode(quarters, user?.isTeamOwner);
                   })()}
                   onBack={() => {
                     setSelectedNotification(null);
@@ -211,7 +211,7 @@ const NotificationPage: React.FC<PageProps> = ({ title, icon, tabs }) => {
                     const quarters = target?.content?.quarterlyTarget?.quarterlyTargets
                       ?.filter((quarter) => quarter?.editable)
                       ?.map((quarter) => quarter?.quarter) || [];
-                    return isEnabledTwoQuarterMode(quarters, user?.isTeamOwner || user?.role === 'SuperUser');
+                    return isEnabledTwoQuarterMode(quarters, user?.isTeamOwner);
                   })()}
                   onBack={() => {
                     setSelectedNotification(null);

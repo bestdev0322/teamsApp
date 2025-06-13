@@ -66,7 +66,7 @@ const PendingValidationTab: React.FC<PendingValidationTabProps & { pendingCount:
     const [progressModalOpen, setProgressModalOpen] = useState(false);
     const [selectedProgressHistory, setSelectedProgressHistory] = useState([]);
     const [selectedTreatmentForProgressHistory, setSelectedTreatmentForProgressHistory] = useState<RiskTreatment | null>(null);
-    const { emit, subscribe } = useSocket(SocketEvent.RISK_VALIDATED, () => {});
+    const { emit } = useSocket(SocketEvent.RISK_VALIDATED, () => {});
     const { subscribe: subscribeTreatmentUpdated } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => {});
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
