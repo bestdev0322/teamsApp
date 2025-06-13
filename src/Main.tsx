@@ -250,7 +250,7 @@ function Main() {
       title: "Compliance Management",
       icon: <ShieldCheckmark24Regular fontSize={iconSize} />,
       tabs: isComplianceSuperUser ?
-        ['Compliance Reporting', 'Compliance Reviews', 'Quarterly Compliance Updates', 'Compliance Setting', 'Compliance Obligations', 'Compliance Areas', 'Compliance Champions'] :
+        ['Compliance Reporting', 'Compliance Reviews', 'Quarterly Compliance Updates', 'Compliance Review Cycles', 'Compliance Obligations', 'Compliance Areas', 'Compliance Champions'] :
         ['Compliance Reporting', 'Quarterly Compliance Updates'],
       show: (isComplianceSuperUser || isComplianceChampion) && isComplianceModuleEnabled
     },

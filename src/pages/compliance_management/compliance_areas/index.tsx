@@ -263,6 +263,7 @@ const ComplianceAreas: React.FC = () => {
         <Table ref={tableRef}>
           <TableHead>
             <TableRow>
+              <StyledHeaderCell className='noprint' sx={{ width: '0.3vw' }}>No.</StyledHeaderCell>
               <StyledHeaderCell sx={{ width: '0.3vw' }}>Name</StyledHeaderCell>
               <StyledHeaderCell sx={{ width: '0.5vw' }}>Description</StyledHeaderCell>
               <StyledHeaderCell sx={{ width: '0.2vw' }} align="center" className='noprint'>Actions</StyledHeaderCell>
@@ -320,7 +321,7 @@ const ComplianceAreas: React.FC = () => {
                 </TableRow>
               </ClickAwayListener>
             )}
-            {filteredAreas.map(area => (
+            {filteredAreas.map((area, index) => (
               <TableRow key={area._id} hover>
                 {editingAreaId === area._id ? (
                   <ClickAwayListener onClickAway={() => handleEditSave(area._id)}>
@@ -367,6 +368,7 @@ const ComplianceAreas: React.FC = () => {
                   </ClickAwayListener>
                 ) : (
                   <>
+                    <StyledTableCell className='noprint'>{index + 1}</StyledTableCell>
                     <StyledTableCell sx={{ width: '30%' }}>{area.areaName}</StyledTableCell>
                     <StyledTableCell sx={{ width: '50%' }}>{renderDescription(area)}</StyledTableCell>
                     <StyledTableCell sx={{ width: '20%' }} align="center">

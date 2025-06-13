@@ -35,7 +35,7 @@ const initialQuarters = (year: number): Quarter[] => [
     { quarter: 'Q4', start: `${year}-10-01`, end: `${year}-12-31` },
 ];
 
-const ComplianceSettingPage: React.FC = () => {
+const ComplianceReviewCycles: React.FC = () => {
     const [settings, setSettings] = useState<ComplianceSetting[]>([]);
     const [viewId, setViewId] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
@@ -338,4 +338,4 @@ const ComplianceSettingPage: React.FC = () => {
     );
 };
 
-export default ComplianceSettingPage;
+export default ComplianceReviewCycles;

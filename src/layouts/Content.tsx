@@ -109,20 +109,21 @@ const Content: React.FC<ContentProps> = ({
       const container = containerRef.current;
       const containerWidth = container.offsetWidth;
       let totalWidth = 0;
-      const visible: string[] = [];
-      const overflow: string[] = [];
+      const visible: typeof tabs = [];
+      const overflow: typeof tabs = [];
 
-      // Calculate which tabs fit
-      tabs.forEach((tab) => {
-        // Approximate width calculation (adjust these values as needed)
-        const tabWidth = tab.length * 10 + 40; // characters * avg char width + padding
-        if (totalWidth + tabWidth < containerWidth - 60) { // 60px for overflow menu
+      for (let i = 0; i < tabs.length; i++) {
+        const tab = tabs[i];
+        const tabWidth = tab.length * 10 + 40; // or your width calculation
+        if (totalWidth + tabWidth < containerWidth - 60) {
           totalWidth += tabWidth;
           visible.push(tab);
         } else {
-          overflow.push(tab);
+          // All remaining tabs go to overflow, preserving order
+          overflow.push(...tabs.slice(i));
+          break;
         }
-      });
+      }
 
       setVisibleTabs(visible);
       setOverflowTabs(overflow);

@@ -242,6 +242,7 @@ const ComplianceObligationPage: React.FC = () => {
         <Table ref={tableRef}>
           <TableHead>
             <TableRow>
+              <TableCell className='noprint'>No.</TableCell>
               <TableCell>Compliance Obligation</TableCell>
               <TableCell>Compliance Area</TableCell>
               <TableCell>Frequency</TableCell>
@@ -253,8 +254,9 @@ const ComplianceObligationPage: React.FC = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredObligations.map(ob => (
+            {filteredObligations.map((ob, index) => (
               <TableRow key={ob._id} hover>
+                <TableCell className='noprint'>{index + 1}</TableCell>
                 <TableCell>{ob.complianceObligation}</TableCell>
                 <TableCell>{getAreaName(ob.complianceArea)}</TableCell>
                 <TableCell>{ob.frequency}</TableCell>
