@@ -413,15 +413,15 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
       // After updating objectives, check if there are any initiatives left
       const hasAnyInitiatives = newPersonalQuarterlyTargets?.some(target => 
         isEnabledTwoQuarterMode 
-          ? (target.quarter === 'Q1' || target.quarter === 'Q2') && target.objectives.length > 0
-          : target.objectives.length > 0
+          ? (target.quarter === 'Q1' || target.quarter === 'Q2') && target.objectives?.some(objective => objective.KPIs.length > 0)
+          : target.objectives?.some(objective => objective.KPIs.length > 0)
       );
-
       // Now update isEditable based on the check
       const finalQuarterlyTargets = newPersonalQuarterlyTargets?.map(target => ({
         ...target,
         isEditable: target.quarter === 'Q1' ? true : hasAnyInitiatives
       }));
+
 
       await dispatch(updatePersonalPerformance({
         _id: personalPerformance?._id || '',
