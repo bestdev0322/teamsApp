@@ -263,15 +263,17 @@ const ImpactResponses: React.FC = () => {
         <Table ref={tableRef}>
           <TableHead>
             <TableRow>
-              <StyledHeaderCell sx={{ width: '0.3vw' }}>Risk Response</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.5vw' }}>Description</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.2vw' }} align="center" className='noprint'>Actions</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '10%' }} className='noprint'>No.</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '30%' }}>Risk Response</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '40%' }}>Description</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '20%' }} align="center" className='noprint'>Actions</StyledHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isAdding && (
               <ClickAwayListener onClickAway={handleCancelAdd}>
                 <TableRow key="new-response-row">
+                  <StyledTableCell sx={{ width: '10%' }} className='noprint'>{responses.length + 1}</StyledTableCell>
                   <StyledTableCell sx={{ width: '30%' }}>
                     <TextField
                       inputRef={inputRef}
@@ -286,7 +288,7 @@ const ImpactResponses: React.FC = () => {
                       }}
                     />
                   </StyledTableCell>
-                  <StyledTableCell sx={{ width: '50%' }}>
+                  <StyledTableCell sx={{ width: '40%' }}>
                     <TextField
                       value={newDescription}
                       onChange={e => setNewDescription(e.target.value)}
@@ -320,11 +322,12 @@ const ImpactResponses: React.FC = () => {
                 </TableRow>
               </ClickAwayListener>
             )}
-            {filteredResponses.map(response => (
+            {filteredResponses.map((response, index) => (
               <TableRow key={response._id} hover>
                 {editingResponseId === response._id ? (
                   <ClickAwayListener onClickAway={() => handleEditSave(response._id)}>
                     <>
+                      <StyledTableCell sx={{ width: '10%' }} className='noprint'>{index + 1}</StyledTableCell>
                       <StyledTableCell sx={{ width: '30%' }}>
                         <TextField
                           inputRef={editInputRef}
@@ -336,7 +339,7 @@ const ImpactResponses: React.FC = () => {
                           autoFocus
                         />
                       </StyledTableCell>
-                      <StyledTableCell sx={{ width: '50%' }}>
+                      <StyledTableCell sx={{ width: '40%' }}>
                         <TextField
                           value={editingDescription}
                           onChange={e => setEditingDescription(e.target.value)}
@@ -367,8 +370,9 @@ const ImpactResponses: React.FC = () => {
                   </ClickAwayListener>
                 ) : (
                   <>
+                    <StyledTableCell sx={{ width: '10%' }} className='noprint'>{index + 1}</StyledTableCell>
                     <StyledTableCell sx={{ width: '30%' }}>{response.responseName}</StyledTableCell>
-                    <StyledTableCell sx={{ width: '50%' }}>{renderDescription(response)}</StyledTableCell>
+                    <StyledTableCell sx={{ width: '40%' }}>{renderDescription(response)}</StyledTableCell>
                     <StyledTableCell sx={{ width: '20%' }} align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
                         <IconButton color="primary" onClick={() => handleEditClick(response)} size="small">

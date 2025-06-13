@@ -18,11 +18,13 @@ interface ReviewModalProps {
 interface RiskImpact {
   _id: string;
   impactName: string;
+  score: number;
 }
 
 interface RiskLikelihood {
   _id: string;
   likelihoodName: string;
+  score: number;
 }
 
 interface RiskResponse {
@@ -105,7 +107,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose, onSav
           >
             {impacts.map((impact) => (
               <MenuItem key={impact._id} value={impact._id}>
-                {impact.impactName}
+                {impact.score} - {impact.impactName}
               </MenuItem>
             ))}
           </Select>
@@ -123,7 +125,7 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({ isOpen, onClose, onSav
           >
             {likelihoods.map((likelihood) => (
               <MenuItem key={likelihood._id} value={likelihood._id}>
-                {likelihood.likelihoodName}
+                {likelihood?.score} - {likelihood.likelihoodName}
               </MenuItem>
             ))}
           </Select>

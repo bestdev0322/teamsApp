@@ -47,21 +47,7 @@ const MyRiskTreatments: React.FC = () => {
   const [validationModalOpen, setValidationModalOpen] = useState(false);
   const [selectedValidationNotes, setSelectedValidationNotes] = useState<string>('');
   const { showToast } = useToast();
-  const { emit, subscribe } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => { });
-  const { subscribe: subscribeValidated } = useSocket(SocketEvent.RISK_VALIDATED, () => { });
-
-  useEffect(() => {
-    fetchRiskTreatments();
-  }, []);
-
-  useEffect(() => {
-    // Subscribe to RISK_VALIDATED to refetch on real-time event
-    const unsub = subscribeValidated(SocketEvent.RISK_VALIDATED, () => {
-      fetchRiskTreatments();
-    });
-    return () => unsub();
-  }, []);
-
+  const { emit } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => { });
   const fetchRiskTreatments = async () => {
     try {
       const response = await api.get('/risk-treatments/my-treatments');
@@ -72,6 +58,22 @@ const MyRiskTreatments: React.FC = () => {
       console.error('Error fetching risk treatments:', error);
     }
   };
+
+  const { subscribe: subscribeValidated } = useSocket(SocketEvent.RISK_VALIDATED, fetchRiskTreatments);
+
+  useEffect(() => {
+    fetchRiskTreatments();
+  }, []);
+
+  useEffect(() => {
+    // Subscribe to RISK_VALIDATED to refetch on real-time event
+    const unsubValidated = subscribeValidated(SocketEvent.RISK_VALIDATED, () => {
+      fetchRiskTreatments();
+    });
+    return () => {
+      unsubValidated();
+    };
+  }, []);
 
   const handleUpdateClick = (treatment: RiskTreatment) => {
     setEditingTreatment(treatment);

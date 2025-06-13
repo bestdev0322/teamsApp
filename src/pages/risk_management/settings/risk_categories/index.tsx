@@ -263,15 +263,17 @@ const RiskCategories: React.FC = () => {
         <Table ref={tableRef}>
           <TableHead>
             <TableRow>
-              <StyledHeaderCell sx={{ width: '0.3vw' }}>Category</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.5vw' }}>Description</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.2vw' }} align="center" className='noprint'>Actions</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '10%' }}>No.</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '30%' }}>Category</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '40%' }}>Description</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '20%' }} align="center" className='noprint'>Actions</StyledHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isAdding && (
               <ClickAwayListener onClickAway={handleCancelAdd}>
                 <TableRow key="new-category-row">
+                  <StyledTableCell sx={{ width: '10%' }}>{categories.length + 1}</StyledTableCell>
                   <StyledTableCell sx={{ width: '30%' }}>
                     <TextField
                       inputRef={inputRef}
@@ -320,11 +322,12 @@ const RiskCategories: React.FC = () => {
                 </TableRow>
               </ClickAwayListener>
             )}
-            {filteredAreas.map(category => (
+            {filteredAreas.map((category, index) => (
               <TableRow key={category._id} hover>
                 {editingCategoryId === category._id ? (
                   <ClickAwayListener onClickAway={() => handleEditSave(category._id)}>
                     <>
+                      <StyledTableCell sx={{ width: '10%' }}>{index + 1}</StyledTableCell>
                       <StyledTableCell sx={{ width: '30%' }}>
                         <TextField
                           inputRef={editInputRef}
@@ -336,7 +339,7 @@ const RiskCategories: React.FC = () => {
                           autoFocus
                         />
                       </StyledTableCell>
-                      <StyledTableCell sx={{ width: '50%' }}>
+                      <StyledTableCell sx={{ width: '40%' }}>
                         <TextField
                           value={editingDescription}
                           onChange={e => setEditingDescription(e.target.value)}
@@ -367,8 +370,9 @@ const RiskCategories: React.FC = () => {
                   </ClickAwayListener>
                 ) : (
                   <>
+                    <StyledTableCell sx={{ width: '10%' }}>{index + 1}</StyledTableCell>
                     <StyledTableCell sx={{ width: '30%' }}>{category.categoryName}</StyledTableCell>
-                    <StyledTableCell sx={{ width: '50%' }}>{renderDescription(category)}</StyledTableCell>
+                    <StyledTableCell sx={{ width: '40%' }}>{renderDescription(category)}</StyledTableCell>
                     <StyledTableCell sx={{ width: '20%' }} align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
                         <IconButton color="primary" onClick={() => handleEditClick(category)} size="small">

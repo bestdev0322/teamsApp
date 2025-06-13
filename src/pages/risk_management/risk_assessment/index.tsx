@@ -314,8 +314,8 @@ const RiskAssessment: React.FC = () => {
                                 <TableCell>{risk.cause}</TableCell>
                                 <TableCell>{risk.effectImpact}</TableCell>
                                 <TableCell>{risk.riskOwner?.name || ''}</TableCell>
-                                <TableCell>{risk.impact?.impactName || ''}</TableCell>
-                                <TableCell>{risk.likelihood?.likelihoodName || ''}</TableCell>
+                                <TableCell>{risk.impact?.score} - {risk.impact?.impactName || ''}</TableCell>
+                                <TableCell>{risk.likelihood?.score} - {risk.likelihood?.likelihoodName || ''}</TableCell>
                                 {(() => {
                                     const inherentRisk = risk.impact?.score && risk.likelihood?.score 
                                         ? calculateInherentRisk(risk.impact.score, risk.likelihood.score)

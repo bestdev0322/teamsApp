@@ -235,10 +235,11 @@ const RiskRatingSettings: React.FC = () => {
         <Table>
           <TableHead>
             <TableRow>
+              <StyledHeaderCell sx={{ width: '10%' }} className='noprint'>No.</StyledHeaderCell>
               <StyledHeaderCell sx={{ width: '25%' }}>Risk Rating</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '25%' }}>Risk Score Min</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '25%' }}>Risk Score Max</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '15%' }}>Risk Rating Colour</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '20%' }}>Risk Score Min</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '20%' }}>Risk Score Max</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '15%' }} align='center'>Risk Rating Colour</StyledHeaderCell>
               <StyledHeaderCell sx={{ width: '10%' }} align="center" className='noprint'>Actions</StyledHeaderCell>
             </TableRow>
           </TableHead>
@@ -246,6 +247,7 @@ const RiskRatingSettings: React.FC = () => {
             {isAdding && ( editingRatingId === null) && (
               <ClickAwayListener onClickAway={handleCancelAdd}>
                 <TableRow key="new-rating-row">
+                  <StyledTableCell className='noprint'>{ratings.length + 1}</StyledTableCell>
                   <StyledTableCell>
                     <TextField
                       inputRef={addInputRef}
@@ -288,7 +290,7 @@ const RiskRatingSettings: React.FC = () => {
                        helperText={errors.maxScore}
                     />
                   </StyledTableCell>
-                  <StyledTableCell>
+                  <StyledTableCell sx={{display: 'flex', justifyContent: 'center'}}>
                        <Box sx={{ display: 'inline-block' }}>
                             <TextField
                                 type="color"
@@ -327,11 +329,12 @@ const RiskRatingSettings: React.FC = () => {
                 </TableRow>
               </ClickAwayListener>
             )}
-            {filteredRatings.map(rating => (
+            {filteredRatings.map((rating, index) => (
               <TableRow key={rating._id} hover>
                 {editingRatingId === rating._id ? (
                   <ClickAwayListener onClickAway={handleEditSave}>
                     <>
+                      <StyledTableCell className='noprint'>{index + 1}</StyledTableCell>
                       <StyledTableCell>
                         <TextField
                           inputRef={editInputRef}
@@ -372,7 +375,7 @@ const RiskRatingSettings: React.FC = () => {
                            helperText={errors.maxScore}
                         />
                       </StyledTableCell>
-                      <StyledTableCell>
+                      <StyledTableCell sx={{display: 'flex', justifyContent: 'center'}}>
                            <Box sx={{ display: 'inline-block' }}>
                                 <TextField
                                     type="color"
@@ -414,10 +417,11 @@ const RiskRatingSettings: React.FC = () => {
                   </ClickAwayListener>
                 ) : (
                   <>
+                    <StyledTableCell className='noprint'>{index + 1}</StyledTableCell>
                     <StyledTableCell>{rating.rating}</StyledTableCell>
                     <StyledTableCell>{rating.minScore}</StyledTableCell>
                     <StyledTableCell>{rating.maxScore}</StyledTableCell>
-                    <StyledTableCell>
+                    <StyledTableCell sx={{display: 'flex', justifyContent: 'center'}}>
                         <Box sx={{
                             width: 24,
                             height: 24,

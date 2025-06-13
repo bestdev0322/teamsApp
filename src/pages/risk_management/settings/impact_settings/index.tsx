@@ -274,16 +274,18 @@ const ImpactSettings: React.FC = () => {
         <Table ref={tableRef}>
           <TableHead>
             <TableRow>
-              <StyledHeaderCell sx={{ width: '0.2vw' }}>Impact</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.4vw' }}>Description</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.2vw' }}>Score</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.2vw' }} align="center" className='noprint'>Actions</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '10%' }} className='noprint'>No.</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '20%' }}>Impact</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '40%' }}>Description</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '10%' }}>Score</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '20%' }} align="center" className='noprint'>Actions</StyledHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isAdding && (
               <ClickAwayListener onClickAway={handleCancelAdd}>
                 <TableRow key="new-impact-row">
+                  <StyledTableCell sx={{ width: '10%' }} className='noprint'>{impactSettings.length + 1}</StyledTableCell>
                   <StyledTableCell sx={{ width: '20%' }}>
                     <TextField
                       inputRef={inputRef}
@@ -311,7 +313,7 @@ const ImpactSettings: React.FC = () => {
                       }}
                     />
                   </StyledTableCell>
-                  <StyledTableCell sx={{ width: '20%' }}>
+                  <StyledTableCell sx={{ width: '10%' }}>
                     <TextField
                       value={newScore}
                       type='number'
@@ -346,11 +348,12 @@ const ImpactSettings: React.FC = () => {
                 </TableRow>
               </ClickAwayListener>
             )}
-            {filteredAreas.map(impact => (
+            {filteredAreas.map((impact, index) => (
               <TableRow key={impact._id} hover>
                 {editingImpactId === impact._id ? (
                   <ClickAwayListener onClickAway={() => handleEditSave(impact._id)}>
                     <>
+                      <StyledTableCell sx={{ width: '10%' }} className='noprint'>{index + 1}</StyledTableCell>
                       <StyledTableCell sx={{ width: '20%' }}>
                         <TextField
                           inputRef={editInputRef}
@@ -371,7 +374,7 @@ const ImpactSettings: React.FC = () => {
                           size="small"
                         />
                       </StyledTableCell>
-                      <StyledTableCell sx={{ width: '20%' }}>
+                      <StyledTableCell sx={{ width: '10%' }}>
                         <TextField
                           value={editingScore}
                           type='number'
@@ -403,9 +406,10 @@ const ImpactSettings: React.FC = () => {
                   </ClickAwayListener>
                 ) : (
                   <>
+                    <StyledTableCell sx={{ width: '10%' }} className='noprint'>{index + 1}</StyledTableCell>
                     <StyledTableCell sx={{ width: '20%' }}>{impact.impactName}</StyledTableCell>
                     <StyledTableCell sx={{ width: '40%' }}>{renderDescription(impact)}</StyledTableCell>
-                    <StyledTableCell sx={{ width: '20%' }}>{impact.score}</StyledTableCell>
+                    <StyledTableCell sx={{ width: '10%' }}>{impact.score}</StyledTableCell>
                     <StyledTableCell sx={{ width: '20%' }} align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
                         <IconButton color="primary" onClick={() => handleEditClick(impact)} size="small">

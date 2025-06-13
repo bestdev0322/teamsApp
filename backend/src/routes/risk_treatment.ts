@@ -12,7 +12,7 @@ const router = express.Router();
 // Create a new risk treatment
 router.post('/', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
   try {
-    const { risk, treatment, treatmentOwner, targetDate, status } = req.body;
+    const { risk, treatment, treatmentOwner, targetDate, status, controlType } = req.body;
     const tenantId = req.user?.tenantId;
 
     if (!tenantId) {
@@ -26,6 +26,7 @@ router.post('/', authenticateToken, checkLicenseStatus, async (req: Authenticate
       targetDate,
       status,
       tenantId,
+      controlType,
     });
 
     await newRiskTreatment.save();
@@ -177,7 +178,8 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
       validationDate,
       frequency,
       controlName,
-      effectiveness
+      effectiveness,
+      controlType
     } = req.body;
 
     if (!tenantId) {
@@ -195,9 +197,9 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
       validationDate,
       frequency,
       controlName,
-      effectiveness
+      effectiveness,
+      controlType
     };
-    console.log(updateObj, 'here')
     const updatedRiskTreatment = await RiskTreatment.findOneAndUpdate(
       { _id: id, tenantId },
       updateObj,
@@ -253,7 +255,7 @@ router.put('/validate/:id', authenticateToken, checkLicenseStatus, async (req: A
   try {
     const { id } = req.params;
     const tenantId = req.user?.tenantId;
-    const { convertedToControl, validationNotes, validationDate, controlName, frequency } = req.body;
+    const { convertedToControl, validationNotes, validationDate, controlName, frequency, controlType } = req.body;
 
     if (!tenantId) {
       return res.status(400).json({ message: 'Tenant ID not found in request' });
@@ -280,7 +282,8 @@ router.put('/validate/:id', authenticateToken, checkLicenseStatus, async (req: A
         validationDate,
         controlName,
         frequency,
-        status: 'Completed'
+        status: 'Completed',
+        controlType
       },
       { new: true }
     )
@@ -338,7 +341,7 @@ router.put('/validate/:id', authenticateToken, checkLicenseStatus, async (req: A
 router.put('/my-treatments/:id', async (req: AuthenticatedRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { status, progressNotes, convertedToControl, validationNotes, validationDate, frequency, controlName } = req.body;
+    const { status, progressNotes, convertedToControl, validationNotes, validationDate, frequency, controlName, controlType } = req.body;
     const userId = req.user?.id;
     const tenantId = req.user?.tenantId;
 
@@ -372,7 +375,8 @@ router.put('/my-treatments/:id', async (req: AuthenticatedRequest, res: Response
           validationNotes,
           validationDate,
           frequency,
-          controlName
+          controlName,
+          controlType
         },
         $push: { progressHistory: progressHistoryEntry }
       },
@@ -383,7 +387,6 @@ router.put('/my-treatments/:id', async (req: AuthenticatedRequest, res: Response
       { path: 'treatmentOwner', select: 'name' }
     ]);
 
-    console.log(status, 'status')
     // If status is set to Completed, send email to team superUsers
     if (status === 'Completed' && tenantId) {
       const superUsers = await User.find({ isRiskSuperUser: true, tenantId });

@@ -270,16 +270,18 @@ const ControlEffectivenessSettings: React.FC = () => {
         <Table ref={tableRef}>
           <TableHead>
             <TableRow>
-              <StyledHeaderCell sx={{ width: '0.3vw' }}>Control Effectiveness</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.4vw' }}>Description</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.2vw' }} align='center'>Effectiveness(%)</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.1vw' }} align="center" className='noprint'>Actions</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '10%' }} className='noprint'>No.</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '30%' }}>Control Effectiveness</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '40%' }}>Description</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '10%' }} align='center'>Effectiveness(%)</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '10%' }} align="center" className='noprint'>Actions</StyledHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isAdding && (
               <ClickAwayListener onClickAway={handleCancelAdd}>
                 <TableRow key="new-setting-row">
+                  <StyledTableCell sx={{ width: '10%' }} className='noprint'>{settings.length + 1}</StyledTableCell>
                   <StyledTableCell sx={{ width: '30%' }}>
                     <TextField
                       inputRef={inputRef}
@@ -307,7 +309,7 @@ const ControlEffectivenessSettings: React.FC = () => {
                       }}
                     />
                   </StyledTableCell>
-                  <StyledTableCell sx={{ width: '20%' }}>
+                  <StyledTableCell sx={{ width: '10%' }}>
                     <TextField
                       type="number"
                       value={newFactor}
@@ -343,11 +345,12 @@ const ControlEffectivenessSettings: React.FC = () => {
                 </TableRow>
               </ClickAwayListener>
             )}
-            {filteredSettings.map(setting => (
+            {filteredSettings.map((setting, index) => (
               <TableRow key={setting._id} hover>
                 {editingId === setting._id ? (
                   <ClickAwayListener onClickAway={() => handleEditSave(setting._id)}>
                     <>
+                      <StyledTableCell sx={{ width: '10%' }} className='noprint'>{index + 1}</StyledTableCell>
                       <StyledTableCell sx={{ width: '30%' }}>
                         <TextField
                           inputRef={editInputRef}
@@ -368,7 +371,7 @@ const ControlEffectivenessSettings: React.FC = () => {
                           size="small"
                         />
                       </StyledTableCell>
-                      <StyledTableCell sx={{ width: '20%' }}>
+                      <StyledTableCell sx={{ width: '10%' }}>
                         <TextField
                           type="number"
                           value={editingFactor}
@@ -401,9 +404,10 @@ const ControlEffectivenessSettings: React.FC = () => {
                   </ClickAwayListener>
                 ) : (
                   <>
+                    <StyledTableCell sx={{ width: '10%' }} className='noprint'>{index + 1}</StyledTableCell>
                     <StyledTableCell sx={{ width: '30%' }}>{setting.controlEffectiveness}</StyledTableCell>
                     <StyledTableCell sx={{ width: '40%' }}>{renderDescription(setting)}</StyledTableCell>
-                    <StyledTableCell sx={{ width: '20%' }} align='center'>{setting.factor}%</StyledTableCell>
+                    <StyledTableCell sx={{ width: '10%' }} align='center'>{setting.factor}%</StyledTableCell>
                     <StyledTableCell sx={{ width: '10%' }} align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
                         <IconButton color="primary" onClick={() => handleEditClick(setting)} size="small">

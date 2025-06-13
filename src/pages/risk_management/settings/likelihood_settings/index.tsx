@@ -274,16 +274,18 @@ const LikelihoodSettings: React.FC = () => {
         <Table ref={tableRef}>
           <TableHead>
             <TableRow>
-              <StyledHeaderCell sx={{ width: '0.2vw' }}>Likelihood</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.4vw' }}>Description</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.2vw' }}>Score</StyledHeaderCell>
-              <StyledHeaderCell sx={{ width: '0.2vw' }} align="center" className='noprint'>Actions</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '10%' }} className='noprint'>No.</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '20%' }}>Likelihood</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '40%' }}>Description</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '10%' }}>Score</StyledHeaderCell>
+              <StyledHeaderCell sx={{ width: '20%' }} align="center" className='noprint'>Actions</StyledHeaderCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {isAdding && (
               <ClickAwayListener onClickAway={handleCancelAdd}>
                 <TableRow key="new-likelihood-row">
+                  <StyledTableCell sx={{ width: '10%' }} className='noprint'>{likelihoodSettings.length + 1}</StyledTableCell>
                   <StyledTableCell sx={{ width: '20%' }}>
                     <TextField
                       inputRef={inputRef}
@@ -311,7 +313,7 @@ const LikelihoodSettings: React.FC = () => {
                       }}
                     />
                   </StyledTableCell>
-                  <StyledTableCell sx={{ width: '20%' }}>
+                  <StyledTableCell sx={{ width: '10%' }}>
                     <TextField
                       value={newScore}
                       type='number'
@@ -346,11 +348,12 @@ const LikelihoodSettings: React.FC = () => {
                 </TableRow>
               </ClickAwayListener>
             )}
-            {filteredAreas.map(likelihood => (
+            {filteredAreas.map((likelihood, index) => (
               <TableRow key={likelihood._id} hover>
                 {editingLikelihoodId === likelihood._id ? (
                   <ClickAwayListener onClickAway={() => handleEditSave(likelihood._id)}>
                     <>
+                      <StyledTableCell sx={{ width: '10%' }} className='noprint'>{index + 1}</StyledTableCell>
                       <StyledTableCell sx={{ width: '20%' }}>
                         <TextField
                           inputRef={editInputRef}
@@ -371,7 +374,7 @@ const LikelihoodSettings: React.FC = () => {
                           size="small"
                         />
                       </StyledTableCell>
-                      <StyledTableCell sx={{ width: '20%' }}>
+                      <StyledTableCell sx={{ width: '10%' }}>
                         <TextField
                           value={editingScore}
                           type='number'
@@ -403,9 +406,10 @@ const LikelihoodSettings: React.FC = () => {
                   </ClickAwayListener>
                 ) : (
                   <>
+                    <StyledTableCell sx={{ width: '10%' }} className='noprint'>{index + 1}</StyledTableCell>
                     <StyledTableCell sx={{ width: '20%' }}>{likelihood.likelihoodName}</StyledTableCell>
                     <StyledTableCell sx={{ width: '40%' }}>{renderDescription(likelihood)}</StyledTableCell>
-                    <StyledTableCell sx={{ width: '20%' }}>{likelihood.score}</StyledTableCell>
+                    <StyledTableCell sx={{ width: '10%' }}>{likelihood.score}</StyledTableCell>
                     <StyledTableCell sx={{ width: '20%' }} align="center">
                       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>
                         <IconButton color="primary" onClick={() => handleEditClick(likelihood)} size="small">

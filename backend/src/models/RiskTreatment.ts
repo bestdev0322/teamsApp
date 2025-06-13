@@ -16,6 +16,7 @@ export interface IRiskTreatment extends Document {
   validationNotes?: string;     // New field for pending validation tab
   validationDate?: Date;        // New field for pending validation tab
   controlName?: string;         // New field for converted control
+  controlType?: string;         // New field for converted control
   frequency?: string;          // New field for converted control
   progressHistory: ProgressHistoryEntry[];
   effectiveness: mongoose.Types.ObjectId; // Reference to the Effectiveness being treated
@@ -74,6 +75,11 @@ const RiskTreatmentSchema: Schema = new Schema({
   },
   controlName: {
     type: String,
+    required: false,
+  },
+  controlType: {
+    type: String,
+    enum: ['Preventive', 'Detective', 'Corrective', 'Mitigating'],
     required: false,
   },
   frequency: {
