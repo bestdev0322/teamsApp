@@ -48,6 +48,17 @@ interface EffectivenessOption {
     factor: number;
 }
 
+// New types for Impact and Likelihood Settings
+interface ImpactSetting {
+    _id: string;
+    score: number;
+}
+
+interface LikelihoodSetting {
+    _id: string;
+    score: number;
+}
+
 // Helper function to parse quarter string to a number for comparison
 const parseQuarter = (q: string): number => parseInt(q.replace('Q', ''), 10);
 
@@ -72,6 +83,8 @@ const Dashboard: React.FC = () => {
     const [riskRatings, setRiskRatings] = useState<RiskRating[]>([]);
     const [riskTreatments, setRiskTreatments] = useState<Treatment[]>([]);
     const [effectivenessOptions, setEffectivenessOptions] = useState<EffectivenessOption[]>([]);
+    const [impactSettings, setImpactSettings] = useState<ImpactSetting[]>([]); // New state
+    const [likelihoodSettings, setLikelihoodSettings] = useState<LikelihoodSetting[]>([]); // New state
     const [loadingHeatmap, setLoadingHeatmap] = useState(false);
 
     const isRiskSuperUser = user?.isRiskSuperUser;
@@ -90,7 +103,7 @@ const Dashboard: React.FC = () => {
     // Determine if the view button should be disabled
     const isViewButtonDisabled = isLoading || !year || !selectedQuarter || !viewMode;
 
-    // Fetch risks and risk ratings for heatmap
+    // Fetch all necessary data for heatmap
     useEffect(() => {
         if (showDashboard && viewMode === 'heatmap') {
             setLoadingHeatmap(true);
@@ -98,8 +111,10 @@ const Dashboard: React.FC = () => {
                 api.get('/risks'),
                 api.get('/risk-ratings'),
                 api.get('/risk-treatments'),
-                api.get('/risk-control-effectiveness')
-            ]).then(([risksRes, ratingsRes, treatmentsRes, effOptionsRes]) => {
+                api.get('/risk-control-effectiveness'),
+                api.get('/risk-impact-settings'), // Fetch impact settings
+                api.get('/risk-likelihood-settings') // Fetch likelihood settings
+            ]).then(([risksRes, ratingsRes, treatmentsRes, effOptionsRes, impactRes, likelihoodRes]) => {
                 // Assign risk numbers (R1, R2, ...)
                 const risksData = (risksRes.data.data || []).map((r: any, idx: number) => ({
                     ...r,
@@ -109,6 +124,8 @@ const Dashboard: React.FC = () => {
                 setRiskRatings(ratingsRes.data.data || []);
                 setRiskTreatments(treatmentsRes.data.data || []);
                 setEffectivenessOptions(effOptionsRes.data.data || []);
+                setImpactSettings(impactRes.data.data || []); // Set impact settings
+                setLikelihoodSettings(likelihoodRes.data.data || []); // Set likelihood settings
                 setLoadingHeatmap(false);
             }).catch((error) => {
                 console.error("Error fetching heatmap data:", error);
@@ -116,14 +133,23 @@ const Dashboard: React.FC = () => {
                 setRiskRatings([]);
                 setRiskTreatments([]);
                 setEffectivenessOptions([]);
+                setImpactSettings([]);
+                setLikelihoodSettings([]);
                 setLoadingHeatmap(false);
             });
         }
     }, [showDashboard, viewMode]);
 
-    // Axis labels (assuming 1-5 for both impact and likelihood)
-    const xLabels = [1, 2, 3, 4, 5];
-    const yLabels = [1, 2, 3, 4, 5];
+    // Dynamically generate axis labels based on fetched settings
+    const xLabels = useMemo(() => {
+        const maxImpactScore = impactSettings.reduce((max, setting) => Math.max(max, setting.score), 0);
+        return Array.from({ length: maxImpactScore }, (_, i) => i + 1);
+    }, [impactSettings]);
+
+    const yLabels = useMemo(() => {
+        const maxLikelihoodScore = likelihoodSettings.reduce((max, setting) => Math.max(max, setting.score), 0);
+        return Array.from({ length: maxLikelihoodScore }, (_, i) => i + 1);
+    }, [likelihoodSettings]);
 
     // Prepare data for Inherent and Residual heatmaps
     const inherentRisks = risks.map(r => ({
