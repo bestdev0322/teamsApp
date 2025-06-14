@@ -9,19 +9,24 @@ import MyRiskTreatment from './my_risk_treatment';
 import ResidualRiskAssessment from './residual_risk_assessments';
 import DashboardReports from './dashboard_reports';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 const RiskManagement: React.FC<PageProps> = ({ title, icon, tabs }) => {
+  const { user } = useAuth();
+  const isRiskSuperUser = user?.isRiskSuperUser;
+  const isRiskChampion = user?.isRiskChampion;
+
   return (
     <Box>
       <Routes>
-        <Route path="/*" element={<Navigate to="dashboard-&-reports" replace />} />
-        <Route path="risk-settings/*" element={<Settings />} />
-        <Route path="risk-identification/*" element={<RiskIdentification />} />
-        <Route path="risk-assessment/*" element={<RiskAssessment />} />
-        <Route path="risk-treatment-admin/*" element={<RiskTreatmentAdmin />} />
+        <Route path="/*" element={isRiskSuperUser ? <Navigate to="dashboard-&-reports" replace /> : <Navigate to="my-risk-treatments" replace />} />
+        {isRiskSuperUser && <Route path="risk-settings/*" element={<Settings />} />}
+        {isRiskSuperUser && <Route path="risk-identification/*" element={<RiskIdentification />} />}
+        {isRiskSuperUser && <Route path="risk-assessment/*" element={<RiskAssessment />} />}
+        {isRiskSuperUser && <Route path="risk-treatment-admin/*" element={<RiskTreatmentAdmin />} />}
+        {isRiskSuperUser && <Route path="residual-risk-assessment/*" element={<ResidualRiskAssessment />} />}
+        {isRiskSuperUser && <Route path="dashboard-&-reports/*" element={<DashboardReports />} />}
         <Route path="my-risk-treatments/*" element={<MyRiskTreatment />} />
-        <Route path="residual-risk-assessment/*" element={<ResidualRiskAssessment />} />
-        <Route path="dashboard-&-reports/*" element={<DashboardReports />} />
       </Routes>
     </Box>
   );

@@ -261,7 +261,7 @@ function Main() {
       icon: <ShieldAdd24Regular fontSize={iconSize} />,
       tabs: isRiskSuperUser ?
         ['Dashboard & Reports', 'Residual Risk Assessment', 'My Risk Treatments', 'Risk Treatment Admin', 'Risk Assessment', 'Risk Identification', 'Risk Settings'] :
-        ['Dashboard & Reports', 'Residual Risk Assessment', 'My Risk Treatments'],
+        ['My Risk Treatments'],
       show: (isRiskSuperUser || isRiskChampion) && isRiskModuleEnabled
     }
   ];
