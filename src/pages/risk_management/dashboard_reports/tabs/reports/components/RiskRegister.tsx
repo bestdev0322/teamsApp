@@ -52,7 +52,7 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
     const calculateRiskInherentLevel = (impactScore, likelihoodScore, riskRatings) => {
         const score = impactScore * likelihoodScore;
         const rating = riskRatings.find(r => score >= r.minScore && score <= r.maxScore);
-        return rating ? { name: rating.rating, color: rating.color } : null;
+        return rating ? { name: rating.rating, color: rating.color, score } : null;
     };
 
     // Fetch risk ratings for color mapping
@@ -138,9 +138,7 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                                     const impactScore = risk.impact?.score || 0;
                                     const likelihoodScore = risk.likelihood?.score || 0;
                                     const inherent = impactScore && likelihoodScore ? calculateRiskInherentLevel(impactScore, likelihoodScore, riskRatings) : null;
-                                    console.log(risk.residualScores.length && risk.residualScores, 'risk')
                                     const residual = calculateRiskResidualLevel(risk, { year: currentYear, quarter: currentQuarter }, riskRatings, effectivenessOptions, treatments);
-                                    console.log(residual, 'res')
                                     // Initial residual risk = inherent risk
                                     return treatments.length === 0 ?
                                         <TableRow key={risk._id}>
@@ -151,12 +149,12 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                                                 <TableCell rowSpan={treatments.length}>{risk.riskOwner?.name}</TableCell>
                                                 <TableCell rowSpan={treatments.length}>
                                                     {inherent ? (
-                                                        <Typography sx={{ color: inherent.color, fontWeight: 'bold', textAlign: 'center' }}>{inherent.name}</Typography>
+                                                        <Typography sx={{ color: inherent.color, fontWeight: 'bold', textAlign: 'center' }}>{inherent.score} - {inherent.name}</Typography>
                                                     ) : ''}
                                                 </TableCell>
                                                 <TableCell rowSpan={treatments.length}>
                                                     {residual ? (
-                                                        <Typography sx={{ color: residual.color, fontWeight: 'bold', textAlign: 'center' }}>{residual.name}</Typography>
+                                                        <Typography sx={{ color: residual.color, fontWeight: 'bold', textAlign: 'center' }}>{residual.score} - {residual.name}</Typography>
                                                     ) : ''}
                                                 </TableCell>
                                                 <TableCell></TableCell>
@@ -177,12 +175,12 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                                                         <TableCell rowSpan={treatments.length}>{risk.riskOwner?.name}</TableCell>
                                                         <TableCell rowSpan={treatments.length} data-color={inherent.color}>
                                                             {inherent ? (
-                                                                <Typography sx={{ color: inherent.color, fontWeight: 'bold', textAlign: 'center' }}>{inherent.name}</Typography>
+                                                                <Typography sx={{ color: inherent.color, fontWeight: 'bold', textAlign: 'center' }}>{inherent.score} - {inherent.name}</Typography>
                                                             ) : ''}
                                                         </TableCell>
                                                         <TableCell rowSpan={treatments.length} data-color={residual.color}>
                                                             {residual ? (
-                                                                <Typography sx={{ color: residual.color, fontWeight: 'bold', textAlign: 'center' }}>{residual.name}</Typography>
+                                                                <Typography sx={{ color: residual.color, fontWeight: 'bold', textAlign: 'center' }}>{residual.score} - {residual.name}</Typography>
                                                             ) : ''}
                                                         </TableCell>
                                                     </>

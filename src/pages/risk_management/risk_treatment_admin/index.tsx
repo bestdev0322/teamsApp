@@ -59,6 +59,7 @@ export interface RiskTreatment {
     validationNotes?: string;
     validationDate?: string;
     progressHistory?: string[];
+    effectiveness?: { effectiveness: string; year: string; quarter: string }[];
 }
 
 const RiskTreatmentAdmin: React.FC = () => {

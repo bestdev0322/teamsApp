@@ -58,7 +58,7 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) 
     const calculateRiskInherentLevel = (impactScore, likelihoodScore) => {
         const score = impactScore * likelihoodScore;
         const rating = riskRatings.find(r => score >= r.minScore && score <= r.maxScore);
-        return rating ? { name: rating.rating, color: rating.color } : null;
+        return rating ? { name: rating.rating, color: rating.color, score } : null;
     };
 
     // Group treatments by risk id
@@ -134,10 +134,10 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) 
                                         return (
                                             <React.Fragment key={qIdx}>
                                                 <TableCell align="center" data-color={inherent?.color}>
-                                                    <Typography sx={{ color: inherent?.color, fontWeight: 'bold' }}>{inherent?.name || ''}</Typography>
+                                                    <Typography sx={{ color: inherent?.color, fontWeight: 'bold' }}>{inherent?.score} - {inherent?.name || ''}</Typography>
                                                 </TableCell>
                                                 <TableCell align="center" data-color={residual?.color}>
-                                                    <Typography sx={{ color: residual?.color, fontWeight: 'bold' }}>{residual?.name || ''}</Typography>
+                                                    <Typography sx={{ color: residual?.color, fontWeight: 'bold' }}>{residual?.score} - {residual?.name || ''}</Typography>
                                                 </TableCell>
                                             </React.Fragment>
                                         );
