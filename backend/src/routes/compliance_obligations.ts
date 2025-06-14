@@ -233,23 +233,51 @@ router.post('/submit-quarterly-updates', authenticateToken, async (req: Authenti
       return res.status(400).json({ message: 'Missing year, quarter, or status' });
     }
 
-    // Update the obligations
-    const result = await Obligation.updateMany(
-      {
-        _id: { $in: obligationIds },
-        tenantId: tenantId,
-        'update.year': year,
-        'update.quarter': quarter
-      },
-      {
-        $set: { 'update.$.assessmentStatus': status }
+    const updatedObligations = [];
+
+    for (const obligationId of obligationIds) {
+      let obligation = await Obligation.findOne({ _id: obligationId, tenantId: tenantId });
+
+      if (!obligation) {
+        console.warn(`Obligation with ID ${obligationId} not found or does not belong to tenant ${tenantId}`);
+        continue; // Skip to the next obligation
       }
-    );
+
+      // Find the update entry for the current year and quarter
+      const existingUpdateIndex = obligation.update?.findIndex(
+        (u) => u.year === year && u.quarter === quarter
+      );
+
+      if (existingUpdateIndex !== -1 && obligation.update) {
+        // Update existing entry's assessmentStatus
+        obligation.update[existingUpdateIndex!].assessmentStatus = status as any;
+      } else {
+        // Create a new update entry for the current quarter
+        if (!obligation.update) {
+          obligation.update = [];
+        }
+        obligation.update.push({
+          year,
+          quarter,
+          comments: '', // Default empty comments on new submission
+          attachments: [], // Default empty attachments on new submission
+          assessmentStatus: status as any,
+        });
+      }
+
+      // Save the updated obligation document. This will trigger schema validation.
+      await obligation.save();
+      updatedObligations.push(obligation);
+    }
+
     if (status === 'Submitted') {
-      // Get the team name from the first obligation
-      const firstObligation = await Obligation.findOne({ _id: obligationIds[0] })
-        .populate<{ owner: { name: string } }>('owner');
-      const teamName = firstObligation?.owner?.name || 'Unknown Team';
+      // Get the team name from the first obligation that was actually processed
+      const firstProcessedObligation = updatedObligations[0];
+      let teamName = 'Unknown Team';
+      if (firstProcessedObligation) {
+        const populatedObligation = await Obligation.findOne({ _id: firstProcessedObligation._id }).populate<{ owner: { name: string } }>('owner');
+        teamName = populatedObligation?.owner?.name || 'Unknown Team';
+      }
 
       // Get all compliance super users in the tenant
       const complianceSuperUsers = await User.find({
@@ -285,15 +313,20 @@ router.post('/submit-quarterly-updates', authenticateToken, async (req: Authenti
 
       return res.json({
         message: 'Obligations updated successfully and notifications sent',
-        result
+        updatedCount: updatedObligations.length,
+        data: updatedObligations
       });
     } else {
-      return res.json({ message: 'Obligations updated successfully', result });
+      return res.json({
+        message: 'Obligations updated successfully',
+        updatedCount: updatedObligations.length,
+        data: updatedObligations
+      });
     }
 
   } catch (error) {
     console.error('Error submitting quarterly updates:', error);
-    return res.status(400).json({ message: 'Error submitting quarterly updates' });
+    return res.status(500).json({ message: 'Error submitting quarterly updates' });
   }
 });
 

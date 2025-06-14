@@ -227,6 +227,9 @@ const ComplianceReviewCycles: React.FC = () => {
                     quarters: res.data.data.quarters,
                 } : s
             ));
+            // Update the store with the latest settings after saving quarter dates
+            await dispatch(fetchComplianceSettings());
+            await dispatch(fetchComplianceObligations());
             // Check and send notification after quarter update
             await checkAndSendQuarterNotification(setting.year, updatedQuarters);
         } catch (error) {

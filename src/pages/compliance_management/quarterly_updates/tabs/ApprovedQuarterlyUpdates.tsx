@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button, IconButton } from '@mui/material';
-import moment from 'moment';
-import { api } from '../../../../services/api';
 import ApprovedObligationsDetail from '../components/ApprovedObligationsDetail'; // Import the new detail component
+import { useAppSelector } from '../../../../hooks/useAppSelector';
+import { useAppDispatch } from '../../../../hooks/useAppDispatch';
+import { fetchComplianceObligations } from '../../../../store/slices/complianceObligationsSlice';
+import { Obligation, AssessmentStatus } from '../../../../types/compliance';
+
 interface Quarter {
     quarter: string;
     start: string;
@@ -17,64 +20,65 @@ interface ComplianceSetting {
 }
 
 const ApprovedQuarterlyUpdates: React.FC = () => {
-    const [currentQuarter, setCurrentQuarter] = useState<Quarter | null>(null);
-    const [currentYear, setCurrentYear] = useState<number | null>(null);
+    const dispatch = useAppDispatch();
+    const { obligations: allObligations, status: obligationsStatus } = useAppSelector(state => state.complianceObligations);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showDetail, setShowDetail] = useState(false); // State to control showing detail view
+    const [selectedYear, setSelectedYear] = useState<number | null>(null);
+    const [selectedQuarter, setSelectedQuarter] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchComplianceSettings = async () => {
-            try {
-                // Fetch Compliance Settings to determine current quarter
-                const settingsRes = await api.get('/compliance-settings');
-                const settings: ComplianceSetting[] = (settingsRes.data.data || []).map((s: any) => ({
-                    id: s._id,
-                    year: s.year,
-                    firstMonth: s.firstMonth,
-                    quarters: s.quarters,
-                }));
+        if (obligationsStatus === 'idle') {
+            dispatch(fetchComplianceObligations());
+        }
+    }, [obligationsStatus, dispatch]);
 
-                const today = moment().startOf('day');
-                settings.sort((a, b) => b.year - a.year);
+    useEffect(() => {
+        if (obligationsStatus === 'succeeded') {
+            setLoading(false);
+        } else if (obligationsStatus === 'failed') {
+            setError('Failed to load obligations.');
+            setLoading(false);
+        }
+    }, [obligationsStatus]);
 
-                let foundQuarter: Quarter | null = null;
-                let foundYear: number | null = null;
-
-                for (const setting of settings) {
-                    for (const quarter of setting.quarters) {
-                        const quarterStart = moment(quarter.start).startOf('day');
-                        const quarterEnd = moment(quarter.end).startOf('day');
-
-                        if (today.isBetween(quarterStart, quarterEnd, null, '[]')) {
-                            foundQuarter = quarter;
-                            foundYear = setting.year;
-                            break;
-                        }
-                    }
-                    if (foundQuarter) break;
+    const approvedQuarters = useMemo(() => {
+        const uniqueQuarters = new Set<string>(); // Stores "YEAR-QUARTER" strings
+        allObligations.forEach(ob => {
+            ob.update?.forEach(u => {
+                if (u.assessmentStatus === AssessmentStatus.Approved) {
+                    uniqueQuarters.add(`${u.year}-${u.quarter}`);
                 }
+            });
+        });
 
-                setCurrentQuarter(foundQuarter);
-                setCurrentYear(foundYear);
-                setLoading(false);
+        // Convert to array of { year: number, quarter: string } objects and sort
+        return Array.from(uniqueQuarters)
+            .map(q => {
+                const [yearStr, quarterStr] = q.split('-');
+                return { year: parseInt(yearStr), quarter: quarterStr };
+            })
+            .sort((a, b) => {
+                // Sort by year descending, then quarter descending
+                if (b.year !== a.year) {
+                    return b.year - a.year;
+                }
+                const quarterOrder = { 'Q4': 4, 'Q3': 3, 'Q2': 2, 'Q1': 1 };
+                return quarterOrder[b.quarter as keyof typeof quarterOrder] - quarterOrder[a.quarter as keyof typeof quarterOrder];
+            });
+    }, [allObligations]);
 
-            } catch (err) {
-                console.error('Error fetching compliance settings:', err);
-                setError('Failed to load compliance settings.');
-                setLoading(false);
-            }
-        };
-
-        fetchComplianceSettings();
-    }, []); // Dependency array includes nothing, so it runs once on mount
-
-    const handleViewClick = () => {
+    const handleViewClick = (year: number, quarter: string) => {
+        setSelectedYear(year);
+        setSelectedQuarter(quarter);
         setShowDetail(true);
     };
 
     const handleBackClick = () => {
         setShowDetail(false);
+        setSelectedYear(null);
+        setSelectedQuarter(null);
     };
 
     if (loading) {
@@ -85,18 +89,16 @@ const ApprovedQuarterlyUpdates: React.FC = () => {
         return <Typography color="error">{error}</Typography>;
     }
 
-    // If showDetail is true and we have a quarter and year, render the detail component
-    if (showDetail && currentQuarter && currentYear) {
-        return <ApprovedObligationsDetail year={currentYear} quarter={currentQuarter.quarter} onBack={handleBackClick} />;
+    if (showDetail && selectedQuarter && selectedYear) {
+        return <ApprovedObligationsDetail year={selectedYear} quarter={selectedQuarter} onBack={handleBackClick} />;
     }
 
-    // Otherwise, render the initial view with the table showing the quarter and view button
     return (
         <Box sx={{ mt: 2 }}>
             <Typography variant="h6" gutterBottom>Approved Quarterly Compliance Updates</Typography>
 
-            {!currentQuarter ? (
-                <Typography>No active compliance quarter found for today's date.</Typography>
+            {approvedQuarters.length === 0 ? (
+                <Typography>No approved compliance updates found.</Typography>
             ) : (
                 <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1, border: '1px solid #E5E7EB', overflowX: 'auto' }}>
                     <Table>
@@ -108,15 +110,17 @@ const ApprovedQuarterlyUpdates: React.FC = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            <TableRow>
-                                <TableCell>{currentYear}</TableCell>
-                                <TableCell align='center'>{currentQuarter.quarter}</TableCell>
-                                <TableCell align='center'>
-                                    <Button variant="outlined" onClick={handleViewClick}>
-                                        VIEW
-                                    </Button>
-                                </TableCell>
-                            </TableRow>
+                            {approvedQuarters.map((item, index) => (
+                                <TableRow key={index}>
+                                    <TableCell>{item.year}</TableCell>
+                                    <TableCell align='center'>{item.quarter}</TableCell>
+                                    <TableCell align='center'>
+                                        <Button variant="outlined" onClick={() => handleViewClick(item.year, item.quarter)}>
+                                            VIEW
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
                         </TableBody>
                     </Table>
                 </TableContainer>
