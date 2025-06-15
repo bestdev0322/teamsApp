@@ -36,7 +36,7 @@ const ImpactResponses: React.FC = () => {
       const response = await api.get('/risk-impact-responses');
       setResponses(response.data.data);
     } catch (error) {
-      console.error('Error fetching impact responses:', error);
+      console.error('Error fetching risk responses:', error);
     }
   };
 
@@ -63,7 +63,7 @@ const ImpactResponses: React.FC = () => {
         setNewDescription('');
         setIsAdding(false);
       } catch (error) {
-        console.error('Error adding impact response:', error);
+        console.error('Error adding risk response:', error);
       }
     }
   };
@@ -109,7 +109,7 @@ const ImpactResponses: React.FC = () => {
         setEditingResponseName('');
         setEditingDescription('');
       } catch (error) {
-        console.error('Error updating impact response:', error);
+        console.error('Error updating risk response:', error);
       }
     }
   };
@@ -127,7 +127,7 @@ const ImpactResponses: React.FC = () => {
       await api.delete(`/risk-impact-responses/${responseId}`);
       setResponses(prev => prev.filter(response => response._id !== responseId));
     } catch (error) {
-      console.error('Error deleting impact response:', error);
+      console.error('Error deleting risk response:', error);
     }
   };
 
@@ -205,15 +205,15 @@ const ImpactResponses: React.FC = () => {
       const doExport = async () => {
         if (exportType === 'pdf') {
           await exportPdf(
-            'impact-response',
+            'risk-response',
             tableRef,
-            'Impact Responses',
+            'Risk Responses',
             '',
             '',
             [0.3, 0.7]
           );
         } else if (exportType === 'excel') {
-          exportExcel(tableRef.current, 'Impact Responses');
+          exportExcel(tableRef.current, 'Risk Responses');
         }
         setIsExporting(false);
         setExportType(null);
@@ -232,7 +232,7 @@ const ImpactResponses: React.FC = () => {
             startIcon={<AddIcon />}
             onClick={handleAddClick}
             sx={{ textTransform: 'none', backgroundColor: '#0078D4', '&:hover': { backgroundColor: '#106EBE' } }}>
-            Add Impact Response
+            Add Risk Response
           </Button>
           <ExportButton
             className="excel"

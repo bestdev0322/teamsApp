@@ -5,7 +5,7 @@ import RiskCategories from './risk_categories';
 import ImpactSettings from './impact_settings';
 import LikelihoodSettings from './likelihood_settings';
 import RiskRating from './risk_rating';
-import ImapactRiskResponse from './impact_risk_responses';
+import RiskResponse from './risk_responses';
 import ControlEffectiveness from './control_effectiveness';
 import RiskChampions from './risk_champions';
 
@@ -50,7 +50,7 @@ const RiskSettings: React.FC = () => {
                     <StyledTab label="Impact Settings" />
                     <StyledTab label="Likelihood Settings" />
                     <StyledTab label="Risk Rating" />
-                    <StyledTab label="Impact Risk Responses" />
+                    <StyledTab label="Risk Responses" />
                     <StyledTab label="Control Effectiveness" />
                     <StyledTab label="Risk Champions" />
                 </StyledTabs>
@@ -73,7 +73,7 @@ const RiskSettings: React.FC = () => {
             </TabPanel>
 
              <TabPanel value={tabValue} index={4}>
-                <ImapactRiskResponse />
+                <RiskResponse />
             </TabPanel>
 
              <TabPanel value={tabValue} index={5}>
