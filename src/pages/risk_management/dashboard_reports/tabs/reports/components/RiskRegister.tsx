@@ -18,11 +18,8 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
     const [risks, setRisks] = useState([]);
     const [riskTreatments, setRiskTreatments] = useState([]);
     const [effectivenessOptions, setEffectivenessOptions] = useState([]);
+    const [riskRatings, setRiskRatings] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [modalOpen, setModalOpen] = useState(false);
-    const [selectedTreatment, setSelectedTreatment] = useState(null);
-    const [selectedEffectiveness, setSelectedEffectiveness] = useState('');
-    const [saving, setSaving] = useState(false);
     const { showToast } = useToast();
     const tableRef = React.useRef<any>(null);
 
@@ -33,13 +30,15 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
     const fetchAll = async () => {
         setLoading(true);
         try {
-            const [risksRes, treatmentsRes, effRes] = await Promise.all([
+            const [risksRes, treatmentsRes, riskRatingRes, effRes] = await Promise.all([
                 api.get('/risks'),
                 api.get('/risk-treatments'),
+                api.get('/risk-ratings'),
                 api.get('/risk-control-effectiveness'),
             ]);
             setRisks(risksRes.data.data || []);
             setRiskTreatments(treatmentsRes.data.data || []);
+            setRiskRatings(riskRatingRes.data.data || []);
             setEffectivenessOptions(effRes.data.data || []);
         } catch (e) {
             // handle error
@@ -54,12 +53,6 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
         const rating = riskRatings.find(r => score >= r.minScore && score <= r.maxScore);
         return rating ? { name: rating.rating, color: rating.color, score } : null;
     };
-
-    // Fetch risk ratings for color mapping
-    const [riskRatings, setRiskRatings] = useState([]);
-    useEffect(() => {
-        api.get('/risk-ratings').then(res => setRiskRatings(res.data.data || []));
-    }, []);
 
     // Group treatments by risk id
     const treatmentsByRisk = {};
@@ -118,11 +111,11 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                             <TableHead>
                                 <TableRow>
                                     <TableCell>No.</TableCell>
-                                    <TableCell>Risk Name</TableCell>
-                                    <TableCell>Risk Category</TableCell>
+                                    <TableCell sx={{ width: '25%' }}>Risk Name</TableCell>
+                                    <TableCell sx={{ width: '10%' }}>Risk Category</TableCell>
                                     <TableCell>Risk Owner</TableCell>
-                                    <TableCell>Inherent Risk</TableCell>
-                                    <TableCell>Residual Risk</TableCell>
+                                    <TableCell sx={{ width: '8%' }}>IR</TableCell>
+                                    <TableCell sx={{ width: '8%' }}>RR</TableCell>
                                     <TableCell>Mitigations</TableCell>
                                     <TableCell>Mitigations Type</TableCell>
                                     <TableCell>Status</TableCell>
@@ -148,12 +141,12 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                                                 <TableCell rowSpan={treatments.length}>{risk.riskCategory?.categoryName}</TableCell>
                                                 <TableCell rowSpan={treatments.length}>{risk.riskOwner?.name}</TableCell>
                                                 <TableCell rowSpan={treatments.length}>
-                                                    {inherent ? (
+                                                    {inherent && inherent.color ? (
                                                         <Typography sx={{ color: inherent.color, fontWeight: 'bold', textAlign: 'center' }}>{inherent.score} - {inherent.name}</Typography>
                                                     ) : ''}
                                                 </TableCell>
                                                 <TableCell rowSpan={treatments.length}>
-                                                    {residual ? (
+                                                    {residual && residual.color ? (
                                                         <Typography sx={{ color: residual.color, fontWeight: 'bold', textAlign: 'center' }}>{residual.score} - {residual.name}</Typography>
                                                     ) : ''}
                                                 </TableCell>
@@ -173,13 +166,13 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                                                         <TableCell rowSpan={treatments.length}>{risk.riskNameElement}</TableCell>
                                                         <TableCell rowSpan={treatments.length}>{risk.riskCategory?.categoryName}</TableCell>
                                                         <TableCell rowSpan={treatments.length}>{risk.riskOwner?.name}</TableCell>
-                                                        <TableCell rowSpan={treatments.length} data-color={inherent.color}>
-                                                            {inherent ? (
+                                                        <TableCell rowSpan={treatments.length} data-color={inherent?.color || ''}>
+                                                            {inherent && inherent.color ? (
                                                                 <Typography sx={{ color: inherent.color, fontWeight: 'bold', textAlign: 'center' }}>{inherent.score} - {inherent.name}</Typography>
                                                             ) : ''}
                                                         </TableCell>
-                                                        <TableCell rowSpan={treatments.length} data-color={residual.color}>
-                                                            {residual ? (
+                                                        <TableCell rowSpan={treatments.length} data-color={residual?.color || ''}>
+                                                            {residual && residual.color ? (
                                                                 <Typography sx={{ color: residual.color, fontWeight: 'bold', textAlign: 'center' }}>{residual.score} - {residual.name}</Typography>
                                                             ) : ''}
                                                         </TableCell>

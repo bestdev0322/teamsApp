@@ -109,25 +109,58 @@ const ControlsTab: React.FC<ControlsTabProps> = ({ riskTreatments, fetchRiskTrea
         Object.values(treatment).some(value =>
             String(value).toLowerCase().includes(searchTerm.toLowerCase())
         )
-    );
+    ).sort((a, b) => {
+        const nameA = a.risk?.riskNameElement ? a.risk.riskNameElement.trim() : '';
+        const nameB = b.risk?.riskNameElement ? b.risk.riskNameElement.trim() : '';
+        const categoryA = a.risk?.riskCategory?.categoryName ? a.risk.riskCategory.categoryName.trim() : '';
+        const categoryB = b.risk?.riskCategory?.categoryName ? b.risk.riskCategory.categoryName.trim() : '';
+
+        if (nameA < nameB) return -1;
+        if (nameA > nameB) return 1;
+        if (categoryA < categoryB) return -1;
+        if (categoryA > categoryB) return 1;
+        return 0;
+    });
 
     // Group rows by riskNameElement and categoryName
     function groupRows(data) {
         const groups = [];
-        let lastKey = '';
-        let rowIndex = 0;
-        data.forEach((t, idx) => {
-            const key = `${t.risk?.riskNameElement}||${t.risk?.riskCategory?.categoryName}`;
-            if (key !== lastKey) {
-                const count = data.filter(x => `${x.risk?.riskNameElement}||${x.risk?.riskCategory?.categoryName}` === key).length;
-                groups.push({ ...t, rowSpan: count, show: true, idx });
-                lastKey = key;
-                rowIndex = 1;
+        if (data.length === 0) return groups;
+
+        let currentGroup = [];
+        let currentKey = '';
+        let displayIndex = 0;
+
+        data.forEach((t, index) => {
+            const riskName = t.risk?.riskNameElement ? t.risk.riskNameElement.trim() : '';
+            const riskCategory = t.risk?.riskCategory?.categoryName ? t.risk.riskCategory.categoryName.trim() : '';
+            const key = `${riskName}||${riskCategory}`;
+
+            if (key !== currentKey) {
+                if (currentGroup.length > 0) {
+                    const groupSize = currentGroup.length;
+                    groups.push({ ...currentGroup[0], rowSpan: groupSize, show: true, displayIndex: displayIndex });
+                    for (let i = 1; i < groupSize; i++) {
+                        groups.push({ ...currentGroup[i], rowSpan: 0, show: false, displayIndex: displayIndex });
+                    }
+                }
+
+                currentGroup = [t];
+                currentKey = key;
+                displayIndex++;
             } else {
-                groups.push({ ...t, rowSpan: 0, show: false, idx });
-                rowIndex++;
+                currentGroup.push(t);
+            }
+
+            if (index === data.length - 1) {
+                const groupSize = currentGroup.length;
+                groups.push({ ...currentGroup[0], rowSpan: groupSize, show: true, displayIndex: displayIndex });
+                for (let i = 1; i < groupSize; i++) {
+                    groups.push({ ...currentGroup[i], rowSpan: 0, show: false, displayIndex: displayIndex });
+                }
             }
         });
+
         return groups;
     }
 
@@ -170,7 +203,7 @@ const ControlsTab: React.FC<ControlsTabProps> = ({ riskTreatments, fetchRiskTrea
                         {groupedTreatments.map((treatment, index) => (
                             <TableRow key={treatment._id}>
                                 {treatment.show && (
-                                    <TableCell rowSpan={treatment.rowSpan}>{index + 1}</TableCell>
+                                    <TableCell rowSpan={treatment.rowSpan}>R{index + 1}</TableCell>
                                 )}
                                 {treatment.show && (
                                     <TableCell rowSpan={treatment.rowSpan}>{treatment.risk?.riskNameElement || ''}</TableCell>

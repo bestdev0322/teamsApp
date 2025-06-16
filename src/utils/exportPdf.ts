@@ -71,6 +71,10 @@ export const exportPdf = async (type: string, tableRef: React.MutableRefObject<u
             data.cell.styles.textColor = [rgb.r, rgb.g, rgb.b];
           }
         }
+        const align = cellElement.getAttribute('data-align');
+        if (align) {
+          data.cell.styles.halign = align as 'left' | 'center' | 'right';
+        }
     },
     didDrawPage: (data) => {
       finalY = data.cursor.y; // Store the final Y position

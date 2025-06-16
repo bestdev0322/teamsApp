@@ -304,7 +304,7 @@ const RiskAssessment: React.FC = () => {
                     <TableBody>
                         {filteredRisks.map((risk, index) => (
                             <TableRow key={risk._id}>
-                                <TableCell>{index + 1}</TableCell>
+                                <TableCell>R{index + 1}</TableCell>
                                 <TableCell>{risk.riskNameElement}</TableCell>
                                 <TableCell>{risk.strategicObjective}</TableCell>
                                 <TableCell>{risk.riskCategory?.categoryName || ''}</TableCell>

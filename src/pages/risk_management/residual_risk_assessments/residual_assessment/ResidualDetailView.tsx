@@ -261,7 +261,7 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
                                         <TableRow key={treatment._id}>
                                             {tIdx === 0 && (
                                                 <>
-                                                    <TableCell rowSpan={treatments.filter(t => t.convertedToControl === true).length}>{idx + 1}</TableCell>
+                                                    <TableCell rowSpan={treatments.filter(t => t.convertedToControl === true).length}>R{idx + 1}</TableCell>
                                                     <TableCell rowSpan={treatments.filter(t => t.convertedToControl === true).length}>{risk.riskNameElement}</TableCell>
                                                     <TableCell rowSpan={treatments.filter(t => t.convertedToControl === true).length}>{risk.riskCategory?.categoryName}</TableCell>
                                                     <TableCell rowSpan={treatments.filter(t => t.convertedToControl === true).length}>{risk.riskOwner?.name}</TableCell>
