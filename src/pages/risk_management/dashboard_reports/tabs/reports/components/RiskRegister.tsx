@@ -76,7 +76,7 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
     };
 
     const handleExportPDF = () => {
-        exportPdf('RiskRegister', tableRef, 'Risk Register', '', '', [0.05, 0.125, 0.125, 0.125, 0.1, 0.1, 0.175, 0.05, 0.05, 0.05, 0.05, 0.05]);
+        exportPdf('RiskRegister', tableRef, 'Risk Register', '', '', [0.05, 0.15, 0.1, 0.125, 0.05, 0.05, 0.2, 0.05, 0.05, 0.075, 0.05, 0.05]);
     };
 
     const handleExportExcel = () => {
@@ -110,18 +110,18 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                         <Table ref={tableRef}>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell>No.</TableCell>
-                                    <TableCell sx={{ width: '25%' }}>Risk Name</TableCell>
+                                    <TableCell sx={{ width: '5%' }}>No.</TableCell>
+                                    <TableCell sx={{ width: '15%' }}>Risk Name</TableCell>
                                     <TableCell sx={{ width: '10%' }}>Risk Category</TableCell>
-                                    <TableCell>Risk Owner</TableCell>
-                                    <TableCell sx={{ width: '8%' }}>IR</TableCell>
-                                    <TableCell sx={{ width: '8%' }}>RR</TableCell>
-                                    <TableCell>Mitigations</TableCell>
-                                    <TableCell>Mitigations Type</TableCell>
-                                    <TableCell>Status</TableCell>
-                                    <TableCell>Owner</TableCell>
-                                    <TableCell>Effectiveness</TableCell>
-                                    <TableCell>Due Date</TableCell>
+                                    <TableCell sx={{ width: '12.5%' }}>Risk Owner</TableCell>
+                                    <TableCell sx={{ width: '5%' }}>IR</TableCell>
+                                    <TableCell sx={{ width: '5%' }}>RR</TableCell>
+                                    <TableCell sx={{ width: '20%' }}>Mitigations</TableCell>
+                                    <TableCell sx={{ width: '5%' }}>Mitigations Type</TableCell>
+                                    <TableCell sx={{ width: '5%' }}>Status</TableCell>
+                                    <TableCell sx={{ width: '7.5%' }}>Owner</TableCell>
+                                    <TableCell sx={{ width: '5%' }}>Effectiveness</TableCell>
+                                    <TableCell sx={{ width: '5%' }}>Due Date</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -183,20 +183,20 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                                                 <TableCell sx={{ color: getStatusColor(getStatusFromTreatment(treatment)) }} data-color={getStatusColor(getStatusFromTreatment(treatment))}>{getStatusFromTreatment(treatment)}</TableCell>
                                                 <TableCell>{treatment.treatmentOwner?.name}</TableCell>
                                                 <TableCell>
-                                                {(() => {
-                                                    const currentEffectiveness = treatment.effectiveness?.find(eff =>
-                                                        eff.year === currentYear && eff.quarter === currentQuarter
-                                                    );
-                                                    if (!currentEffectiveness) return '';
-                                                    let effObj = null;
-                                                    if (typeof currentEffectiveness.effectiveness === 'object' && currentEffectiveness.effectiveness !== null && '_id' in currentEffectiveness.effectiveness) {
-                                                        effObj = effectivenessOptions.find(e => e._id === currentEffectiveness.effectiveness._id);
-                                                    } else {
-                                                        effObj = effectivenessOptions.find(e => e._id === currentEffectiveness.effectiveness);
-                                                    }
-                                                    return effObj ? `${effObj.controlEffectiveness} (${effObj.factor}%)` : '';
-                                                })()}
-                                            </TableCell>
+                                                    {(() => {
+                                                        const currentEffectiveness = treatment.effectiveness?.find(eff =>
+                                                            eff.year === currentYear && eff.quarter === currentQuarter
+                                                        );
+                                                        if (!currentEffectiveness) return '';
+                                                        let effObj = null;
+                                                        if (typeof currentEffectiveness.effectiveness === 'object' && currentEffectiveness.effectiveness !== null && '_id' in currentEffectiveness.effectiveness) {
+                                                            effObj = effectivenessOptions.find(e => e._id === currentEffectiveness.effectiveness._id);
+                                                        } else {
+                                                            effObj = effectivenessOptions.find(e => e._id === currentEffectiveness.effectiveness);
+                                                        }
+                                                        return effObj ? `${effObj.controlEffectiveness} (${effObj.factor}%)` : '';
+                                                    })()}
+                                                </TableCell>
                                                 <TableCell>
                                                     {formatDate(new Date(treatment.targetDate))}
                                                 </TableCell>
