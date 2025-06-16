@@ -108,11 +108,16 @@ router.get('/my-treatments', authenticateToken, checkLicenseStatus, async (req: 
     return res.status(500).json({ message: 'Error fetching my risk treatments' });
   }
 });
+
 // Register this route BEFORE any /:id route to avoid conflicts
 router.delete('/:id/progress-history/:index', async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+      return res.status(400).json({ message: 'Tenant ID not found in request' });
+    }
     const { id, index } = req.params;
-    const riskTreatment = await RiskTreatment.findById(id);
+    const riskTreatment = await RiskTreatment.findOne({_id: id, tenantId});
     if (!riskTreatment) {
       return res.status(404).json({ message: 'Risk treatment not found' });
     }
@@ -355,11 +360,15 @@ router.put('/my-treatments/:id', async (req: AuthenticatedRequest, res: Response
     const userId = req.user?.id;
     const tenantId = req.user?.tenantId;
 
+    if (!tenantId) {
+      return res.status(400).json({ message: 'Tenant ID not found in request' });
+    }
+
     if (!userId) {
       return res.status(400).json({ message: 'User ID not found in request' });
     }
 
-    const riskTreatment = await RiskTreatment.findById(id).populate({
+    const riskTreatment = await RiskTreatment.findOne({_id: id, tenantId}).populate({
       path: 'risk',
       select: 'riskNameElement',
     }).populate('treatmentOwner', 'name');

@@ -10,7 +10,11 @@ const router = express.Router();
 // Get all risks for the tenant
 router.get('/', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
     try {
-        const risks = await Risk.find({ tenantId: req.user?.tenantId })
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) {
+            return res.status(400).json({ message: 'Tenant ID not found in request' });
+        }
+        const risks = await Risk.find({ tenantId })
             .populate('riskCategory', 'categoryName')
             .populate('riskOwner', 'name')
             .populate('impact', 'impactName score')
@@ -27,6 +31,10 @@ router.get('/', authenticateToken, checkLicenseStatus, async (req: Authenticated
 // Create a new risk
 router.post('/', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
     try {
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) {
+            return res.status(400).json({ message: 'Tenant ID not found in request' });
+        }
         const {
             riskNameElement,
             strategicObjective,
@@ -55,7 +63,7 @@ router.post('/', authenticateToken, checkLicenseStatus, async (req: Authenticate
             effectImpact,
             riskOwner,
             status,
-            tenantId: req.user?.tenantId,
+            tenantId,
             impact: req.body.impact,
             likelihood: null,
             riskResponse: null,
@@ -78,6 +86,10 @@ router.post('/', authenticateToken, checkLicenseStatus, async (req: Authenticate
 // Update a risk
 router.put('/:id', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
     try {
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) {
+            return res.status(400).json({ message: 'Tenant ID not found in request' });
+        }
         const {
             riskNameElement,
             strategicObjective,
@@ -99,7 +111,7 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
         }
 
         const risk = await Risk.findOneAndUpdate(
-            { _id: req.params.id, tenantId: req.user?.tenantId },
+            { _id: req.params.id, tenantId },
             {
                 riskNameElement,
                 strategicObjective,
@@ -134,6 +146,10 @@ router.put('/:id', authenticateToken, checkLicenseStatus, async (req: Authentica
 // Update a risk's assessment fields
 router.put('/assessment/:id', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const tenantId = req.user?.tenantId;
+    if (!tenantId) {
+        return res.status(400).json({ message: 'Tenant ID not found in request' });
+    }
     const { impact, likelihood, riskResponse } = req.body;
 
     // Validate ObjectIds
@@ -148,7 +164,7 @@ router.put('/assessment/:id', authenticateToken, checkLicenseStatus, async (req:
     }
 
     const risk = await Risk.findOneAndUpdate(
-      { _id: req.params.id, tenantId: req.user?.tenantId },
+      { _id: req.params.id, tenantId },
       { impact, likelihood, riskResponse },
       { new: true }
     ).populate('riskCategory', 'categoryName')
@@ -171,9 +187,13 @@ router.put('/assessment/:id', authenticateToken, checkLicenseStatus, async (req:
 // Delete a risk
 router.delete('/:id', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
     try {
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) {
+            return res.status(400).json({ message: 'Tenant ID not found in request' });
+        }
         const risk = await Risk.findOneAndDelete({ 
             _id: req.params.id, 
-            tenantId: req.user?.tenantId 
+            tenantId
         });
 
         if (!risk) {
@@ -193,6 +213,10 @@ router.delete('/:id', authenticateToken, checkLicenseStatus, async (req: Authent
 // Add new residual score to a risk
 router.post('/:id/residual-score', authenticateToken, checkLicenseStatus, async (req: AuthenticatedRequest, res: Response) => {
     try {
+        const tenantId = req.user?.tenantId;
+        if (!tenantId) {
+            return res.status(400).json({ message: 'Tenant ID not found in request' });
+        }
         const { score, year, quarter } = req.body;
 
         if (!score || !year || !quarter) {
@@ -201,7 +225,7 @@ router.post('/:id/residual-score', authenticateToken, checkLicenseStatus, async 
 
         const newScore = { score, year, quarter };
 
-        const risk = await Risk.findOne({ _id: req.params.id, tenantId: req.user?.tenantId });
+        const risk = await Risk.findOne({ _id: req.params.id, tenantId });
         if (!risk) {
             return res.status(404).json({ message: 'Risk not found' });
         }
