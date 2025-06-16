@@ -67,7 +67,6 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) 
     const handleExportExcel = () => {
         exportExcel(tableRef.current, `${currentYear} - Residual Risk Trend`);
     };
-    };
 
     return (
         <Box mt={2}>
