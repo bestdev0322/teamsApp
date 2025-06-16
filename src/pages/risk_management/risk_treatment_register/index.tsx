@@ -70,7 +70,19 @@ const RiskTreatmentRegister: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTreatment, setEditingTreatment] = useState<RiskTreatment | null>(null);
     const [riskTreatments, setRiskTreatments] = useState<RiskTreatment[]>([]);
-    const { subscribe: subscribeTreatmentUpdated } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => {});
+
+    const fetchRiskTreatments = async () => {
+        try {
+            const response = await api.get(`/risk-treatments`);
+            if (response.status === 200) {
+                setRiskTreatments(response.data.data || []);
+            }
+        } catch (error) {
+            console.error('Error fetching risk treatments:', error);
+        }
+    };
+
+    const { subscribe: subscribeTreatmentUpdated } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => { fetchRiskTreatments(); });
 
 
     useEffect(() => {
@@ -83,17 +95,6 @@ const RiskTreatmentRegister: React.FC = () => {
         });
         return () => unsub();
     }, []);
-
-    const fetchRiskTreatments = async () => {
-        try {
-            const response = await api.get(`/risk-treatments`);
-            if (response.status === 200) {
-                setRiskTreatments(response.data.data || []);
-            }
-        } catch (error) {
-            console.error('Error fetching risk treatments:', error);
-        }
-    };
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setCurrentTab(newValue);

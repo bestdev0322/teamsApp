@@ -19,7 +19,6 @@ interface ComplianceViewProps {
 const ComplianceView: React.FC<ComplianceViewProps> = ({ year, quarter, obligations }) => {
   const { user } = useAuth();
   const isComplianceSuperUser = user?.isComplianceSuperUser;
-  const chartRef = useRef<HTMLDivElement>(null);
   const calculateCompliance = (filteredObligations: Obligation[]) => {
     if (!filteredObligations.length) return null;
     const compliantCount = filteredObligations.filter(o => o.complianceStatus === 'Compliant').length;

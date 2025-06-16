@@ -77,6 +77,52 @@ class SocketService {
         this.handleAssessment(socket, data);
       });
 
+      // Handle risk treatment update events
+      socket.on(SocketEvent.RISK_TREATMENT_UPDATED, async (data) => {
+        try {
+          const { teamId } = data.data;
+          if (!teamId) {
+            console.log('Server RISK_TREATMENT_UPDATED handler: teamId is missing, returning.');
+            return;
+          }
+          // Dynamically import User model to avoid circular deps
+          const User = require('../models/User').default;
+          const superUsers = await User.find({ isRiskSuperUser: true });
+          superUsers.forEach((superUser: any) => {
+            console.log('Server forwarding SocketEvent.RISK_TREATMENT_UPDATED to super user:', superUser.MicrosoftId);
+            this.emitToUser(superUser.MicrosoftId, SocketEvent.RISK_TREATMENT_UPDATED, {
+              updatedBy: socket.data?.microsoftId,
+              timestamp: new Date().toISOString()
+            });
+          });
+        } catch (err) {
+          console.error('Error handling RISK_TREATMENT_UPDATED socket event:', err);
+        }
+      });
+
+      // Handle risk validation events
+      socket.on(SocketEvent.RISK_VALIDATED, async (data) => {
+        try {
+          const { teamId } = data.data;
+          if (!teamId) {
+            console.log('Server RISK_VALIDATED handler: teamId is missing, returning.');
+            return;
+          }
+          // Dynamically import User model to avoid circular deps
+          const User = require('../models/User').default;
+          const champions = await User.find({ isRiskChampion: true, teamId });
+          champions.forEach((champion: any) => {
+            console.log('Server forwarding SocketEvent.RISK_VALIDATED to champion:', champion.MicrosoftId);
+            this.emitToUser(champion.MicrosoftId, SocketEvent.RISK_VALIDATED, {
+              validatedBy: socket.data?.microsoftId,
+              timestamp: new Date().toISOString()
+            });
+          });
+        } catch (err) {
+          console.error('Error handling RISK_VALIDATED socket event:', err);
+        }
+      });
+
       // Handle obligation submission events
       socket.on(SocketEvent.OBLIGATION_SUBMITTED, async (data) => {
         try {
@@ -100,6 +146,7 @@ class SocketService {
           console.error('Error handling OBLIGATION_SUBMITTED socket event:', err);
         }
       });
+      
     });
   }
 

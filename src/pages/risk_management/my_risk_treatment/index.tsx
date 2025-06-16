@@ -12,6 +12,7 @@ import { StyledTab, StyledTabs } from '../../../components/StyledTab';
 import { useToast } from '../../../contexts/ToastContext';
 import { useSocket } from '../../../hooks/useSocket';
 import { SocketEvent } from '../../../types/socket';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface ProgressHistoryEntry {
   progressNotes: string;
@@ -47,7 +48,8 @@ const MyRiskTreatments: React.FC = () => {
   const [validationModalOpen, setValidationModalOpen] = useState(false);
   const [selectedValidationNotes, setSelectedValidationNotes] = useState<string>('');
   const { showToast } = useToast();
-  const { emit } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => { });
+  const { user } = useAuth();
+  const { emit } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => {});
   const fetchRiskTreatments = async () => {
     try {
       const response = await api.get('/risk-treatments/my-treatments');
@@ -95,7 +97,7 @@ const MyRiskTreatments: React.FC = () => {
       updatePayload.controlName = '';
       await api.put(`/risk-treatments/my-treatments/${editingTreatment._id}`, updatePayload);
       fetchRiskTreatments();
-      emit({ teamId: editingTreatment.treatmentOwner?._id }); // Emit to super users
+      emit({ userId: user.id }); // Emit to super users
       showToast('Update submitted successfully', 'success');
     } catch (error) {
       console.error('Error updating risk treatment:', error);
@@ -196,8 +198,8 @@ const MyRiskTreatments: React.FC = () => {
           label={
             <Badge
               color="error"
-              badgeContent={riskTreatments.filter(t => t.status !== 'Completed' || (t.status === 'Completed' && t.convertedToControl !== true)).length}
-              invisible={riskTreatments.filter(t => t.status !== 'Completed' || (t.status === 'Completed' && t.convertedToControl !== true)).length === 0}
+              badgeContent={riskTreatments.filter(t => t.status !== 'Completed' || (t.status === 'Completed' && t.convertedToControl !== true && t.validationNotes)).length}
+              invisible={riskTreatments.filter(t => t.status !== 'Completed' || (t.status === 'Completed' && t.convertedToControl !== true && t.validationNotes)).length === 0}
               sx={{ ml: 1, '& .MuiBadge-badge': { right: -10, top: -5, fontSize: '0.75rem', minWidth: 20, height: 20, padding: '0 6px' } }}
             >
               My Risk Treatments
