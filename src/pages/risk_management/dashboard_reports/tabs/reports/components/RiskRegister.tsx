@@ -136,7 +136,7 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                                     return treatments.length === 0 ?
                                         <TableRow key={risk._id}>
                                             <>
-                                                <TableCell rowSpan={treatments.length}>{idx + 1}</TableCell>
+                                                <TableCell rowSpan={treatments.length}>R{idx + 1}</TableCell>
                                                 <TableCell rowSpan={treatments.length}>{risk.riskNameElement}</TableCell>
                                                 <TableCell rowSpan={treatments.length}>{risk.riskCategory?.categoryName}</TableCell>
                                                 <TableCell rowSpan={treatments.length}>{risk.riskOwner?.name}</TableCell>
@@ -162,7 +162,7 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                                             <TableRow key={risk._id + treatment._id}>
                                                 {tIdx === 0 && (
                                                     <>
-                                                        <TableCell rowSpan={treatments.length}>{idx + 1}</TableCell>
+                                                        <TableCell rowSpan={treatments.length}>R{idx + 1}</TableCell>
                                                         <TableCell rowSpan={treatments.length}>{risk.riskNameElement}</TableCell>
                                                         <TableCell rowSpan={treatments.length}>{risk.riskCategory?.categoryName}</TableCell>
                                                         <TableCell rowSpan={treatments.length}>{risk.riskOwner?.name}</TableCell>

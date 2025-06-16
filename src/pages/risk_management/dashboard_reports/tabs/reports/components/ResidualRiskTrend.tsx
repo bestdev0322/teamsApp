@@ -7,16 +7,6 @@ import { exportPdf } from '../../../../../../utils/exportPdf';
 import { exportExcel } from '../../../../../../utils/exportExcel';
 import { calculateRiskResidualLevel } from "../../../../residual_risk_assessments/residual_assessment/ResidualDetailView";
 
-
-const riskColor = (level: string) => {
-    switch (level) {
-        case 'High': return '#DC2626';
-        case 'Medium': return '#F59E42';
-        case 'Low': return '#059669';
-        default: return undefined;
-    }
-};
-
 const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
 
 interface ResidualRiskTrendPageProps {
@@ -71,11 +61,12 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) 
     });
 
     const handleExportPDF = () => {
-        exportPdf('ResidualRiskTrend', tableRef, 'Residual Risk Trend', '', '', [0.05, 0.15, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]);
+        exportPdf('ResidualRiskTrend', tableRef, `${currentYear} - Residual Risk Trend`, '', '', [0.05, 0.25, 0.1, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075]);
     };
 
     const handleExportExcel = () => {
-        exportExcel(tableRef.current, 'Residual Risk Trend');
+        exportExcel(tableRef.current, `${currentYear} - Residual Risk Trend`);
+    };
     };
 
     return (
@@ -103,17 +94,18 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) 
                     <Table ref={tableRef} size="small">
                         <TableHead>
                             <TableRow>
-                                <TableCell rowSpan={2} align="center" sx={{ fontWeight: 'bold' }}>Risk Name</TableCell>
-                                <TableCell rowSpan={2} align="center" sx={{ fontWeight: 'bold' }}>Risk Category</TableCell>
+                                <TableCell rowSpan={2} sx={{ fontWeight: 'bold' }}>No.</TableCell>
+                                <TableCell rowSpan={2} sx={{ fontWeight: 'bold' }}>Risk Name</TableCell>
+                                <TableCell rowSpan={2} sx={{ fontWeight: 'bold' }}>Risk Category</TableCell>
                                 {quarters.map(q => (
-                                    <TableCell key={q} align="center" colSpan={2} sx={{ fontWeight: 'bold' }}>{q}</TableCell>
+                                    <TableCell key={q} align="center" colSpan={2} sx={{ fontWeight: 'bold' }}  data-align="center">{q}</TableCell>
                                 ))}
                             </TableRow>
                             <TableRow>
                                 {quarters.map(q => (
                                     <React.Fragment key={q}>
-                                        <TableCell align="center" sx={{ fontWeight: 'bold' }}>Inherent Risk</TableCell>
-                                        <TableCell align="center" sx={{ fontWeight: 'bold' }}>Residual Risk</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 'bold' }} data-align="center">IR</TableCell>
+                                        <TableCell align="center" sx={{ fontWeight: 'bold' }} data-align="center">RR</TableCell>
                                     </React.Fragment>
                                 ))}
                             </TableRow>
@@ -121,6 +113,7 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) 
                         <TableBody>
                             {risks.map((risk, idx) => (
                                 <TableRow key={risk._id}>
+                                    <TableCell>R{idx + 1}</TableCell>
                                     <TableCell>{risk.riskNameElement}</TableCell>
                                     <TableCell>{risk.riskCategory?.categoryName}</TableCell>
                                     {quarters.map((q, qIdx) => {
@@ -133,11 +126,15 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) 
 
                                         return (
                                             <React.Fragment key={qIdx}>
-                                                <TableCell align="center" data-color={inherent?.color}>
-                                                    <Typography sx={{ color: inherent?.color, fontWeight: 'bold' }}>{inherent?.score} - {inherent?.name || ''}</Typography>
+                                                <TableCell align="center" data-align="center" data-color={inherent?.color}>
+                                                    {inherent ? (
+                                                        <Typography sx={{ color: inherent.color, fontWeight: 'bold' }}>{inherent.score} - {inherent.name}</Typography>
+                                                    ) : ''}
                                                 </TableCell>
-                                                <TableCell align="center" data-color={residual?.color}>
-                                                    <Typography sx={{ color: residual?.color, fontWeight: 'bold' }}>{residual?.score} - {residual?.name || ''}</Typography>
+                                                <TableCell align="center" data-align="center" data-color={residual?.color}>
+                                                    {residual ? (
+                                                        <Typography sx={{ color: residual.color, fontWeight: 'bold' }}>{residual.score} - {residual.name}</Typography>
+                                                    ) : ''}
                                                 </TableCell>
                                             </React.Fragment>
                                         );
