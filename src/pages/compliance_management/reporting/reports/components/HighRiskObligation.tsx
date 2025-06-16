@@ -7,7 +7,8 @@ import { exportPdf } from '../../../../../utils/exportPdf';
 import { exportExcel } from '../../../../../utils/exportExcel';
 import { exportWord } from '../../../../../utils/exportUtils';
 import { PdfType } from '../../../../../types';
-import { getComplianceStatusColor } from './OrganizationCompliance'
+import { getComplianceStatusColor } from './OrganizationCompliance';
+import { getRiskLevelColor } from './OrganizationCompliance';
 
 interface HighRiskOverdueProps {
   year: string;
@@ -18,14 +19,48 @@ interface HighRiskOverdueProps {
 const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obligations }) => {
   const tableRef = useRef<any>(null);
 
+  // Helper to find the effective compliance status for reporting
+  const findEffectiveStatusForReporting = (obligation: Obligation, targetYear: string, targetQuarter: string): 'Compliant' | 'Not Compliant' | null => {
+    // 1. Try to find an Approved update for the target quarter
+    const targetQuarterUpdate = obligation.update?.find(u =>
+      u.year === targetYear &&
+      u.quarter === targetQuarter &&
+      u.assessmentStatus === 'Approved'
+    );
+
+    if (targetQuarterUpdate) {
+      return targetQuarterUpdate.complianceStatus as 'Compliant' | 'Not Compliant';
+    }
+
+    // 2. If no Approved update for the target quarter, find the latest Approved update from any previous quarter
+    const previousApprovedUpdates = obligation.update
+      ?.filter(u =>
+        u.assessmentStatus === 'Approved' &&
+        (parseInt(u.year) < parseInt(targetYear) || (parseInt(u.year) === parseInt(targetYear) && u.quarter < targetQuarter))
+      )
+      .sort((a, b) => {
+        if (parseInt(b.year) !== parseInt(a.year)) return parseInt(b.year) - parseInt(a.year);
+        return b.quarter.localeCompare(a.quarter);
+      });
+
+    if (previousApprovedUpdates && previousApprovedUpdates.length > 0) {
+      return previousApprovedUpdates[0].complianceStatus as 'Compliant' | 'Not Compliant';
+    }
+
+    // 3. If no approved status found for current or previous quarters
+    return null;
+  };
+
   const getHighRiskOverdueObligations = () => {
     return obligations.filter(obligation => {
-      const update = obligation.update?.find(u => u.year === year && u.quarter === quarter);
+      // Only consider active obligations
+      if (obligation.status !== 'Active') return false;
+
+      const effectiveStatus = findEffectiveStatusForReporting(obligation, year, quarter);
+
       return (
-        update &&
-        update.assessmentStatus === 'Approved' &&
-        obligation.riskLevel === 'High' &&
-        update.complianceStatus === 'Not Compliant'
+        effectiveStatus === 'Not Compliant' &&
+        obligation.riskLevel === 'High'
       );
     });
   };
@@ -35,7 +70,7 @@ const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obl
   const handleExportPDF = () => {
     if (overdueObligations.length > 0) {
       const title = `${year}, ${quarter} High-Risk Overdue Obligations`;
-      exportPdf(PdfType.HighRiskOverdue, tableRef, title, '', '', [0.2, 0.2, 0.2, 0.2, 0.2]);
+      exportPdf(PdfType.HighRiskOverdue, tableRef, title, '', '', [0.2, 0.15, 0.15, 0.15, 0.15, 0.2]);
     }
   };
 
@@ -48,7 +83,7 @@ const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obl
   const handleExportWord = () => {
     if (overdueObligations.length > 0) {
       const title = `${year}, ${quarter} High-Risk Overdue Obligations`;
-      exportWord(tableRef, title, [0.2, 0.2, 0.2, 0.2, 0.2]);
+      exportWord(tableRef, title, [0.2, 0.15, 0.15, 0.15, 0.15, 0.2]);
     }
   };
 
@@ -90,6 +125,7 @@ const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obl
           <TableHead>
             <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
               <TableCell>Obligation</TableCell>
+              <TableCell>Risk Level</TableCell>
               <TableCell>Area</TableCell>
               <TableCell>Owner</TableCell>
               <TableCell>Compliance Status</TableCell>
@@ -97,23 +133,33 @@ const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obl
             </TableRow>
           </TableHead>
           <TableBody>
-            {overdueObligations.map((obligation) => (
-              <TableRow key={obligation._id}>
-                <TableCell>{obligation.complianceObligation}</TableCell>
-                <TableCell>{obligation.complianceArea.areaName}</TableCell>
-                <TableCell>{obligation.owner.name}</TableCell>
-                <TableCell
-                  data-color={getComplianceStatusColor(obligation.update?.find(u => u.year === year && u.quarter === quarter)?.complianceStatus || '')}
-                  sx={{color: getComplianceStatusColor(obligation.update?.find(u => u.year === year && u.quarter === quarter)?.complianceStatus || '')}}
-                >{obligation.update?.find(u => u.year === year && u.quarter === quarter)?.complianceStatus}</TableCell>
-                <TableCell>
-                  {obligation.update?.find(u => u.year === year && u.quarter === quarter)?.comments || ''}
-                </TableCell>
-              </TableRow>
-            ))}
+            {overdueObligations.map((obligation) => {
+              const effectiveStatus = findEffectiveStatusForReporting(obligation, year, quarter);
+              const currentUpdate = obligation.update?.find(
+                u => u.year === year && u.quarter === quarter && u.assessmentStatus === 'Approved'
+              );
+              const displayComplianceStatus = effectiveStatus || 'N/A';
+              const displayComments = currentUpdate?.comments || '';
+
+              return (
+                <TableRow key={obligation._id}>
+                  <TableCell>{obligation.complianceObligation}</TableCell>
+                  <TableCell data-color={getRiskLevelColor(obligation.riskLevel)} sx={{ color: getRiskLevelColor(obligation.riskLevel) }}>{obligation.riskLevel}</TableCell>
+                  <TableCell>{obligation.complianceArea.areaName}</TableCell>
+                  <TableCell>{obligation.owner.name}</TableCell>
+                  <TableCell
+                    data-color={getComplianceStatusColor(displayComplianceStatus)}
+                    sx={{ color: getComplianceStatusColor(displayComplianceStatus) }}
+                  >{displayComplianceStatus}</TableCell>
+                  <TableCell>
+                    {displayComments}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
             {overdueObligations.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={6} align="center">
                   No high-risk overdue obligations found for this period.
                 </TableCell>
               </TableRow>

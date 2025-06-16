@@ -19,36 +19,73 @@ interface ComplianceViewProps {
 const ComplianceView: React.FC<ComplianceViewProps> = ({ year, quarter, obligations }) => {
   const { user } = useAuth();
   const isComplianceSuperUser = user?.isComplianceSuperUser;
-  const calculateCompliance = (filteredObligations: Obligation[]) => {
-    if (!filteredObligations.length) return null;
-    const compliantCount = filteredObligations.filter(o => o?.update?.find(u => u.year === year.toString() && u.quarter === quarter)?.complianceStatus === 'Compliant').length;
-    return Math.round((compliantCount / filteredObligations.length) * 100);
+
+  // Helper to find the effective compliance status for reporting
+  const findEffectiveStatusForReporting = (obligation: Obligation, targetYear: string, targetQuarter: string): 'Compliant' | 'Not Compliant' | null => {
+      // 1. Try to find an Approved update for the target quarter
+      const targetQuarterUpdate = obligation.update?.find(u =>
+          u.year === targetYear &&
+          u.quarter === targetQuarter &&
+          u.assessmentStatus === 'Approved'
+      );
+
+      if (targetQuarterUpdate) {
+          return targetQuarterUpdate.complianceStatus as 'Compliant' | 'Not Compliant';
+      }
+
+      // 2. If no Approved update for the target quarter, find the latest Approved update from any previous quarter
+      const previousApprovedUpdates = obligation.update
+          ?.filter(u =>
+              u.assessmentStatus === 'Approved' &&
+              (parseInt(u.year) < parseInt(targetYear) || (parseInt(u.year) === parseInt(targetYear) && u.quarter < targetQuarter))
+          )
+          .sort((a, b) => {
+              if (parseInt(b.year) !== parseInt(a.year)) return parseInt(b.year) - parseInt(a.year);
+              return b.quarter.localeCompare(a.quarter);
+          });
+
+      if (previousApprovedUpdates && previousApprovedUpdates.length > 0) {
+          return previousApprovedUpdates[0].complianceStatus as 'Compliant' | 'Not Compliant';
+      }
+
+      // 3. If no approved status found for current or previous quarters
+      return null; // Or 'Not Compliant' as a default for calculations
   };
 
   const getComplianceData = () => {
-    // Filter obligations for the selected year and quarter
-    const filteredObligations = obligations.filter(o => {
-      const update = o.update?.find(u => u.year === year && u.quarter === quarter);
-      return update && update.assessmentStatus === 'Approved';
-    });
+    // Filter obligations to include only active ones
+    const activeObligations = obligations.filter(o => o.status === 'Active');
 
-    // Calculate organization-wide compliance
-    const organizationCompliance = calculateCompliance(filteredObligations);
+    if (!activeObligations.length) {
+      return { organizationCompliance: null, teamCompliance: [], hasData: false };
+    }
+
+    // Calculate organization-wide compliance based on effective status
+    const compliantCount = activeObligations.filter(ob =>
+        findEffectiveStatusForReporting(ob, year, quarter) === 'Compliant'
+    ).length;
+    
+    const organizationCompliance = Math.round((compliantCount / activeObligations.length) * 100);
 
     // Group obligations by team (owner) and calculate team compliance
-    const teamObligations = filteredObligations.reduce((acc: { [key: string]: Obligation[] }, curr) => {
-      const teamName = curr.owner.name;
+    const teamObligations = activeObligations.reduce((acc: { [key: string]: Obligation[] }, curr) => {
+      const teamName = typeof curr.owner === 'object' ? curr.owner.name : curr.owner; // Handle owner as object or string
       if (!acc[teamName]) acc[teamName] = [];
       acc[teamName].push(curr);
       return acc;
     }, {});
 
-    const teamCompliance = Object.entries(teamObligations).map(([team, obligations]) => ({
-      teamName: team,
-      compliancePercentage: calculateCompliance(obligations)
-    }));
+    const teamCompliance = Object.entries(teamObligations).map(([teamName, teamObs]) => {
+      const teamCompliantCount = teamObs.filter(ob =>
+          findEffectiveStatusForReporting(ob, year, quarter) === 'Compliant'
+      ).length;
+      return {
+        teamName: teamName,
+        compliancePercentage: Math.round((teamCompliantCount / teamObs.length) * 100)
+      };
+    });
 
-    return { organizationCompliance, teamCompliance, hasData: filteredObligations.length > 0 };
+    return { organizationCompliance, teamCompliance, hasData: activeObligations.length > 0 };
   };
 
   const { organizationCompliance, teamCompliance, hasData } = getComplianceData();

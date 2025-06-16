@@ -14,7 +14,7 @@ interface OrganizationComplianceProps {
   obligations: Obligation[];
 }
 
-const getRiskLevelColor = (riskLevel: string) => {
+export const getRiskLevelColor = (riskLevel: string) => {
   switch (riskLevel) {
     case 'High':
       return '#DC2626';  // Red
@@ -41,11 +41,41 @@ export const getComplianceStatusColor = (status: string) => {
 const OrganizationCompliance: React.FC<OrganizationComplianceProps> = ({ year, quarter, obligations }) => {
   const tableRef = useRef<any>(null);
 
+  // Helper to find the effective compliance status for reporting
+  const findEffectiveStatusForReporting = (obligation: Obligation, targetYear: string, targetQuarter: string): 'Compliant' | 'Not Compliant' | null => {
+      // 1. Try to find an Approved update for the target quarter
+      const targetQuarterUpdate = obligation.update?.find(u =>
+          u.year === targetYear &&
+          u.quarter === targetQuarter &&
+          u.assessmentStatus === 'Approved'
+      );
+
+      if (targetQuarterUpdate) {
+          return targetQuarterUpdate.complianceStatus as 'Compliant' | 'Not Compliant';
+      }
+
+      // 2. If no Approved update for the target quarter, find the latest Approved update from any previous quarter
+      const previousApprovedUpdates = obligation.update
+          ?.filter(u =>
+              u.assessmentStatus === 'Approved' &&
+              (parseInt(u.year) < parseInt(targetYear) || (parseInt(u.year) === parseInt(targetYear) && u.quarter < targetQuarter))
+          )
+          .sort((a, b) => {
+              if (parseInt(b.year) !== parseInt(a.year)) return parseInt(b.year) - parseInt(a.year);
+              return b.quarter.localeCompare(a.quarter);
+          });
+
+      if (previousApprovedUpdates && previousApprovedUpdates.length > 0) {
+          return previousApprovedUpdates[0].complianceStatus as 'Compliant' | 'Not Compliant';
+      }
+
+      // 3. If no approved status found for current or previous quarters
+      return null; 
+  };
+
   const getFilteredObligations = () => {
-    return obligations.filter(obligation => {
-      const update = obligation.update?.find(u => u.year === year && u.quarter === quarter);
-      return update && update.assessmentStatus === 'Approved';
-    });
+    // Filter obligations to include only active ones
+    return obligations.filter(obligation => obligation.status === 'Active');
   };
 
   const filteredObligations = getFilteredObligations();
@@ -117,13 +147,14 @@ const OrganizationCompliance: React.FC<OrganizationComplianceProps> = ({ year, q
           </TableHead>
           <TableBody>
             {filteredObligations.map((obligation) => {
-              const quarterUpdate = obligation.update?.find(u => u.year === year && u.quarter === quarter);
-              const currentComplianceStatus = quarterUpdate?.complianceStatus || 'N/A';
+              const effectiveStatus = findEffectiveStatusForReporting(obligation, year, quarter);
+              const displayComplianceStatus = effectiveStatus || 'N/A';
+
               return (
                 <TableRow 
                   key={obligation._id}
                   sx={{
-                    backgroundColor: currentComplianceStatus === 'Not Compliant' 
+                    backgroundColor: displayComplianceStatus === 'Not Compliant' 
                       ? '#fff4f4' 
                       : 'inherit'
                   }}
@@ -139,15 +170,15 @@ const OrganizationCompliance: React.FC<OrganizationComplianceProps> = ({ year, q
                     {obligation.riskLevel}
                   </TableCell>
                   <TableCell 
-                    sx={{ color: getComplianceStatusColor(currentComplianceStatus) }}
-                    data-color={getComplianceStatusColor(currentComplianceStatus)}
+                    sx={{ color: getComplianceStatusColor(displayComplianceStatus) }}
+                    data-color={getComplianceStatusColor(displayComplianceStatus)}
                   >
-                    {currentComplianceStatus}
+                    {displayComplianceStatus}
                   </TableCell>
                 </TableRow>
               );
             })}
-            {filteredObligations.length === 0 && (
+            {filteredObligations.length === 0 && ( /* This check should be against filteredObligations */
               <TableRow>
                 <TableCell colSpan={6} align="center">
                   No compliance details found for this period.

@@ -29,10 +29,45 @@ const ComplianceSummary: React.FC<ComplianceSummaryProps> = ({ year, quarter, ob
   const { user } = useAuth();
   const isComplianceSuperUser = user?.isComplianceSuperUser;
 
+  // Helper to find the effective compliance status for reporting
+  const findEffectiveStatusForReporting = (obligation: Obligation, targetYear: string, targetQuarter: string): 'Compliant' | 'Not Compliant' | null => {
+      // 1. Try to find an Approved update for the target quarter
+      const targetQuarterUpdate = obligation.update?.find(u =>
+          u.year === targetYear &&
+          u.quarter === targetQuarter &&
+          u.assessmentStatus === 'Approved'
+      );
+
+      if (targetQuarterUpdate) {
+          return targetQuarterUpdate.complianceStatus as 'Compliant' | 'Not Compliant';
+      }
+
+      // 2. If no Approved update for the target quarter, find the latest Approved update from any previous quarter
+      const previousApprovedUpdates = obligation.update
+          ?.filter(u =>
+              u.assessmentStatus === 'Approved' &&
+              (parseInt(u.year) < parseInt(targetYear) || (parseInt(u.year) === parseInt(targetYear) && u.quarter < targetQuarter))
+          )
+          .sort((a, b) => {
+              if (parseInt(b.year) !== parseInt(a.year)) return parseInt(b.year) - parseInt(a.year);
+              return b.quarter.localeCompare(a.quarter);
+          });
+
+      if (previousApprovedUpdates && previousApprovedUpdates.length > 0) {
+          return previousApprovedUpdates[0].complianceStatus as 'Compliant' | 'Not Compliant';
+      }
+
+      // 3. If no approved status found for current or previous quarters
+      return null; 
+  };
+
   const calculateSummary = (): SummaryRow[] => {
+    // Filter obligations to include only active ones
+    const activeObligations = obligations.filter(o => o.status === 'Active');
+
     // Group obligations by area
     const areaMap = new Map<string, Obligation[]>();
-    obligations.forEach(obligation => {
+    activeObligations.forEach(obligation => {
       const area = obligation.complianceArea.areaName;
       if (!areaMap.has(area)) {
         areaMap.set(area, []);
@@ -43,20 +78,9 @@ const ComplianceSummary: React.FC<ComplianceSummaryProps> = ({ year, quarter, ob
     // Calculate statistics for each area
     const summary: SummaryRow[] = [];
     areaMap.forEach((areaObligations, area) => {
-      const filteredObligations = areaObligations.filter(o => {
-        const update = o.update?.find(u => u.year === year && u.quarter === quarter);
-        return update && update.assessmentStatus === 'Approved';
-      });
-
-      const total = filteredObligations.length;
-      const compliant = filteredObligations.filter(o => {
-        const update = o.update?.find(u => u.year === year && u.quarter === quarter);
-        return update?.complianceStatus === 'Compliant';
-      }).length;
-      const overdue = filteredObligations.filter(o => {
-        const update = o.update?.find(u => u.year === year && u.quarter === quarter);
-        return update?.complianceStatus === 'Not Compliant';
-      }).length;
+      const total = areaObligations.length;
+      const compliant = areaObligations.filter(o => findEffectiveStatusForReporting(o, year, quarter) === 'Compliant').length;
+      const overdue = areaObligations.filter(o => findEffectiveStatusForReporting(o, year, quarter) === 'Not Compliant').length;
       
       summary.push({
         area,
