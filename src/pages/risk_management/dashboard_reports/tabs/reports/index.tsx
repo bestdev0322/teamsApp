@@ -27,10 +27,6 @@ const Reports: React.FC = () => {
                 const response = await api.get('/residual-risk-assessment-cycle/assessment-years');
                 const years = response.data.data || [];
                 setAvailableYears(years);
-                // Set the most recent year as default if available
-                if (years.length > 0) {
-                    setYear(years[0]);
-                }
             } catch (error) {
                 console.error('Error fetching available years:', error);
                 setAvailableYears([]);
