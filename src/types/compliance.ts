@@ -12,6 +12,7 @@ export enum AssessmentStatus {
 export interface UpdateEntry {
     year: string;
     quarter: string;
+    complianceStatus?: 'Compliant' | 'Not Compliant';
     comments?: string;
     attachments?: Attachment[];
     assessmentStatus?: AssessmentStatus;
@@ -27,6 +28,5 @@ export interface Obligation {
     riskLevel: string;
     status: string;
     tenantId: string;
-    complianceStatus?: 'Compliant' | 'Not Compliant';
     update?: UpdateEntry[];
 } 

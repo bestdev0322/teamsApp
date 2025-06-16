@@ -15,10 +15,10 @@ export interface ObligationDocument extends Document {
   riskLevel: string;
   status: string;
   tenantId: string;
-  complianceStatus?: 'Compliant' | 'Not Compliant';
   update?: {
     year: string;
     quarter: string;
+    complianceStatus?: 'Compliant' | 'Not Compliant';
     comments: string;
     assessmentStatus: AssessmentStatus;
     attachments: {
@@ -64,12 +64,6 @@ const obligationSchema = new Schema<ObligationDocument>({
     type: String,
     required: true
   },
-  complianceStatus: {
-    type: String,
-    required: false,
-    enum: ['Compliant', 'Not Compliant'],
-    default: 'Not Compliant'
-  },
   update: [
     {
       year: {
@@ -79,6 +73,12 @@ const obligationSchema = new Schema<ObligationDocument>({
       quarter: {
         type: String,
         required: true
+      },
+      complianceStatus: {
+        type: String,
+        required: false,
+        enum: ['Compliant', 'Not Compliant'],
+        default: 'Not Compliant'
       },
       comments: {
         type: String,

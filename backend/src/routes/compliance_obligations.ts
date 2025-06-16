@@ -129,29 +129,32 @@ router.put('/:id/update', authenticateToken, async (req: AuthenticatedRequest, r
       result = await Obligation.findOneAndUpdate(
         {
           _id: req.params.id,
-          tenantId: req.user?.tenantId,
-          'update.year': year,
-          'update.quarter': quarter
+          tenantId: req.user?.tenantId
         },
         {
           $set: {
-            complianceStatus,
-            'update.$.comments': comments,
-            'update.$.attachments': attachments
+            'update.$[elem].complianceStatus': complianceStatus,
+            'update.$[elem].comments': comments,
+            'update.$[elem].attachments': attachments
           }
         },
-        { new: true }
+        {
+          new: true,
+          arrayFilters: [
+            { 'elem.year': year, 'elem.quarter': quarter }
+          ]
+        }
       ).populate('complianceArea').populate('owner');
     } else {
       // Add new entry
       result = await Obligation.findOneAndUpdate(
         { _id: req.params.id, tenantId: req.user?.tenantId },
         {
-          $set: { complianceStatus },
           $push: {
             update: {
               year,
               quarter,
+              complianceStatus,
               comments,
               assessmentStatus: 'Draft',
               attachments
@@ -161,7 +164,6 @@ router.put('/:id/update', authenticateToken, async (req: AuthenticatedRequest, r
         { new: true }
       ).populate('complianceArea').populate('owner');
     }
-
     if (!result) {
       return res.status(404).json({ message: 'Obligation not found' });
     }
@@ -243,9 +245,9 @@ router.post('/submit-quarterly-updates', authenticateToken, async (req: Authenti
         continue; // Skip to the next obligation
       }
 
-      // Find the update entry for the current year and quarter
+      // Find the update entry for the current year and quarter, ensuring year comparison is string-based
       const existingUpdateIndex = obligation.update?.findIndex(
-        (u) => u.year === year && u.quarter === quarter
+        (u) => String(u.year) === String(year) && u.quarter === quarter
       );
 
       if (existingUpdateIndex !== -1 && obligation.update) {
@@ -257,7 +259,7 @@ router.post('/submit-quarterly-updates', authenticateToken, async (req: Authenti
           obligation.update = [];
         }
         obligation.update.push({
-          year,
+          year: String(year), // Ensure year is stored as a string for consistency
           quarter,
           comments: '', // Default empty comments on new submission
           attachments: [], // Default empty attachments on new submission

@@ -19,6 +19,7 @@ export interface UpdateEntry {
     quarter: string;
     comments?: string;
     attachments?: Attachment[];
+    complianceStatus?: string;
 }
 
 export interface Obligation {
@@ -48,11 +49,34 @@ const FileLink = styled('a')({
 });
 
 const CommentsAttachmentsViewModal: React.FC<CommentsAttachmentsViewModalProps> = ({ open, onClose, obligation, year, quarter }) => {
+    // Helper to find the latest update before the current year/quarter
+    const findLatestUpdate = (ob: Obligation, currentYear: number, currentQuarter: string) => {
+        if (!ob.update || ob.update.length === 0) return null;
+
+        const sortedUpdates = [...ob.update].sort((a, b) => {
+            const aYear = parseInt(a.year);
+            const bYear = parseInt(b.year);
+            if (aYear !== bYear) return bYear - aYear;
+            return b.quarter.localeCompare(a.quarter);
+        });
+
+        return sortedUpdates.find(u => {
+            const updateYear = parseInt(u.year);
+            if (updateYear < currentYear) return true;
+            if (updateYear === currentYear) return u.quarter < currentQuarter;
+            return false;
+        }) || null;
+    };
+
     // Find the relevant update entry for the current year and quarter
     const currentQuarterUpdate = obligation?.update?.find(u => u.year === year.toString() && u.quarter === quarter);
-
-    const comments = currentQuarterUpdate?.comments;
-    const attachments = currentQuarterUpdate?.attachments;
+    
+    // If no update for the current quarter, find the latest available one
+    const displayUpdate = currentQuarterUpdate || (obligation ? findLatestUpdate(obligation, year, quarter) : null);
+    
+    const comments = displayUpdate?.comments;
+    const attachments = displayUpdate?.attachments;
+    const isFromPreviousQuarter = !currentQuarterUpdate && displayUpdate;
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -73,6 +97,11 @@ const CommentsAttachmentsViewModal: React.FC<CommentsAttachmentsViewModalProps> 
                     >
                         {comments || 'No comments provided.'} {/* Use comments from the update entry */}
                     </Typography>
+                    {isFromPreviousQuarter && displayUpdate && (
+                        <Typography variant="caption" display="block" sx={{ color: 'text.secondary', mt: 1 }}>
+                            (Showing comments from {displayUpdate.quarter} {displayUpdate.year})
+                        </Typography>
+                    )}
                 </Box>
 
                 {attachments && attachments.length > 0 && (

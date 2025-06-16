@@ -63,18 +63,46 @@ const ComplianceUpdateModal: React.FC<ComplianceUpdateModalProps> = ({ open, onC
         files?: string;
     }>({});
 
+    // Helper to find the latest update before the current year/quarter
+    const findLatestUpdate = (ob: Obligation, currentYear: number, currentQuarter: string) => {
+        if (!ob.update || ob.update.length === 0) return null;
+
+        const sortedUpdates = [...ob.update].sort((a, b) => {
+            const aYear = parseInt(a.year);
+            const bYear = parseInt(b.year);
+            if (aYear !== bYear) return bYear - aYear;
+            return b.quarter.localeCompare(a.quarter);
+        });
+
+        return sortedUpdates.find(u => {
+            const updateYear = parseInt(u.year);
+            if (updateYear < currentYear) return true;
+            if (updateYear === currentYear) return u.quarter < currentQuarter;
+            return false;
+        }) || null;
+    };
+
     // Find the relevant update entry for the current year and quarter
     const currentQuarterUpdate = obligation?.update?.find(u => u.year === year.toString() && u.quarter === quarter);
 
     useEffect(() => {
         if (open && obligation) {
-            setComplianceStatus(obligation.complianceStatus || 'Not Compliant');
-            setComments(currentQuarterUpdate?.comments || '');
-            setAttachments(currentQuarterUpdate?.attachments || []);
+            // If there's a current quarter update, use its data
+            if (currentQuarterUpdate) {
+                setComplianceStatus(currentQuarterUpdate.complianceStatus || 'Not Compliant');
+                setComments(currentQuarterUpdate.comments || '');
+                setAttachments(currentQuarterUpdate.attachments || []);
+            } else {
+                // If no current quarter update, try to find the latest previous update
+                const latestPreviousUpdate = findLatestUpdate(obligation, year, quarter);
+                setComplianceStatus(latestPreviousUpdate?.complianceStatus || 'Not Compliant');
+                setComments(latestPreviousUpdate?.comments || '');
+                setAttachments(latestPreviousUpdate?.attachments || []);
+            }
             setFilesToUpload([]);
             setErrors({}); // Reset errors when modal opens
         }
-    }, [open, obligation, currentQuarterUpdate]);
+    }, [open, obligation, currentQuarterUpdate, year, quarter]);
 
     const validateForm = () => {
         const newErrors: {

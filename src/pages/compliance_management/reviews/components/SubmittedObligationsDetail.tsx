@@ -5,8 +5,8 @@ import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, Tab
 import { api } from '../../../../services/api';
 import { riskColors } from '../../obligation/obligationModal';
 import ArticleIcon from '@mui/icons-material/Article'; // Icon for comments/attachments
-import ComplianceUpdateModal, { FileToUpload } from './ComplianceUpdateModal';
-import CommentsAttachmentsViewModal from './CommentsAttachmentsViewModal'; // Import the new modal
+import ComplianceUpdateModal, { FileToUpload } from '../../quarterly_updates/components/ComplianceUpdateModal';
+import CommentsAttachmentsViewModal from '../../quarterly_updates/components/CommentsAttachmentsViewModal'; // Import the new modal
 import { useToast } from '../../../../contexts/ToastContext';
 import { useAppSelector } from '../../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
@@ -36,13 +36,38 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     const [exportType, setExportType] = useState<'pdf' | 'excel' | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Helper to find the latest update before the current year/quarter
+    const findLatestUpdate = (ob: Obligation, currentYear: number, currentQuarter: string) => {
+        if (!ob.update || ob.update.length === 0) return null;
+
+        const sortedUpdates = [...ob.update].sort((a, b) => {
+            const aYear = parseInt(a.year);
+            const bYear = parseInt(b.year);
+            if (aYear !== bYear) return bYear - aYear;
+            return b.quarter.localeCompare(a.quarter);
+        });
+
+        return sortedUpdates.find(u => {
+            const updateYear = parseInt(u.year);
+            if (updateYear < currentYear) return true;
+            if (updateYear === currentYear) return u.quarter < currentQuarter;
+            return false;
+        }) || null;
+    };
+
     // Filter obligations that have submitted updates for the current quarter
     const obligations = allObligations.filter(ob =>
         ob.status === 'Active' &&
-        ob.update?.some(u =>
-            u.year === year.toString() &&
-            u.quarter === quarter &&
-            u.assessmentStatus === AssessmentStatus.Submitted
+        (
+            ob.update?.some(u =>
+                u.year === year.toString() &&
+                u.quarter === quarter &&
+                u.assessmentStatus === AssessmentStatus.Submitted
+            ) ||
+            !ob.update?.some(u =>
+                u.year === year.toString() &&
+                u.quarter === quarter
+            )
         )
     );
 
@@ -51,7 +76,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
         ob.frequency.toLowerCase().includes(search.toLowerCase()) ||
         (typeof ob.owner === 'object' ? ob.owner.name : ob.owner).toLowerCase().includes(search.toLowerCase()) ||
         ob.riskLevel.toLowerCase().includes(search.toLowerCase()) ||
-        (ob.complianceStatus || '').toLowerCase().includes(search.toLowerCase())
+        (ob.update?.find(u => u.year === year.toString() && u.quarter === quarter)?.complianceStatus || '').toLowerCase().includes(search.toLowerCase())
     );
 
     useEffect(() => {
@@ -162,20 +187,9 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     };
 
     const handleViewCommentsAttachments = (obligation: Obligation) => {
-        // Find the most recent update for the current quarter to display
-        const latestQuarterUpdate = obligation.update?.find(u => u.year === year.toString() && u.quarter === quarter); // Assuming year is passed as number and stored as string
-        if (latestQuarterUpdate) {
-            // Pass the specific update entry and obligation ID to the modal
-            setObligationForView(obligation); // Pass the full obligation
-            // The CommentsAttachmentsViewModal will need to find the correct update entry internally
-            setCommentsAttachmentsModalOpen(true);
-        } else {
-            // Handle case where no update exists for the current quarter (e.g., show empty modal or alert)
-            console.log('No update found for this quarter for obligation', obligation._id);
-            // Pass the full obligation, modal should handle empty state if update is not found
-            setObligationForView(obligation);
-            setCommentsAttachmentsModalOpen(true);
-        }
+        // Pass the full obligation to the modal
+        setObligationForView(obligation);
+        setCommentsAttachmentsModalOpen(true);
     };
 
     const handleCloseCommentsAttachmentsModal = () => {
@@ -215,12 +229,13 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
 
     const handleSelectAllClick = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.checked) {
-            // Select all obligations that have an update for the current quarter with comments or attachments AND a compliance status
+            // Select all obligations that have a submitted update for the current quarter with comments or attachments AND a compliance status
             const allSelectableObligationIds = obligations.filter(ob => {
-                const quarterUpdate = ob.update?.find(u => u.year === year.toString() && u.quarter === quarter);
-                // Check condition based on the quarter's update
-                const hasCommentsOrAttachmentsForQuarter = quarterUpdate && ((quarterUpdate.comments && quarterUpdate.comments.length > 0) || (quarterUpdate.attachments && quarterUpdate.attachments.length > 0));
-                return hasCommentsOrAttachmentsForQuarter && ob.complianceStatus !== undefined;
+                const quarterUpdate = ob.update?.find(u => u.year === year.toString() && u.quarter === quarter && u.assessmentStatus === AssessmentStatus.Submitted);
+                const latestUpdate = !quarterUpdate ? findLatestUpdate(ob, year, quarter) : null;
+                const hasCommentsOrAttachmentsForQuarter = quarterUpdate && ((quarterUpdate.comments && quarterUpdate.comments.length > 0) || (quarterUpdate.attachments && quarterUpdate.attachments.length > 0)) ||
+                    latestUpdate && ((latestUpdate.comments && latestUpdate.comments.length > 0) || (latestUpdate.attachments && latestUpdate.attachments.length > 0));
+                return hasCommentsOrAttachmentsForQuarter;
             }).map(ob => ob._id);
             setSelectedObligations(allSelectableObligationIds);
         } else {
@@ -245,7 +260,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                         `Submitted Obligations for ${quarter} ${year}`,
                         '',
                         '',
-                        [0.17, 0.17, 0.17, 0.17, 0.17, 0.15] // Adjust as needed for your columns
+                        [0.3, 0.15, 0.2, 0.15, 0.2] // Adjust as needed for your columns
                     );
                 } else if (exportType === 'excel') {
                     exportExcel(tableRef.current, `Submitted Obligations for ${quarter} ${year}`);
@@ -265,9 +280,11 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
     const canApprove = selectedObligations.length > 0;
     // Filter selectable obligations based on having an update for the current quarter with comments/attachments AND compliance status
     const selectableObligations = obligations.filter(ob => {
-        const quarterUpdate = ob.update?.find(u => u.year === year.toString() && u.quarter === quarter);
-        const hasCommentsOrAttachmentsForQuarter = quarterUpdate && ((quarterUpdate.comments && quarterUpdate.comments.length > 0) || (quarterUpdate.attachments && quarterUpdate.attachments.length > 0));
-        return hasCommentsOrAttachmentsForQuarter && ob.complianceStatus !== undefined;
+        const quarterUpdate = ob.update?.find(u => u.year === year.toString() && u.quarter === quarter && u.assessmentStatus === AssessmentStatus.Submitted);
+        const latestUpdate = !quarterUpdate ? findLatestUpdate(ob, year, quarter) : null;
+        const hasCommentsOrAttachmentsForQuarter = quarterUpdate && ((quarterUpdate.comments && quarterUpdate.comments.length > 0) || (quarterUpdate.attachments && quarterUpdate.attachments.length > 0)) ||
+            latestUpdate && ((latestUpdate.comments && latestUpdate.comments.length > 0) || (latestUpdate.attachments && latestUpdate.attachments.length > 0));
+        return hasCommentsOrAttachmentsForQuarter;
     });
     const isAllSelected = selectableObligations.length > 0 && selectedObligations.length === selectableObligations.length;
 
@@ -382,7 +399,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                                 <TableCell>Owner</TableCell>
                                 <TableCell>Risk Level</TableCell>
                                 <TableCell>Compliance Status</TableCell>
-                                <TableCell align='center'>Comments</TableCell>
+                                <TableCell align='center' className="noprint">Comments</TableCell>
                                 <TableCell align='center' className="noprint">Actions</TableCell>
                             </TableRow>
                         </TableHead>
@@ -390,13 +407,15 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                             {filteredObligations.map(obligation => {
                                 // Find the update entry for the current quarter
                                 const quarterUpdate = obligation.update?.find(u => u.year === year.toString() && u.quarter === quarter);
+                                // Find the latest update before current quarter if current quarter has no update
+                                const latestUpdate = !quarterUpdate ? findLatestUpdate(obligation, year, quarter) : null;
+                                // Use current quarter update or fallback to latest update
+                                const displayUpdate = quarterUpdate || latestUpdate;
 
                                 // Checkbox appears if an update exists for the current quarter with comments or attachments AND complianceStatus is set
-                                const hasCommentsOrAttachmentsForQuarter = quarterUpdate && ((quarterUpdate.comments && quarterUpdate.comments.length > 0) || (quarterUpdate.attachments && quarterUpdate.attachments.length > 0));
-                                const canSelect = hasCommentsOrAttachmentsForQuarter && obligation.complianceStatus !== undefined;
-
-                                // Determine if comments/attachments icon should be shown (based on *any* update entry)
-                                const hasAnyCommentsOrAttachments = obligation.update?.some(u => (u.comments && u.comments.length > 0) || (u.attachments && u.attachments.length > 0));
+                                const hasCommentsOrAttachmentsForQuarter = quarterUpdate && ((quarterUpdate.comments && quarterUpdate.comments.length > 0) || (quarterUpdate.attachments && quarterUpdate.attachments.length > 0)) ||
+                                    latestUpdate && ((latestUpdate.comments && latestUpdate.comments.length > 0) || (latestUpdate.attachments && latestUpdate.attachments.length > 0));
+                                const canSelect = hasCommentsOrAttachmentsForQuarter;
 
                                 return (
                                     <TableRow key={obligation._id} hover>
@@ -425,11 +444,16 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
                                                 {obligation.riskLevel}
                                             </Box>
                                         </TableCell>
-                                        <TableCell sx={{ color: obligation.complianceStatus === 'Compliant' ? 'green' : (obligation.complianceStatus === 'Not Compliant' ? 'red' : 'inherit') }}>
-                                            {obligation.complianceStatus || 'N/A'}
+                                        <TableCell sx={{ color: displayUpdate?.complianceStatus === 'Compliant' ? 'green' : (displayUpdate?.complianceStatus === 'Not Compliant' ? 'red' : 'inherit') }}>
+                                            {displayUpdate?.complianceStatus || 'N/A'}
+                                            {latestUpdate && !quarterUpdate && (
+                                                <Typography variant="caption" display="block" sx={{ color: 'text.secondary' }}>
+                                                    (From {latestUpdate.quarter} {latestUpdate.year})
+                                                </Typography>
+                                            )}
                                         </TableCell>
                                         <TableCell align='center'>
-                                            {hasAnyCommentsOrAttachments ? (
+                                            {hasCommentsOrAttachmentsForQuarter ? (
                                                 <IconButton size="small" onClick={() => handleViewCommentsAttachments(obligation)}>
                                                     <ArticleIcon fontSize="small" />
                                                 </IconButton>

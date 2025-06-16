@@ -25,7 +25,7 @@ const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obl
         update &&
         update.assessmentStatus === 'Approved' &&
         obligation.riskLevel === 'High' &&
-        obligation.complianceStatus === 'Not Compliant'
+        update.complianceStatus === 'Not Compliant'
       );
     });
   };
@@ -41,15 +41,6 @@ const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obl
 
   const handleExportExcel = () => {
     if (overdueObligations.length > 0) {
-      const headers = ['Obligation', 'Area', 'Owner', 'Compliance Status', 'Comments'];
-      const data = overdueObligations.map(obligation => [
-        obligation.complianceObligation,
-        obligation.complianceArea.areaName,
-        obligation.owner.name,
-        obligation.complianceStatus,
-        obligation.update?.find(u => u.year === year && u.quarter === quarter)?.comments || ''
-      ]);
-
       exportExcel(tableRef.current, `${year}_${quarter}_High_Risk_Overdue`);
     }
   };
@@ -112,9 +103,9 @@ const HighRiskObligation: React.FC<HighRiskOverdueProps> = ({ year, quarter, obl
                 <TableCell>{obligation.complianceArea.areaName}</TableCell>
                 <TableCell>{obligation.owner.name}</TableCell>
                 <TableCell
-                  data-color={getComplianceStatusColor(obligation.complianceStatus || '')}
-                  sx={{color: getComplianceStatusColor(obligation.complianceStatus || '')}}
-                >{obligation.complianceStatus}</TableCell>
+                  data-color={getComplianceStatusColor(obligation.update?.find(u => u.year === year && u.quarter === quarter)?.complianceStatus || '')}
+                  sx={{color: getComplianceStatusColor(obligation.update?.find(u => u.year === year && u.quarter === quarter)?.complianceStatus || '')}}
+                >{obligation.update?.find(u => u.year === year && u.quarter === quarter)?.complianceStatus}</TableCell>
                 <TableCell>
                   {obligation.update?.find(u => u.year === year && u.quarter === quarter)?.comments || ''}
                 </TableCell>

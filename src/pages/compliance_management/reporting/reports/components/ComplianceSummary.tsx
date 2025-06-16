@@ -49,8 +49,14 @@ const ComplianceSummary: React.FC<ComplianceSummaryProps> = ({ year, quarter, ob
       });
 
       const total = filteredObligations.length;
-      const compliant = filteredObligations.filter(o => o.complianceStatus === 'Compliant').length;
-      const overdue = filteredObligations.filter(o => o.complianceStatus === 'Not Compliant').length;
+      const compliant = filteredObligations.filter(o => {
+        const update = o.update?.find(u => u.year === year && u.quarter === quarter);
+        return update?.complianceStatus === 'Compliant';
+      }).length;
+      const overdue = filteredObligations.filter(o => {
+        const update = o.update?.find(u => u.year === year && u.quarter === quarter);
+        return update?.complianceStatus === 'Not Compliant';
+      }).length;
       
       summary.push({
         area,

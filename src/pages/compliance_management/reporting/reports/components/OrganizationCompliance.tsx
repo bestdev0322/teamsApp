@@ -59,16 +59,6 @@ const OrganizationCompliance: React.FC<OrganizationComplianceProps> = ({ year, q
 
   const handleExportExcel = () => {
     if (filteredObligations.length > 0) {
-      const headers = ['Obligation', 'Area', 'Owner', 'Frequency', 'Risk Level', 'Compliance Status'];
-      const data = filteredObligations.map(obligation => [
-        obligation.complianceObligation,
-        obligation.complianceArea.areaName,
-        obligation.owner.name,
-        obligation.frequency,
-        obligation.riskLevel,
-        obligation.complianceStatus
-      ]);
-      
       exportExcel(tableRef.current, `${year}_${quarter}_Organization_Compliance`);
     }
   };
@@ -126,33 +116,37 @@ const OrganizationCompliance: React.FC<OrganizationComplianceProps> = ({ year, q
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredObligations.map((obligation) => (
-              <TableRow 
-                key={obligation._id}
-                sx={{
-                  backgroundColor: obligation.complianceStatus === 'Not Compliant' 
-                    ? '#fff4f4' 
-                    : 'inherit'
-                }}
-              >
-                <TableCell>{obligation.complianceObligation}</TableCell>
-                <TableCell>{obligation.complianceArea.areaName}</TableCell>
-                <TableCell>{obligation.owner.name}</TableCell>
-                <TableCell>{obligation.frequency}</TableCell>
-                <TableCell 
-                  sx={{ color: getRiskLevelColor(obligation.riskLevel) }}
-                  data-color={getRiskLevelColor(obligation.riskLevel)}
+            {filteredObligations.map((obligation) => {
+              const quarterUpdate = obligation.update?.find(u => u.year === year && u.quarter === quarter);
+              const currentComplianceStatus = quarterUpdate?.complianceStatus || 'N/A';
+              return (
+                <TableRow 
+                  key={obligation._id}
+                  sx={{
+                    backgroundColor: currentComplianceStatus === 'Not Compliant' 
+                      ? '#fff4f4' 
+                      : 'inherit'
+                  }}
                 >
-                  {obligation.riskLevel}
-                </TableCell>
-                <TableCell 
-                  sx={{ color: getComplianceStatusColor(obligation.complianceStatus || '') }}
-                  data-color={getComplianceStatusColor(obligation.complianceStatus || '')}
-                >
-                  {obligation.complianceStatus}
-                </TableCell>
-              </TableRow>
-            ))}
+                  <TableCell>{obligation.complianceObligation}</TableCell>
+                  <TableCell>{obligation.complianceArea.areaName}</TableCell>
+                  <TableCell>{obligation.owner.name}</TableCell>
+                  <TableCell>{obligation.frequency}</TableCell>
+                  <TableCell 
+                    sx={{ color: getRiskLevelColor(obligation.riskLevel) }}
+                    data-color={getRiskLevelColor(obligation.riskLevel)}
+                  >
+                    {obligation.riskLevel}
+                  </TableCell>
+                  <TableCell 
+                    sx={{ color: getComplianceStatusColor(currentComplianceStatus) }}
+                    data-color={getComplianceStatusColor(currentComplianceStatus)}
+                  >
+                    {currentComplianceStatus}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
             {filteredObligations.length === 0 && (
               <TableRow>
                 <TableCell colSpan={6} align="center">

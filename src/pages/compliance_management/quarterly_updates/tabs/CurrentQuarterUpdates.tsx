@@ -6,25 +6,12 @@ import { fetchComplianceSettings } from '../../../../store/slices/complianceSett
 import { getCurrentQuarterYear } from '../../../../store/slices/complianceObligationsSlice';
 import QuarterObligationsDetail from '../components/QuarterObligationsDetail';
 
-interface Quarter {
-    quarter: string;
-    start: string;
-    end: string;
-}
-
-interface ComplianceSetting {
-    id: string;
-    year: number;
-    firstMonth: string;
-    quarters: Quarter[];
-}
 
 const CurrentQuarterUpdates: React.FC = () => {
     const dispatch = useAppDispatch();
     const { year: currentYear, quarter: currentQuarter } = useAppSelector(getCurrentQuarterYear);
     const settingsStatus = useAppSelector((state: any) => state.complianceSettings.status);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [showDetail, setShowDetail] = useState(false);
 
     useEffect(() => {
@@ -45,10 +32,6 @@ const CurrentQuarterUpdates: React.FC = () => {
 
     if (loading) {
         return <Typography>Loading...</Typography>;
-    }
-
-    if (error) {
-        return <Typography color="error">{error}</Typography>;
     }
 
     if (showDetail && currentQuarter && currentYear) {

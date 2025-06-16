@@ -4,9 +4,9 @@ import { ExportButton } from '../../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { riskColors } from '../../obligation/obligationModal';
 import { api } from '../../../../services/api';
-import ComplianceUpdateModal, { FileToUpload } from './ComplianceUpdateModal';
+import ComplianceUpdateModal, { FileToUpload } from '../../quarterly_updates/components/ComplianceUpdateModal';
 import ArticleIcon from '@mui/icons-material/Article'; // Icon for comments/attachments
-import CommentsAttachmentsViewModal from './CommentsAttachmentsViewModal'; // Import the view modal
+import CommentsAttachmentsViewModal from '../../quarterly_updates/components/CommentsAttachmentsViewModal'; // Import the view modal
 import { useToast } from '../../../../contexts/ToastContext';
 import { useAppSelector } from '../../../../hooks/useAppSelector';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
@@ -49,7 +49,7 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
         ob.frequency.toLowerCase().includes(search.toLowerCase()) ||
         (typeof ob.owner === 'object' ? ob.owner.name : ob.owner).toLowerCase().includes(search.toLowerCase()) ||
         ob.riskLevel.toLowerCase().includes(search.toLowerCase()) ||
-        (ob.complianceStatus || '').toLowerCase().includes(search.toLowerCase())
+        (ob.update?.find(u => u.year === year.toString() && u.quarter === quarter)?.complianceStatus || '').toLowerCase().includes(search.toLowerCase())
     );
 
     useEffect(() => {
@@ -186,7 +186,7 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
                         `Approved Obligations for ${quarter} ${year}`,
                         '',
                         '',
-                        [0.17, 0.17, 0.17, 0.17, 0.17, 0.15]
+                        [0.3, 0.15, 0.2, 0.15, 0.2]
                     );
                 } else if (exportType === 'excel') {
                     exportExcel(tableRef.current, `Approved Obligations for ${quarter} ${year}`);
@@ -297,8 +297,8 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
                                                 {obligation.riskLevel}
                                             </Box>
                                         </TableCell>
-                                        <TableCell sx={{ color: obligation.complianceStatus === 'Compliant' ? 'green' : (obligation.complianceStatus === 'Not Compliant' ? 'red' : 'inherit') }}>
-                                            {obligation.complianceStatus || 'N/A'}
+                                        <TableCell sx={{ color: displayQuarterUpdate?.complianceStatus === 'Compliant' ? 'green' : (displayQuarterUpdate?.complianceStatus === 'Not Compliant' ? 'red' : 'inherit') }}>
+                                            {displayQuarterUpdate?.complianceStatus || 'N/A'}
                                         </TableCell>
                                         <TableCell align='center'>
                                             {hasCommentsOrAttachmentsForQuarter ? (

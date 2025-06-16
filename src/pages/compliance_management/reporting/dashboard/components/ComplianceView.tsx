@@ -21,7 +21,7 @@ const ComplianceView: React.FC<ComplianceViewProps> = ({ year, quarter, obligati
   const isComplianceSuperUser = user?.isComplianceSuperUser;
   const calculateCompliance = (filteredObligations: Obligation[]) => {
     if (!filteredObligations.length) return null;
-    const compliantCount = filteredObligations.filter(o => o.complianceStatus === 'Compliant').length;
+    const compliantCount = filteredObligations.filter(o => o?.update?.find(u => u.year === year.toString() && u.quarter === quarter)?.complianceStatus === 'Compliant').length;
     return Math.round((compliantCount / filteredObligations.length) * 100);
   };
 

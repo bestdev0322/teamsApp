@@ -42,7 +42,8 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
         ob.frequency.toLowerCase().includes(search.toLowerCase()) ||
         (typeof ob.owner === 'object' ? ob.owner.name : ob.owner).toLowerCase().includes(search.toLowerCase()) ||
         ob.riskLevel.toLowerCase().includes(search.toLowerCase()) ||
-        (ob.complianceStatus || '').toLowerCase().includes(search.toLowerCase())
+        (ob?.update?.find(q => q.year === year.toString() && q.quarter === quarter)?.complianceStatus || '').toLowerCase().includes(search.toLowerCase())
+
     );
 
     useEffect(() => {
@@ -87,7 +88,7 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
                         `Approved Obligations for ${quarter} ${year}`,
                         '',
                         '',
-                        [0.17, 0.17, 0.17, 0.17, 0.17, 0.15] // Adjust as needed for your columns
+                        [0.3, 0.15, 0.2, 0.15, 0.2] // Adjust as needed for your columns
                     );
                 } else if (exportType === 'excel') {
                     exportExcel(tableRef.current, `Approved Obligations for ${quarter} ${year}`);
@@ -197,8 +198,8 @@ const ApprovedObligationsDetail: React.FC<ApprovedObligationsDetailProps> = ({ y
                                                 {obligation.riskLevel}
                                             </Box>
                                         </TableCell>
-                                        <TableCell sx={{ color: obligation.complianceStatus === 'Compliant' ? 'green' : (obligation.complianceStatus === 'Not Compliant' ? 'red' : 'inherit') }}>
-                                            {obligation.complianceStatus || 'N/A'}
+                                        <TableCell sx={{ color: displayQuarterUpdate.complianceStatus === 'Compliant' ? 'green' : (displayQuarterUpdate.complianceStatus === 'Not Compliant' ? 'red' : 'inherit') }}>
+                                            {displayQuarterUpdate.complianceStatus || 'N/A'}
                                         </TableCell>
                                         <TableCell align='center'>
                                             {hasCommentsOrAttachmentsForQuarter ? (

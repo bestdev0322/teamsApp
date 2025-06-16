@@ -26,9 +26,9 @@ const ComplianceTrendView: React.FC<ComplianceTrendViewProps> = ({ year, obligat
   const isComplianceSuperUser = user?.isComplianceSuperUser;
   const orgTableRef = useRef<any>(null);
 
-  const calculateCompliance = (filteredObligations: Obligation[]) => {
+  const calculateCompliance = (filteredObligations: Obligation[], quarter) => {
     if (!filteredObligations.length) return { compliance: 0, nonCompliance: 0 };
-    const compliantCount = filteredObligations.filter(o => o.complianceStatus === 'Compliant').length;
+    const compliantCount = filteredObligations.filter(o => o?.update.find(u => u.year === year.toString() && u.quarter === quarter)?.complianceStatus === 'Compliant').length;
     const total = filteredObligations.length;
     const compliance = Math.round((compliantCount / total) * 100);
     return {
@@ -46,7 +46,7 @@ const ComplianceTrendView: React.FC<ComplianceTrendViewProps> = ({ year, obligat
         const update = o.update?.find(u => u.year === year && u.quarter === q);
         return update && update.assessmentStatus === 'Approved';
       });
-      const { compliance, nonCompliance } = calculateCompliance(quarterObligations);
+      const { compliance, nonCompliance } = calculateCompliance(quarterObligations, q);
       return {
         quarter: q,
         compliance,
@@ -62,7 +62,7 @@ const ComplianceTrendView: React.FC<ComplianceTrendViewProps> = ({ year, obligat
           const update = o.update?.find(u => u.year === year && u.quarter === q);
           return update && update.assessmentStatus === 'Approved' && o.owner.name === team;
         });
-        const { compliance, nonCompliance } = calculateCompliance(quarterObligations);
+        const { compliance, nonCompliance } = calculateCompliance(quarterObligations, q);
         return {
           quarter: q,
           compliance,
