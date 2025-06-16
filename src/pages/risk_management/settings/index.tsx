@@ -56,15 +56,15 @@ const RiskSettings: React.FC = () => {
                 </StyledTabs>
             </Box>
             
-            <TabPanel value={tabValue} index={6}>
+            <TabPanel value={tabValue} index={0}>
                 <RiskChampions />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={4}>
+            <TabPanel value={tabValue} index={1}>
                 <RiskResponse />
             </TabPanel>
             
-            <TabPanel value={tabValue} index={5}>
+            <TabPanel value={tabValue} index={2}>
                 <ControlEffectiveness />
             </TabPanel>
 
@@ -72,15 +72,15 @@ const RiskSettings: React.FC = () => {
                 <RiskRating />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={2}>
+            <TabPanel value={tabValue} index={4}>
                 <LikelihoodSettings />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={1}>
+            <TabPanel value={tabValue} index={5}>
                 <ImpactSettings />
             </TabPanel>
 
-            <TabPanel value={tabValue} index={0}>
+            <TabPanel value={tabValue} index={6}>
                  <RiskCategories />
             </TabPanel>
             
