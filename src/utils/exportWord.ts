@@ -1,5 +1,5 @@
 import { saveAs } from 'file-saver';
-import { Document, Packer, Paragraph, Table as DocxTable, TableCell as DocxTableCell, TableRow as DocxTableRow, WidthType, TextRun } from 'docx';
+import { Document, Packer, Paragraph, Table as DocxTable, TableCell as DocxTableCell, TableRow as DocxTableRow, WidthType, TextRun, VerticalMergeType } from 'docx';
 
 function hexToRgb(hex: string) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -16,25 +16,41 @@ export async function exportWord(tableRef: React.MutableRefObject<any>, title: s
   const tableElement = tableRef.current as HTMLTableElement;
   if (!tableElement) return;
 
-  // Extract table data, skipping noprint cells
-  const rows = Array.from(tableElement.rows);
-  if (rows.length === 0) return;
+  const htmlRows = Array.from(tableElement.rows);
+  if (htmlRows.length === 0) return;
 
-  const docxRows = rows.map((row, rowIndex) => {
-    const cells = Array.from(row.cells).filter(
+  const docxRows: DocxTableRow[] = [];
+
+  for (let rowIndex = 0; rowIndex < htmlRows.length; rowIndex++) {
+    const htmlCells = Array.from(htmlRows[rowIndex].cells).filter(
       (cell) => !cell.classList.contains('noprint')
     );
-    return new DocxTableRow({
-      children: cells.map((cell, colIndex) => {
-        // Handle data-color for text color
+
+    const docxCells: DocxTableCell[] = [];
+    let htmlCellIndex = 0;
+
+    for (let currentGridColIndex = 0; currentGridColIndex < columnWidths.length;) {
+      if (htmlCellIndex < htmlCells.length) {
+        const cell = htmlCells[htmlCellIndex];
+
+        const rowSpan = cell.rowSpan > 1 ? cell.rowSpan : undefined;
+        const colSpan = cell.colSpan > 1 ? cell.colSpan : undefined;
+        let calculatedWidth = 0;
+        const actualColSpan = colSpan || 1;
+        for (let i = 0; i < actualColSpan; i++) {
+          if (columnWidths[currentGridColIndex + i] !== undefined) {
+            calculatedWidth += columnWidths[currentGridColIndex + i];
+          } else {
+            console.warn(`Column width for grid index ${currentGridColIndex + i} is undefined.`);
+          }
+        }
+
         const dataColor = cell.getAttribute('data-color');
         let color: string | undefined = undefined;
         if (dataColor) {
-          // Convert rgb/hex to hex string for docx
           if (dataColor.startsWith('#')) {
             color = dataColor.replace('#', '');
           } else if (dataColor.startsWith('rgb')) {
-            // Convert rgb(r,g,b) to hex
             const rgb = dataColor.match(/\d+/g);
             if (rgb && rgb.length === 3) {
               color = (
@@ -45,22 +61,36 @@ export async function exportWord(tableRef: React.MutableRefObject<any>, title: s
             }
           }
         }
-        return new DocxTableCell({
+
+        const docxCell = new DocxTableCell({
           children: [
             new Paragraph({
               children: [
                 new TextRun({
-                  text: cell.textContent || '',
+                  text: cell.textContent?.trim() || '',
                   color: color,
                 }),
               ],
+              alignment: cell.getAttribute('data-align') as 'left' | 'center' | 'right' || undefined,
             }),
           ],
-          width: columnWidths[colIndex] ? { size: Math.round(columnWidths[colIndex] * 100), type: WidthType.PERCENTAGE } : undefined,
+          rowSpan: rowSpan,
+          columnSpan: colSpan,
+          // width: {
+          //   size: Math.round(calculatedWidth * 100),
+          //   type: WidthType.PERCENTAGE
+          // },
         });
-      }),
-    });
-  });
+        docxCells.push(docxCell);
+        currentGridColIndex += actualColSpan;
+        htmlCellIndex++;
+      } else {
+        currentGridColIndex++;
+      }
+    }
+
+    docxRows.push(new DocxTableRow({ children: docxCells }));
+  }
 
   const docxTable = new DocxTable({
     rows: docxRows,
@@ -86,4 +116,4 @@ export async function exportWord(tableRef: React.MutableRefObject<any>, title: s
 
   const blob = await Packer.toBlob(doc);
   saveAs(blob, `${title.replace(/\s+/g, '_')}.docx`);
-} 
+}

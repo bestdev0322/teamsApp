@@ -6,6 +6,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { exportPdf } from '../../../../../../utils/exportPdf';
 import { exportExcel } from '../../../../../../utils/exportExcel';
 import { calculateRiskResidualLevel } from "../../../../residual_risk_assessments/residual_assessment/ResidualDetailView";
+import { exportWord } from '../../../../../../utils/exportWord';
 
 const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
 
@@ -13,7 +14,7 @@ interface ResidualRiskTrendPageProps {
     currentYear: string;
 }
 
-const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) => {
+const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({ currentYear }) => {
     const [risks, setRisks] = useState([]);
     const [riskTreatments, setRiskTreatments] = useState([]);
     const [riskRatings, setRiskRatings] = useState([]);
@@ -68,6 +69,11 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) 
         exportExcel(tableRef.current, `${currentYear} - Residual Risk Trend`);
     };
 
+    const handleExportWord = () => {
+        const wordColumnWidths = [0.05, 0.25, 0.1, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075];
+        exportWord(tableRef, `${currentYear} - Residual Risk Trend`, wordColumnWidths);
+    }; 
+
     return (
         <Box mt={2}>
             <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
@@ -86,6 +92,14 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({currentYear}) 
                     size="small"
                 >
                     Export to PDF
+                </ExportButton>
+                <ExportButton
+                    className="word"
+                    startIcon={<FileDownloadIcon />}
+                    onClick={handleExportWord}
+                    size="small"
+                >
+                    Export to Word
                 </ExportButton>
             </Box>
             {loading ? <CircularProgress /> : (

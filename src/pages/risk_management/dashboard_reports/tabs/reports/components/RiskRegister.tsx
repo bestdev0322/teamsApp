@@ -6,6 +6,7 @@ import { formatDate } from '../../../../../../utils/date';
 import { ExportButton } from '../../../../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { exportPdf } from '../../../../../../utils/exportPdf';
+import { exportWord } from '../../../../../../utils/exportWord';
 import { exportExcel } from '../../../../../../utils/exportExcel';
 import { calculateRiskResidualLevel } from "../../../../residual_risk_assessments/residual_assessment/ResidualDetailView";
 
@@ -79,6 +80,10 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
         exportPdf('RiskRegister', tableRef, 'Risk Register', '', '', [0.05, 0.15, 0.1, 0.125, 0.05, 0.05, 0.2, 0.05, 0.05, 0.075, 0.05, 0.05]);
     };
 
+    const handleExportWord = () => {
+        exportWord(tableRef, 'Risk Register', [0.05, 0.15, 0.1, 0.125, 0.05, 0.05, 0.2, 0.05, 0.05, 0.075, 0.05, 0.05]);
+    };
+
     const handleExportExcel = () => {
         exportExcel(tableRef.current, 'Risk Register');
     };
@@ -102,6 +107,14 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
                     size="small"
                 >
                     Export to PDF
+                </ExportButton>
+                <ExportButton
+                    className="word"
+                    startIcon={<FileDownloadIcon />}
+                    onClick={handleExportWord}
+                    size="small"
+                >
+                    Export to Word
                 </ExportButton>
             </Box>
             <Box mt={4}>

@@ -4,6 +4,12 @@ import { useAuth } from '../../../../../contexts/AuthContext';
 import Heatmap from './components/Heatmap';
 import TreatmentsDistribution from './components/TreatmentsDistribution';
 import { api } from '../../../../../services/api';
+import { ExportButton } from '../../../../../components/Buttons';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { Document, Packer, Paragraph, TextRun, ImageRun } from 'docx';
+import { saveAs } from 'file-saver';
 
 const StyledFormControl = FormControl;
 const ViewButton = Button;
@@ -89,6 +95,10 @@ const Dashboard: React.FC = () => {
                 const response = await api.get('/residual-risk-assessment-cycle/assessment-years');
                 const years = response.data.data || [];
                 setAvailableYears(years);
+                // Set the most recent year as default if available
+                if (years.length > 0) {
+                    setYear(years[0]);
+                }
             } catch (error) {
                 console.error('Error fetching available years:', error);
                 setAvailableYears([]);
@@ -251,6 +261,99 @@ const Dashboard: React.FC = () => {
         };
     });
 
+    // Export screenshot to PDF
+    const handleExportPDF = async () => {
+        const title = `${year}, ${selectedQuarter} Risk Heatmap`;
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const titleHeight = 30; // mm, space for title on first page
+        let y = titleHeight;
+        let isFirstPage = true;
+
+        // Render each chart block to an image
+        const chartBlocks = document.querySelectorAll('[data-chart-block]');
+        const blockImages: { imgData: string, imgHeight: number }[] = [];
+        for (const block of Array.from(chartBlocks)) {
+            const canvas = await html2canvas(block as HTMLElement, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            const imgProps = pdf.getImageProperties(imgData);
+            const blockWidth = pdfWidth;
+            const blockHeight = (imgProps.height * blockWidth) / imgProps.width;
+            blockImages.push({ imgData, imgHeight: blockHeight });
+        }
+
+        // Add title to the first page
+        pdf.setFontSize(22);
+        pdf.text(title, pdfWidth / 2, 20, { align: 'center' });
+
+        // Add chart blocks, packing them onto pages
+        for (const { imgData, imgHeight } of blockImages) {
+            if ((y + imgHeight > pdfHeight - 5)) {
+                pdf.addPage();
+                y = 10; // top margin for subsequent pages
+                isFirstPage = false;
+            }
+            pdf.addImage(imgData, 'PNG', 0, y, pdfWidth, imgHeight);
+            y += imgHeight + 4; // 4mm gap between blocks
+        }
+
+        pdf.save(`${title.replace(/\s+/g, '_')}.pdf`);
+    };
+
+    // Export screenshot to Word
+    const handleExportWord = async () => {
+        const title = `${year}, ${selectedQuarter} Risk Heatmap`;
+
+        // Render each chart block to an image first
+        const chartBlocks = document.querySelectorAll('[data-chart-block]');
+        const children = [
+            new Paragraph({
+                children: [
+                    new TextRun({ text: title, size: 24, bold: true })
+                ],
+                spacing: { after: 200 },
+                alignment: 'center',
+            })
+        ];
+
+        if (chartBlocks.length === 0) {
+            children.push(new Paragraph({ text: 'No charts available.' }));
+        } else {
+            for (const block of Array.from(chartBlocks)) {
+                const canvas = await html2canvas(block as HTMLElement, { scale: 2 });
+                const imgData = canvas.toDataURL('image/png');
+                const base64Data = imgData.split(',')[1];
+
+                children.push(
+                    new Paragraph({
+                        children: [
+                            new ImageRun({
+                                data: base64Data,
+                                transformation: {
+                                    width: 600,
+                                    height: (canvas.height * 600) / canvas.width,
+                                },
+                                type: 'png',
+                            }),
+                        ],
+                        spacing: { after: 200 },
+                    })
+                );
+            }
+        }
+
+        const doc = new Document({
+            sections: [{
+                properties: {},
+                children: children
+            }]
+        });
+
+        const blob = await Packer.toBlob(doc);
+        saveAs(blob, `${title.replace(/\s+/g, '_')}.docx`);
+    };
+
     return (
         <Box sx={{ p: 2, backgroundColor: '#F9FAFB', borderRadius: '8px' }}>
             <Box sx={{
@@ -319,35 +422,59 @@ const Dashboard: React.FC = () => {
                         </Box>
                     ) : (
                         <Box>
-                            <Typography variant="h6" align="center" sx={{ mb: 2 }}>{year}, {selectedQuarter} Risk Heatmap</Typography>
-                            <Box sx={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
-                                <Heatmap
-                                    title="Inherent Risk Heatmap"
-                                    risks={inherentRisks}
-                                    riskRatings={riskRatings}
-                                    xLabels={xLabels}
-                                    yLabels={yLabels}
-                                    year={year}
-                                    showLegend={false}
-                                />
-                                <Heatmap
-                                    title="Residual Risk Heatmap"
-                                    risks={residualRisks}
-                                    riskRatings={riskRatings}
-                                    xLabels={xLabels}
-                                    yLabels={yLabels}
-                                    year={year}
-                                    showLegend={false}
-                                />
+                            {/* Export Buttons */}
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                                <Box sx={{ display: 'flex', gap: 1 }}>
+                                    <ExportButton
+                                        className="pdf"
+                                        startIcon={<FileDownloadIcon />}
+                                        onClick={handleExportPDF}
+                                        size="small"
+                                    >
+                                        Export to PDF
+                                    </ExportButton>
+                                    <ExportButton
+                                        className="word"
+                                        startIcon={<FileDownloadIcon />}
+                                        onClick={handleExportWord}
+                                        size="small"
+                                    >
+                                        Export to Word
+                                    </ExportButton>
+                                </Box>
                             </Box>
-                            <Box sx={{ mt: 4, maxWidth: 800, mx: 'auto' }}>
+                            <Box sx={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }} data-chart-block>
+                                <Box>
+                                    <Heatmap
+                                        title="Inherent Risk Heatmap"
+                                        risks={inherentRisks}
+                                        riskRatings={riskRatings}
+                                        xLabels={xLabels}
+                                        yLabels={yLabels}
+                                        year={year}
+                                        showLegend={false}
+                                    />
+                                </Box>
+                                <Box>
+                                    <Heatmap
+                                        title="Residual Risk Heatmap"
+                                        risks={residualRisks}
+                                        riskRatings={riskRatings}
+                                        xLabels={xLabels}
+                                        yLabels={yLabels}
+                                        year={year}
+                                        showLegend={false}
+                                    />
+                                </Box>
+                            </Box>
+                            <Box sx={{ mt: 4, maxWidth: 800, mx: 'auto', padding: 2 }} data-chart-block>
                                 <Typography variant="h6" align="center" sx={{ mb: 2 }}>
                                     Risk Legend
                                 </Typography>
                                 <TableContainer component={Paper} variant="outlined">
                                     <Table size="medium">
                                         <TableHead>
-                                            <TableRow>  
+                                            <TableRow>
                                                 <TableCell>No.</TableCell>
                                                 <TableCell>Risk Name</TableCell>
                                             </TableRow>
