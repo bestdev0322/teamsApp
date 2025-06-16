@@ -95,8 +95,8 @@ const MyRiskTreatments: React.FC = () => {
       updatePayload.controlName = '';
       await api.put(`/risk-treatments/my-treatments/${editingTreatment._id}`, updatePayload);
       fetchRiskTreatments();
-      emit({ tenantId: editingTreatment.treatmentOwner?._id }); // Emit to super users
-      showToast('Email sent successfully', 'success');
+      emit({ teamId: editingTreatment.treatmentOwner?._id }); // Emit to super users
+      showToast('Update submitted successfully', 'success');
     } catch (error) {
       console.error('Error updating risk treatment:', error);
       showToast('Error updating risk treatment', 'error');

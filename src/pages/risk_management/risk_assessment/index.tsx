@@ -201,9 +201,9 @@ const RiskAssessment: React.FC = () => {
             // Delay export to allow re-rendering with full descriptions
             setTimeout(() => {
                 exportPdf(
-                    'risk-assessment',
+                    'inherent-risk-assessment',
                     tableRef,
-                    'Risk Assessment',
+                    'Inherent Risk Assessment',
                     '',
                     '',
                     pdfColumnWidths
@@ -225,7 +225,7 @@ const RiskAssessment: React.FC = () => {
         try {
             // Delay export to allow re-rendering with full descriptions
             setTimeout(() => {
-                exportExcel(tableRef.current, 'Risk Assessment');
+                exportExcel(tableRef.current, 'Inherent Risk Assessment');
                 setIsExporting(false); // Reset after export
             }, 100); // Increased timeout to ensure data is loaded
         } catch (error) {

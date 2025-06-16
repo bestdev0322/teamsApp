@@ -68,7 +68,6 @@ const PendingValidationTab: React.FC<PendingValidationTabProps & { pendingCount:
     const [selectedProgressHistory, setSelectedProgressHistory] = useState([]);
     const [selectedTreatmentForProgressHistory, setSelectedTreatmentForProgressHistory] = useState<RiskTreatment | null>(null);
     const { emit } = useSocket(SocketEvent.RISK_VALIDATED, () => {});
-    const { subscribe: subscribeTreatmentUpdated } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => {});
 
     const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(event.target.value);
@@ -93,8 +92,8 @@ const PendingValidationTab: React.FC<PendingValidationTabProps & { pendingCount:
             });
             if (response.status === 200) {
                 fetchRiskTreatments();
-                emit({ tenantId: selectedTreatmentForValidation.treatmentOwner?._id });
-                showToast('Email sent successfully', 'success');
+                emit({ teamId: selectedTreatmentForValidation.treatmentOwner?._id });
+                showToast('Update validated successfully', 'success');
             }
         } catch (error) {
             console.error('Error saving validation:', error);
@@ -164,13 +163,6 @@ const PendingValidationTab: React.FC<PendingValidationTabProps & { pendingCount:
     }
 
     const groupedTreatments = groupRows(filteredRiskTreatments);
-
-    useEffect(() => {
-        const unsub = subscribeTreatmentUpdated(SocketEvent.RISK_TREATMENT_UPDATED, () => {
-            fetchRiskTreatments();
-        });
-        return () => unsub();
-    }, []);
 
     return (
         <Box sx={{ p: 0 }}>

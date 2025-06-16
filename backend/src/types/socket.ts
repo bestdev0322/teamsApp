@@ -6,7 +6,9 @@ export enum SocketEvent {
   SEND_BACK_PERFORMANCE_AGREEMENT = 'send_back_performance_agreement',
   SEND_BACK_PERFORMANCE_ASSESSMENT = 'send_back_performance_assessment',
   NOTIFICATION = 'notification',
-  OBLIGATION_SUBMITTED = 'obligation_submitted'
+  OBLIGATION_SUBMITTED = 'obligation_submitted',
+  RISK_TREATMENT_UPDATED = 'risk_treatment_updated',
+  RISK_VALIDATED = 'risk_validated'
 }
 
 export interface SocketData {

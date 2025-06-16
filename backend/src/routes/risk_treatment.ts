@@ -297,41 +297,51 @@ router.put('/validate/:id', authenticateToken, checkLicenseStatus, async (req: A
       })
       .populate('treatmentOwner', 'name');
 
-    // Find the team to get champions
-    const team = await Team.findById(riskTreatment.treatmentOwner?._id);
-    const teamChampions = await User.find({ isRiskChampion: true, tenantId, teamId: team?._id });
+    // Send response immediately
+    res.json({ data: updatedRiskTreatment });
 
-    if (teamChampions && Array.isArray(teamChampions) && teamChampions.length > 0) {
-      // Find users who are champions
-      const risk = updatedRiskTreatment?.risk as { riskNameElement?: string };
-      const riskName = risk?.riskNameElement || '';
-      const treatmentName = riskTreatment.treatment;
-      const subject = 'Risk Treatment';
-      let body = '';
+    // Handle email sending asynchronously
+    (async () => {
+      try {
+        // Find the team to get champions
+        const team = await Team.findById(riskTreatment.treatmentOwner?._id);
+        const teamChampions = await User.find({ isRiskChampion: true, tenantId, teamId: team?._id });
 
-      if (convertedToControl === 'Yes') {
-        body = `Dear Team,<br/><br/>Please note that <b>${treatmentName}</b> for <b>${riskName}</b> has been converted to a control.<br/><br/>Regards,<br/>Risk Management Team`;
-      } else {
-        body = `Dear Team,<br/><br/>Please note that <b>${treatmentName}</b> for <b>${riskName}</b> could not be converted to a control and has been sent back for implementation.<br/><br/>Regards,<br/>Risk Management Team`;
-      }
-      for (const champion of teamChampions) {
-        if (champion.email) {
-          try {
-            await graphService.sendMail(
-              tenantId,
-              req.user?.id || '',
-              champion.email,
-              subject,
-              body
-            );
-          } catch (err) {
-            console.error('Error sending email to champion:', champion.email, err);
+        if (teamChampions && Array.isArray(teamChampions) && teamChampions.length > 0) {
+          const risk = updatedRiskTreatment?.risk as { riskNameElement?: string };
+          const riskName = risk?.riskNameElement || '';
+          const treatmentName = riskTreatment.treatment;
+          const subject = 'Risk Treatment';
+          let body = '';
+
+          if (convertedToControl === 'Yes') {
+            body = `Dear Team,<br/><br/>Please note that <b>${treatmentName}</b> for <b>${riskName}</b> has been converted to a control.<br/><br/>Regards,<br/>Risk Management Team`;
+          } else {
+            body = `Dear Team,<br/><br/>Please note that <b>${treatmentName}</b> for <b>${riskName}</b> could not be converted to a control and has been sent back for implementation.<br/><br/>Regards,<br/>Risk Management Team`;
           }
-        }
-      }
-    }
 
-    return res.json({ data: updatedRiskTreatment });
+          // Send emails concurrently without waiting
+          teamChampions.map(async (champion) => {
+            if (champion.email) {
+              try {
+                await graphService.sendMail(
+                  tenantId,
+                  req.user?.id || '',
+                  champion.email,
+                  subject,
+                  body
+                );
+              } catch (err) {
+                console.error('Error sending email to champion:', champion.email, err);
+              }
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error in async email process:', error);
+      }
+    })();
+    return;
   } catch (error) {
     console.error('Error updating risk treatment validation:', error);
     return res.status(500).json({ message: 'Error updating risk treatment validation' });
@@ -388,7 +398,7 @@ router.put('/my-treatments/:id', async (req: AuthenticatedRequest, res: Response
     ]);
 
     // If status is set to Completed, send email to team superUsers
-    if (status === 'Completed' && tenantId) {
+    if (status === 'Completed' && tenantId && updatedRiskTreatment) {
       const superUsers = await User.find({ isRiskSuperUser: true, tenantId });
 
       if (superUsers && Array.isArray(superUsers) && superUsers.length > 0) {
@@ -397,7 +407,9 @@ router.put('/my-treatments/:id', async (req: AuthenticatedRequest, res: Response
         const treatmentName = riskTreatment.treatment;
         const subject = 'Risk Treatment';
         const body = `Dear Team,<br/><br/>Please note that <b>${treatmentName}</b> for <b>${riskName}</b> has been sent to you for validation.<br/><br/>Regards,<br/>Risk Management Team`;
-        for (const superUser of superUsers) {
+        
+        // Fire and forget email sending
+        Promise.all(superUsers.map(async (superUser) => {
           if (superUser.email) {
             try {
               await graphService.sendMail(
@@ -411,7 +423,9 @@ router.put('/my-treatments/:id', async (req: AuthenticatedRequest, res: Response
               console.error('Error sending email to superUser:', superUser.email, err);
             }
           }
-        }
+        })).catch(err => {
+          console.error('Error in email sending process:', err);
+        });
       }
     }
 

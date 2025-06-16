@@ -1,10 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Box, InputLabel, Select, MenuItem, FormControl, Button, CircularProgress, Typography } from '@mui/material';
+import { Box, InputLabel, Select, MenuItem, FormControl, Button, CircularProgress, Typography, TableRow, TableBody, Table, TableContainer, TableHead, Paper, TableCell } from '@mui/material';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import Heatmap from './components/Heatmap';
 import TreatmentsDistribution from './components/TreatmentsDistribution';
 import { api } from '../../../../../services/api';
-import { RiskTreatment } from '../../../../risk_management/risk_treatment_admin';
 
 const StyledFormControl = FormControl;
 const ViewButton = Button;
@@ -64,15 +63,8 @@ const parseQuarter = (q: string): number => parseInt(q.replace('Q', ''), 10);
 
 const Dashboard: React.FC = () => {
     const { user } = useAuth();
-
-    // Get available years from obligations and current year
-    const years = useMemo(() => {
-        const currentYear = new Date().getFullYear();
-        // Create an array from currentYear - 5 to currentYear + 1
-        return Array.from({ length: 7 }, (_, i) => (currentYear - 5 + i).toString()).reverse();
-    }, []);
-
-    const [year, setYear] = useState<string>(new Date().getFullYear().toString());
+    const [availableYears, setAvailableYears] = useState<string[]>([]);
+    const [year, setYear] = useState<string>('');
     const [viewMode, setViewMode] = useState<'heatmap' | 'risk-treatments-distribution'>('heatmap');
     const [selectedQuarter, setSelectedQuarter] = useState('Q1');
     const [isLoading, setIsLoading] = useState(false);
@@ -83,12 +75,32 @@ const Dashboard: React.FC = () => {
     const [riskRatings, setRiskRatings] = useState<RiskRating[]>([]);
     const [riskTreatments, setRiskTreatments] = useState<Treatment[]>([]);
     const [effectivenessOptions, setEffectivenessOptions] = useState<EffectivenessOption[]>([]);
-    const [impactSettings, setImpactSettings] = useState<ImpactSetting[]>([]); // New state
-    const [likelihoodSettings, setLikelihoodSettings] = useState<LikelihoodSetting[]>([]); // New state
+    const [impactSettings, setImpactSettings] = useState<ImpactSetting[]>([]);
+    const [likelihoodSettings, setLikelihoodSettings] = useState<LikelihoodSetting[]>([]);
     const [loadingHeatmap, setLoadingHeatmap] = useState(false);
 
     const isRiskSuperUser = user?.isRiskSuperUser;
     const isRiskChampion = user?.isRiskChampion;
+
+    // Fetch available years from residual risk assessments
+    useEffect(() => {
+        const fetchAvailableYears = async () => {
+            try {
+                const response = await api.get('/residual-risk-assessment-cycle/assessment-years');
+                const years = response.data.data || [];
+                setAvailableYears(years);
+                // Set the most recent year as default if available
+                if (years.length > 0) {
+                    setYear(years[0]);
+                }
+            } catch (error) {
+                console.error('Error fetching available years:', error);
+                setAvailableYears([]);
+            }
+        };
+
+        fetchAvailableYears();
+    }, []);
 
     const handleView = () => {
         setIsLoading(true);
@@ -258,7 +270,7 @@ const Dashboard: React.FC = () => {
                         label="Year"
                         onChange={(e) => { setYear(e.target.value); setShowDashboard(false); }}
                     >
-                        {years.map((y) => (
+                        {availableYears.map((y) => (
                             <MenuItem key={y} value={y}>{y}</MenuItem>
                         ))}
                     </Select>
@@ -319,6 +331,8 @@ const Dashboard: React.FC = () => {
                                     riskRatings={riskRatings}
                                     xLabels={xLabels}
                                     yLabels={yLabels}
+                                    year={year}
+                                    showLegend={false}
                                 />
                                 <Heatmap
                                     title="Residual Risk Heatmap"
@@ -326,9 +340,35 @@ const Dashboard: React.FC = () => {
                                     riskRatings={riskRatings}
                                     xLabels={xLabels}
                                     yLabels={yLabels}
+                                    year={year}
+                                    showLegend={false}
                                 />
                             </Box>
+                            <Box sx={{ mt: 4, maxWidth: 800, mx: 'auto' }}>
+                                <Typography variant="h6" align="center" sx={{ mb: 2 }}>
+                                    Risk Legend
+                                </Typography>
+                                <TableContainer component={Paper} variant="outlined">
+                                    <Table size="medium">
+                                        <TableHead>
+                                            <TableRow>  
+                                                <TableCell>No.</TableCell>
+                                                <TableCell>Risk Name</TableCell>
+                                            </TableRow>
+                                        </TableHead>
+                                        <TableBody>
+                                            {risks.map((r) => (
+                                                <TableRow key={r._id}>
+                                                    <TableCell sx={{ width: 40 }}>{r.no}</TableCell>
+                                                    <TableCell>{r.riskNameElement}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </TableContainer>
+                            </Box>
                         </Box>
+
                     )
                 ) : (
                     <TreatmentsDistribution year={year} quarter={selectedQuarter} />

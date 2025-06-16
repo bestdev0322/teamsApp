@@ -17,6 +17,16 @@ interface Risk {
   likelihood: { score: number };
 }
 
+interface HeatmapProps {
+  risks: Risk[];
+  riskRatings: RiskRating[];
+  xLabels: number[];
+  yLabels: number[];
+  title: string;
+  year: string;
+  showLegend?: boolean;
+}
+
 // Helper to get color for a cell
 const getBlockColor = (
   impact: number,
@@ -31,13 +41,7 @@ const getBlockColor = (
 };
 
 // Main Heatmap component
-const Heatmap: React.FC<{
-  risks: Risk[];
-  riskRatings: RiskRating[];
-  xLabels: number[];
-  yLabels: number[];
-  title: string;
-}> = ({ risks, riskRatings, xLabels, yLabels, title }) => (
+const Heatmap: React.FC<HeatmapProps> = ({ risks, riskRatings, xLabels, yLabels, title, year, showLegend = true }) => (
   <Box sx={{ mb: 4, position: 'relative' }}>
     <Typography variant="h6" align="center" sx={{ mb: 2 }}>
       {title}
@@ -48,14 +52,14 @@ const Heatmap: React.FC<{
         variant="body2"
         sx={{
           position: 'absolute',
-          left: -40,
+          left: -60,
           top: '50%',
           transform: 'translateY(-50%) rotate(-90deg)',
           transformOrigin: 'center center',
           whiteSpace: 'nowrap'
         }}
       >
-        Likelihood
+        Likelihood →
       </Typography>
 
       <TableContainer component={Paper} sx={{ borderCollapse: 'collapse', width: 'auto', margin: '0 auto', padding: '8 8', overflowX: 'auto' }}>
@@ -131,24 +135,26 @@ const Heatmap: React.FC<{
     </Box>
 
     {/* Legend */}
-    <Box sx={{ mt: 3 }}>
-      <Table size="medium">
-        <TableHead>
-          <TableRow>
-            <TableCell>No.</TableCell>
-            <TableCell>Risk Name</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {risks.map((r) => (
-            <TableRow key={r._id}>
-              <TableCell sx={{ width: 40 }}>{r.no}</TableCell>
-              <TableCell>{r.riskNameElement}</TableCell>
+    {showLegend && (
+      <Box sx={{ mt: 3 }}>
+        <Table size="medium">
+          <TableHead>
+            <TableRow>
+              <TableCell>No.</TableCell>
+              <TableCell>Risk Name</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </Box>
+          </TableHead>
+          <TableBody>
+            {risks.map((r) => (
+              <TableRow key={r._id}>
+                <TableCell sx={{ width: 40 }}>{r.no}</TableCell>
+                <TableCell>{r.riskNameElement}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Box>
+    )}
   </Box>
 );
 

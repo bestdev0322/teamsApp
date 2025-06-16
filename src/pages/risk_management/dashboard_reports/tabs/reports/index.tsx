@@ -1,23 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, InputLabel, Select, MenuItem, FormControl, Button } from '@mui/material';
 import { useAuth } from '../../../../../contexts/AuthContext';
 import RiskRegister from './components/RiskRegister';
 import ResidualRiskTrend from './components/ResidualRiskTrend';
+import { api } from '../../../../../services/api';
 
 const StyledFormControl = FormControl;
 const ViewButton = Button;
 
 const Reports: React.FC = () => {
     const { user } = useAuth();
-
-    // Get available years from obligations and current year
-    const years = useMemo(() => {
-        const currentYear = new Date().getFullYear();
-        // Create an array from currentYear - 5 to currentYear + 1
-        return Array.from({ length: 7 }, (_, i) => (currentYear - 5 + i).toString()).reverse();
-    }, []);
-
-    const [year, setYear] = useState<string>(new Date().getFullYear().toString());
+    const [availableYears, setAvailableYears] = useState<string[]>([]);
+    const [year, setYear] = useState<string>('');
     const [viewMode, setViewMode] = useState<'risk-register' | 'residual-risk-trend'>('risk-register');
     const [selectedQuarter, setSelectedQuarter] = useState('Q1');
     const [isLoading, setIsLoading] = useState(false);
@@ -25,6 +19,26 @@ const Reports: React.FC = () => {
 
     const isRiskSuperUser = user?.isRiskSuperUser;
     const isRiskChampion = user?.isRiskChampion;
+
+    // Fetch available years from residual risk assessments
+    useEffect(() => {
+        const fetchAvailableYears = async () => {
+            try {
+                const response = await api.get('/residual-risk-assessment-cycle/assessment-years');
+                const years = response.data.data || [];
+                setAvailableYears(years);
+                // Set the most recent year as default if available
+                if (years.length > 0) {
+                    setYear(years[0]);
+                }
+            } catch (error) {
+                console.error('Error fetching available years:', error);
+                setAvailableYears([]);
+            }
+        };
+
+        fetchAvailableYears();
+    }, []);
 
     const handleView = () => {
         setIsLoading(true);
@@ -54,7 +68,7 @@ const Reports: React.FC = () => {
                         label="Year"
                         onChange={(e) => { setYear(e.target.value); setShowReports(false); }}
                     >
-                        {years.map((y) => (
+                        {availableYears.map((y) => (
                             <MenuItem key={y} value={y}>{y}</MenuItem>
                         ))}
                     </Select>

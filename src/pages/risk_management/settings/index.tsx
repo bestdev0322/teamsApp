@@ -46,43 +46,44 @@ const RiskSettings: React.FC = () => {
         <Box sx={{ mt: 2 }}>
              <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
                 <StyledTabs value={tabValue} onChange={handleTabChange} aria-label="settings tabs">
-                    <StyledTab label="Risk Categories" />
-                    <StyledTab label="Impact Settings" />
-                    <StyledTab label="Likelihood Settings" />
-                    <StyledTab label="Risk Rating" />
+                    <StyledTab label="Risk Champions" />
                     <StyledTab label="Risk Responses" />
                     <StyledTab label="Control Effectiveness" />
-                    <StyledTab label="Risk Champions" />
+                    <StyledTab label="Risk Rating" />
+                    <StyledTab label="Likelihood Settings" />
+                    <StyledTab label="Impact Settings" />
+                    <StyledTab label="Risk Categories" />
                 </StyledTabs>
             </Box>
+            
+            <TabPanel value={tabValue} index={6}>
+                <RiskChampions />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={4}>
+                <RiskResponse />
+            </TabPanel>
+            
+            <TabPanel value={tabValue} index={5}>
+                <ControlEffectiveness />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={3}>
+                <RiskRating />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={2}>
+                <LikelihoodSettings />
+            </TabPanel>
+
+            <TabPanel value={tabValue} index={1}>
+                <ImpactSettings />
+            </TabPanel>
 
             <TabPanel value={tabValue} index={0}>
                  <RiskCategories />
             </TabPanel>
-
-             <TabPanel value={tabValue} index={1}>
-                <ImpactSettings />
-            </TabPanel>
-
-             <TabPanel value={tabValue} index={2}>
-                <LikelihoodSettings />
-            </TabPanel>
-
-             <TabPanel value={tabValue} index={3}>
-                <RiskRating />
-            </TabPanel>
-
-             <TabPanel value={tabValue} index={4}>
-                <RiskResponse />
-            </TabPanel>
-
-             <TabPanel value={tabValue} index={5}>
-                <ControlEffectiveness />
-            </TabPanel>
-
-             <TabPanel value={tabValue} index={6}>
-                <RiskChampions />
-            </TabPanel>
+            
         </Box>
     );
 };

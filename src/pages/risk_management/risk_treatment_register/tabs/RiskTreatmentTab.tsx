@@ -75,9 +75,9 @@ const RiskTreatmentTab: React.FC<RiskTreatmentTabProps> = ({
             return;
         }
         setIsExporting(true);
-        const pdfColumnWidths = [0.05, 0.15, 0.1, 0.15, 0.15, 0.1, 0.1, 0.2];
+        const pdfColumnWidths = [0.1, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15];
         try {
-            await exportPdf('risk-treatment', tableRef, 'Risk Treatment Admin', '', '', pdfColumnWidths);
+            await exportPdf('risk-treatment-register', tableRef, 'Risk Treatment Register', '', '', pdfColumnWidths);
         } catch (error) {
             console.error('Error exporting PDF:', error);
         } finally {
@@ -92,7 +92,7 @@ const RiskTreatmentTab: React.FC<RiskTreatmentTabProps> = ({
         }
         setIsExporting(true);
         try {
-            await exportExcel(tableRef.current, 'Risk Treatment Admin');
+            await exportExcel(tableRef.current, 'Risk Treatment Register');
         } catch (error) {
             console.error('Error exporting Excel:', error);
         } finally {

@@ -199,9 +199,9 @@ const RiskIdentification: React.FC = () => {
       // Delay export to allow re-rendering with full descriptions
       setTimeout(() => {
         exportPdf(
-          'risk-identification',
+          'risk-identification-register',
           tableRef,
-          'Risk Identification',
+          'Risk Identification Register',
           '',
           '',
           pdfColumnWidths
@@ -216,7 +216,7 @@ const RiskIdentification: React.FC = () => {
       setIsExporting(true);
       // Delay export to allow re-rendering with full descriptions
       setTimeout(() => {
-        exportExcel(tableRef.current, 'Risk Identification');
+        exportExcel(tableRef.current, 'Risk Identification Register');
         setIsExporting(false); // Reset after export
       }, 0);
     }

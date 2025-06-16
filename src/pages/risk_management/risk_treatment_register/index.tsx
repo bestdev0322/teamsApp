@@ -8,6 +8,8 @@ import RiskTreatmentTab from './tabs/RiskTreatmentTab';
 import PendingValidationTab from './tabs/PendingValidationTab';
 import ControlsTab from './tabs/ControlsTab';
 import Badge from '@mui/material/Badge';
+import { useSocket } from '../../../hooks/useSocket';
+import { SocketEvent } from '../../../types/socket';
 
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -62,16 +64,25 @@ export interface RiskTreatment {
     effectiveness?: { effectiveness: string; year: string; quarter: string }[];
 }
 
-const RiskTreatmentAdmin: React.FC = () => {
+const RiskTreatmentRegister: React.FC = () => {
     const { user } = useAuth();
     const [currentTab, setCurrentTab] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingTreatment, setEditingTreatment] = useState<RiskTreatment | null>(null);
     const [riskTreatments, setRiskTreatments] = useState<RiskTreatment[]>([]);
+    const { subscribe: subscribeTreatmentUpdated } = useSocket(SocketEvent.RISK_TREATMENT_UPDATED, () => {});
+
 
     useEffect(() => {
         fetchRiskTreatments();
     }, [user?.tenantId]);
+
+    useEffect(() => {
+        const unsub = subscribeTreatmentUpdated(SocketEvent.RISK_TREATMENT_UPDATED, () => {
+            fetchRiskTreatments();
+        });
+        return () => unsub();
+    }, []);
 
     const fetchRiskTreatments = async () => {
         try {
@@ -211,4 +222,4 @@ const RiskTreatmentAdmin: React.FC = () => {
     );
 };
 
-export default RiskTreatmentAdmin;
+export default RiskTreatmentRegister;

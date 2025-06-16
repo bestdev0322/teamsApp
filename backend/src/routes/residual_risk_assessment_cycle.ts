@@ -15,6 +15,21 @@ router.get('/', async (_req: AuthenticatedRequest, res: Response) => {
   }
 });
 
+// Get assessment years
+router.get('/assessment-years', async (_req: AuthenticatedRequest, res: Response) => {
+  try {
+    const cycles = await ResidualRiskAssessmentCycle.find()
+      .select('year')
+      .sort({ year: -1 });
+    
+    const years = cycles.map(cycle => cycle.year.toString());
+    return res.json({ data: years });
+  } catch (err) {
+    console.error('Error fetching assessment years:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Get single cycle by id
 router.get('/:id', async (req: AuthenticatedRequest, res: Response) => {
   try {

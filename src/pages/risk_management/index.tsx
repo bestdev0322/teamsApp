@@ -4,7 +4,7 @@ import { PageProps } from '../../types';
 import Settings from './settings';
 import RiskIdentification from './risk_identification';
 import RiskAssessment from './risk_assessment';
-import RiskTreatmentAdmin from './risk_treatment_admin';
+import RiskTreatmentRegister from './risk_treatment_register';
 import MyRiskTreatment from './my_risk_treatment';
 import ResidualRiskAssessment from './residual_risk_assessments';
 import DashboardReports from './dashboard_reports';
@@ -23,7 +23,7 @@ const RiskManagement: React.FC<PageProps> = ({ title, icon, tabs }) => {
         {isRiskSuperUser && <Route path="risk-settings/*" element={<Settings />} />}
         {isRiskSuperUser && <Route path="risk-identification/*" element={<RiskIdentification />} />}
         {isRiskSuperUser && <Route path="risk-assessment/*" element={<RiskAssessment />} />}
-        {isRiskSuperUser && <Route path="risk-treatment-admin/*" element={<RiskTreatmentAdmin />} />}
+        {isRiskSuperUser && <Route path="risk-treatment-register/*" element={<RiskTreatmentRegister />} />}
         {isRiskSuperUser && <Route path="residual-risk-assessment/*" element={<ResidualRiskAssessment />} />}
         {isRiskSuperUser && <Route path="dashboard-&-reports/*" element={<DashboardReports />} />}
         <Route path="my-risk-treatments/*" element={<MyRiskTreatment />} />
