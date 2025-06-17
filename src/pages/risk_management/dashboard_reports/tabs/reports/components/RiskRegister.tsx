@@ -90,7 +90,7 @@ const RiskRegister: React.FC<RiskRegisterPageProps> = ({ currentYear, currentQua
 
     return (
         <Box>
-            <Typography variant="h6">Residual Risk Assessment Detail</Typography>
+            <Typography variant="h6" sx={{ mb: 2 }}>Residual Risk Assessment Detail - {currentYear}, {currentQuarter}</Typography>
             <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                 <ExportButton
                     className="excel"

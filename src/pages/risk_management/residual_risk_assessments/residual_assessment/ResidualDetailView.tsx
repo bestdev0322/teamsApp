@@ -3,6 +3,13 @@ import React, { useEffect, useState } from "react";
 import { api } from '../../../../services/api';
 import { useToast } from '../../../../contexts/ToastContext';
 
+const CONTROL_TYPE_EFFECT_MAP = {
+    'Preventive': 'Reduces Likelihood',
+    'Detective': 'Reduces Likelihood',
+    'Corrective': 'Reduces Impact',
+    'Mitigating': 'Often reduces Impact'
+}
+
 // Calculate residual risk level based on current and previous quarter's score
 export const calculateRiskResidualLevel = (
     risk: any,
@@ -324,6 +331,22 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
                             ))}
                         </Select>
                     </FormControl>
+                    {(
+                        <Table sx={{ mt: 2, padding: 5 }}>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>Control Type</TableCell>
+                                    <TableCell>Effect</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                <TableRow>
+                                    <TableCell>{selectedTreatment?.controlType}</TableCell>
+                                    <TableCell>{CONTROL_TYPE_EFFECT_MAP[selectedTreatment?.controlType]}</TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setModalOpen(false)} disabled={saving}>Cancel</Button>

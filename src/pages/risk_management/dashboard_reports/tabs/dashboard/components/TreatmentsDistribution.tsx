@@ -181,25 +181,28 @@ const TreatmentsDistribution: React.FC<TreatmentsDistributionProps> = ({ year, q
         <Box>
             {loading ? <CircularProgress /> : (
                 <>
-                    {/* Export Buttons */}
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                            <ExportButton
-                                className="pdf"
-                                startIcon={<FileDownloadIcon />}
-                                onClick={handleExportPDF}
-                                size="small"
-                            >
-                                Export to PDF
-                            </ExportButton>
-                            <ExportButton
-                                className="word"
-                                startIcon={<FileDownloadIcon />}
-                                onClick={handleExportWord}
-                                size="small"
-                            >
-                                Export to Word
-                            </ExportButton>
+                    <Box>
+                        <Typography variant="h6" sx={{ mb: 2, display: 'inline-block' }}>Risk Treatment Implementation Status - {year}</Typography>
+                        {/* Export Buttons */}
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                <ExportButton
+                                    className="pdf"
+                                    startIcon={<FileDownloadIcon />}
+                                    onClick={handleExportPDF}
+                                    size="small"
+                                >
+                                    Export to PDF
+                                </ExportButton>
+                                <ExportButton
+                                    className="word"
+                                    startIcon={<FileDownloadIcon />}
+                                    onClick={handleExportWord}
+                                    size="small"
+                                >
+                                    Export to Word
+                                </ExportButton>
+                            </Box>
                         </Box>
                     </Box>
                     <div data-chart-block>

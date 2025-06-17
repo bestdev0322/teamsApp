@@ -422,6 +422,7 @@ const Dashboard: React.FC = () => {
                         </Box>
                     ) : (
                         <Box>
+                            <Typography variant="h6">Risk Heatmaps - {year}, {selectedQuarter}</Typography>
                             {/* Export Buttons */}
                             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                                 <Box sx={{ display: 'flex', gap: 1 }}>

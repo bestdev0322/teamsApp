@@ -72,10 +72,11 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({ currentYear }
     const handleExportWord = () => {
         const wordColumnWidths = [0.05, 0.25, 0.1, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075, 0.075];
         exportWord(tableRef, `${currentYear} - Residual Risk Trend`, wordColumnWidths);
-    }; 
+    };
 
     return (
         <Box mt={2}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Residual Risk Trend - {currentYear}</Typography>
             <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
                 <ExportButton
                     className="excel"
@@ -111,7 +112,7 @@ const ResidualRiskTrend: React.FC<ResidualRiskTrendPageProps> = ({ currentYear }
                                 <TableCell rowSpan={2} sx={{ fontWeight: 'bold' }}>Risk Name</TableCell>
                                 <TableCell rowSpan={2} sx={{ fontWeight: 'bold' }}>Risk Category</TableCell>
                                 {quarters.map(q => (
-                                    <TableCell key={q} align="center" colSpan={2} sx={{ fontWeight: 'bold' }}  data-align="center">{q}</TableCell>
+                                    <TableCell key={q} align="center" colSpan={2} sx={{ fontWeight: 'bold' }} data-align="center">{q}</TableCell>
                                 ))}
                             </TableRow>
                             <TableRow>
