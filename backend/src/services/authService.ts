@@ -409,7 +409,7 @@ export class AuthService {
     return jwt.sign(
       tokenPayload,
       config.jwtSecret,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
   }
 }
