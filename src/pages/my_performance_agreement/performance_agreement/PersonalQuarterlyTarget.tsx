@@ -82,6 +82,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [initiativeToDelete, setInitiativeToDelete] = useState<PersonalQuarterlyTargetObjective | null>(null);
   const [status, setStatus] = useState<AgreementStatus | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const tableRef = useRef();
   const { user } = useAuth();
   const notifications = useAppSelector((state: RootState) => state.notification.notifications);
@@ -177,63 +178,71 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     initiative: string;
     kpis: QuarterlyTargetKPI[];
   }) => {
-    const newObjective: PersonalQuarterlyTargetObjective = {
-      perspectiveId: data.perspectiveId,
-      name: data.objectiveName,
-      initiativeName: data.initiative,
-      KPIs: data.kpis,
-    };
+    try {
+      setIsSaving(true);
+      const newObjective: PersonalQuarterlyTargetObjective = {
+        perspectiveId: data.perspectiveId,
+        name: data.objectiveName,
+        initiativeName: data.initiative,
+        KPIs: data.kpis,
+      };
 
-    let newPersonalQuarterlyObjectives = [...personalQuarterlyObjectives];
+      let newPersonalQuarterlyObjectives = [...personalQuarterlyObjectives];
 
-    if (editingObjective) {
-      newPersonalQuarterlyObjectives = newPersonalQuarterlyObjectives.map(obj =>
-        (obj.name === editingObjective.name &&
-          obj.initiativeName === editingObjective.initiativeName &&
-          obj.perspectiveId === editingObjective.perspectiveId)
-          ? newObjective
-          : obj
-      );
-      setPersonalQuarterlyObjectives(newPersonalQuarterlyObjectives);
-    } else {
-      newPersonalQuarterlyObjectives.push(newObjective);
-      setPersonalQuarterlyObjectives(newPersonalQuarterlyObjectives);
-    }
-
-    setEditingObjective(null);
-    setIsAddInitiativeModalOpen(false);
-    const newPersonalQuarterlyTargets = personalPerformance?.quarterlyTargets.map((target: PersonalQuarterlyTarget) => {
-      if (quarter === 'Q1' && target.isEditable === false) {
-        return {
-          ...target,
-          agreementStatus: AgreementStatus.Draft,
-          agreementStatusUpdatedAt: new Date(),
-          supervisorId: selectedSupervisor,
-          objectives: newPersonalQuarterlyObjectives,
-          isEditable: calculateTotalWeight(newPersonalQuarterlyObjectives) >= 100 || target.quarter === 'Q1' ? true : false
-        }
+      if (editingObjective) {
+        newPersonalQuarterlyObjectives = newPersonalQuarterlyObjectives.map(obj =>
+          (obj.name === editingObjective.name &&
+            obj.initiativeName === editingObjective.initiativeName &&
+            obj.perspectiveId === editingObjective.perspectiveId)
+            ? newObjective
+            : obj
+        );
+        setPersonalQuarterlyObjectives(newPersonalQuarterlyObjectives);
       } else {
-        if (target.quarter === quarter) {
+        newPersonalQuarterlyObjectives.push(newObjective);
+        setPersonalQuarterlyObjectives(newPersonalQuarterlyObjectives);
+      }
+
+      const newPersonalQuarterlyTargets = personalPerformance?.quarterlyTargets.map((target: PersonalQuarterlyTarget) => {
+        if (quarter === 'Q1' && target.isEditable === false) {
           return {
             ...target,
             agreementStatus: AgreementStatus.Draft,
             agreementStatusUpdatedAt: new Date(),
             supervisorId: selectedSupervisor,
-            objectives: newPersonalQuarterlyObjectives
+            objectives: newPersonalQuarterlyObjectives,
+            isEditable: calculateTotalWeight(newPersonalQuarterlyObjectives) >= 100 || target.quarter === 'Q1' ? true : false
           }
         } else {
-          return target;
+          if (target.quarter === quarter) {
+            return {
+              ...target,
+              agreementStatus: AgreementStatus.Draft,
+              agreementStatusUpdatedAt: new Date(),
+              supervisorId: selectedSupervisor,
+              objectives: newPersonalQuarterlyObjectives
+            }
+          } else {
+            return target;
+          }
         }
-      }
-    });
+      });
 
-    await dispatch(updatePersonalPerformance({
-      _id: personalPerformance?._id || '',
-      teamId: personalPerformance?.teamId || '',
-      annualTargetId: personalPerformance?.annualTargetId || '',
-      quarterlyTargets: newPersonalQuarterlyTargets || []
-    }));
-    setStatus(AgreementStatus.Draft);
+      await dispatch(updatePersonalPerformance({
+        _id: personalPerformance?._id || '',
+        teamId: personalPerformance?.teamId || '',
+        annualTargetId: personalPerformance?.annualTargetId || '',
+        quarterlyTargets: newPersonalQuarterlyTargets || []
+      }));
+      setStatus(AgreementStatus.Draft);
+      setEditingObjective(null);
+      setIsAddInitiativeModalOpen(false);
+    } catch (error) {
+      console.error('Error saving initiative:', error);
+      showToast('Failed to save initiative', 'error');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleViewRatingScales = (kpi: QuarterlyTargetKPI) => {
@@ -372,7 +381,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   const canEdit = () => {
     const quarterlyTarget = personalPerformance?.quarterlyTargets.find(target => target.quarter === quarter);
     return isWithinPeriod() &&
-      quarterlyTarget?.isEditable  &&
+      quarterlyTarget?.isEditable &&
       !isSubmitted && !isApproved
   };
 
@@ -411,8 +420,8 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
       });
 
       // After updating objectives, check if there are any initiatives left
-      const hasAnyInitiatives = newPersonalQuarterlyTargets?.some(target => 
-        isEnabledTwoQuarterMode 
+      const hasAnyInitiatives = newPersonalQuarterlyTargets?.some(target =>
+        isEnabledTwoQuarterMode
           ? (target.quarter === 'Q1' || target.quarter === 'Q2') && target.objectives?.some(objective => objective.KPIs.length > 0)
           : target.objectives?.some(objective => objective.KPIs.length > 0)
       );
@@ -497,6 +506,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           onClick={handleExportPDF}
           size="small"
           sx={{ marginTop: 2 }}
+          disabled={isSaving}
         >
           Export to PDF
         </ExportButton>
@@ -504,6 +514,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           onClick={onBack}
           variant="outlined"
           color="primary"
+          disabled={isSaving}
           sx={{
             minWidth: '100px',
             '&:hover': {
