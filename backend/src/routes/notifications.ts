@@ -32,9 +32,8 @@ router.post('/agreement/submit', authenticateToken, async (req: AuthenticatedReq
     });
 
     if (existingNotification) {
-      await Notification.updateOne(
-        { _id: existingNotification._id },
-        { $set: { isRead: false } }
+      await Notification.deleteOne(
+        { _id: existingNotification._id }
       );
     } else {
       await Notification.create({
@@ -163,9 +162,8 @@ router.post('/assessment/submit', authenticateToken, async (req: AuthenticatedRe
     });
 
     if (existingNotification) {
-      await Notification.updateOne(
-        { _id: existingNotification._id },
-        { $set: { isRead: false } }
+      await Notification.deleteOne(
+        { _id: existingNotification._id }
       );
     } else {
       await Notification.create({
@@ -533,9 +531,8 @@ router.post('/send-back/:notificationId', authenticateToken, async (req: Authent
       });
   
       if (existingNotification) {
-        await Notification.updateOne(
-          { _id: existingNotification._id },
-          { $set: { isRead: false } }
+        await Notification.deleteOne(
+          { _id: existingNotification._id }
         );
       } else {
         await Notification.create({
