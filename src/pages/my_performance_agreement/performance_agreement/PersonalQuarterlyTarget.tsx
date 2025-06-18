@@ -234,6 +234,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         annualTargetId: personalPerformance?.annualTargetId || '',
         quarterlyTargets: newPersonalQuarterlyTargets || []
       }));
+      await dispatch(fetchPersonalPerformances({}));
       setStatus(AgreementStatus.Draft);
       setEditingObjective(null);
       setIsAddInitiativeModalOpen(false);
@@ -290,7 +291,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         annualTargetId: personalPerformance?.annualTargetId || '',
         quarterlyTargets: newPersonalQuarterlyTargets || []
       }));
-
+      await dispatch(fetchPersonalPerformances({}));
       try {
         await api.post('/notifications/agreement/submit', {
           recipientId: selectedSupervisor,
@@ -340,6 +341,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         annualTargetId: personalPerformance?.annualTargetId || '',
         quarterlyTargets: newPersonalQuarterlyTargets || []
       }));
+      await dispatch(fetchPersonalPerformances({}));
 
       try {
         await api.post('/notifications/agreement/recall', {
@@ -438,6 +440,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         annualTargetId: personalPerformance?.annualTargetId || '',
         quarterlyTargets: finalQuarterlyTargets || []
       }));
+      await dispatch(fetchPersonalPerformances({}));
 
       setDeleteConfirmOpen(false);
       setInitiativeToDelete(null);
