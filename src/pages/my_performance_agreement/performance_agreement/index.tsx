@@ -217,8 +217,7 @@ const PersonalPerformanceAgreement: React.FC = () => {
             quarter.quarter
           )), user?.isTeamOwner)}
           onBack={() => {
-            setShowPersonalQuarterlyTarget(false);
-            setShowQuarterlyTargets(true);
+            handleView();
           }}
           personalPerformance={selectedPersonalPerformance}
         />

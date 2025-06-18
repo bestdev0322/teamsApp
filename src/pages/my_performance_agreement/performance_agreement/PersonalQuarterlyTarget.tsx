@@ -66,7 +66,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   quarter,
   isEnabledTwoQuarterMode,
   onBack,
-  personalPerformance = null,
+  personalPerformance: initialPersonalPerformance = null,
 }) => {
   const dispatch = useAppDispatch();
   const [selectedSupervisor, setSelectedSupervisor] = React.useState('');
@@ -97,6 +97,8 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   const [viewSendBackModalOpen, setViewSendBackModalOpen] = useState(false);
   const [commentModalOpen, setCommentModalOpen] = useState(false);
   const [selectedComment, setSelectedComment] = useState('');
+
+  const personalPerformance = personalPerformances.find(p => p._id === initialPersonalPerformance?._id) || initialPersonalPerformance;
 
   useEffect(() => {
     fetchCompanyUsers();
@@ -234,7 +236,10 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         annualTargetId: personalPerformance?.annualTargetId || '',
         quarterlyTargets: newPersonalQuarterlyTargets || []
       }));
-      await dispatch(fetchPersonalPerformances({}));
+
+      // Fetch updated data
+      await dispatch(fetchPersonalPerformances({ annualTargetId: personalPerformance?.annualTargetId }));
+      
       setStatus(AgreementStatus.Draft);
       setEditingObjective(null);
       setIsAddInitiativeModalOpen(false);
@@ -281,7 +286,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
             objectives: personalQuarterlyObjectives
           }
         }
-
         return target;
       });
 
@@ -291,7 +295,10 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         annualTargetId: personalPerformance?.annualTargetId || '',
         quarterlyTargets: newPersonalQuarterlyTargets || []
       }));
-      await dispatch(fetchPersonalPerformances({}));
+
+      // Fetch updated data
+      await dispatch(fetchPersonalPerformances({ annualTargetId: personalPerformance?.annualTargetId }));
+
       try {
         await api.post('/notifications/agreement/submit', {
           recipientId: selectedSupervisor,
@@ -313,7 +320,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
   const handleRecall = async () => {
     if (hasAnyAgreementComment()) {
@@ -341,7 +348,9 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         annualTargetId: personalPerformance?.annualTargetId || '',
         quarterlyTargets: newPersonalQuarterlyTargets || []
       }));
-      await dispatch(fetchPersonalPerformances({}));
+
+      // Fetch updated data
+      await dispatch(fetchPersonalPerformances({ annualTargetId: personalPerformance?.annualTargetId }));
 
       try {
         await api.post('/notifications/agreement/recall', {
