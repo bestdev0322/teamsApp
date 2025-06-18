@@ -275,9 +275,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
           return {
             ...target,
             agreementStatus: AgreementStatus.Submitted,
-            agreementStatusUpdatedAt: new Date(),
-            supervisorId: selectedSupervisor,
-            objectives: personalQuarterlyObjectives
+            agreementStatusUpdatedAt: new Date()
           }
         }
 
@@ -326,8 +324,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         return {
           ...target,
           agreementStatus: target.isAgreementCommitteeSendBack ? AgreementStatus.CommitteeSendBack : AgreementStatus.Draft,
-          agreementStatusUpdatedAt: new Date(),
-          objectives: personalQuarterlyObjectives
+          agreementStatusUpdatedAt: new Date()
         }
       }
       return target;
