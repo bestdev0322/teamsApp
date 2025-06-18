@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress } from '@mui/material';
 import { api } from '../../../../../../services/api';
 import { useAuth } from '../../../../../../contexts/AuthContext';
@@ -39,7 +39,7 @@ const TreatmentsDistribution: React.FC<TreatmentsDistributionProps> = ({ year, q
         }
     }
 
-    const fetchData = useCallback(async () => {
+    const fetchData = async () => {
         setLoading(true);
         try {
             const [treatmentsRes, teamsRes] = await Promise.all([
@@ -60,7 +60,7 @@ const TreatmentsDistribution: React.FC<TreatmentsDistributionProps> = ({ year, q
             setTreatments([]);
         }
         setLoading(false);
-    }, [user?.tenantId]);
+    };
 
     const getTeamChartData = (teamId) => {
         const teamTreatments = treatments.filter(t => t.treatmentOwner?._id === teamId);
@@ -175,7 +175,7 @@ const TreatmentsDistribution: React.FC<TreatmentsDistributionProps> = ({ year, q
 
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+    }, []);
 
     return (
         <Box>

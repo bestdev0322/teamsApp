@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -24,7 +24,12 @@ const MyTrainingDashboard: React.FC = () => {
   const { showToast } = useToast();
   const dispatch = useAppDispatch();
 
-  const fetchRequestedTrainings = useCallback(async (existingTrainings: Training[]) => {
+  useEffect(() => {
+    dispatch(fetchAnnualTargets());
+    fetchAllTrainings();
+  }, [dispatch]);
+
+  const fetchRequestedTrainings = async (existingTrainings: Training[]) => {
     try {
       const response = await api.get(`/personal-performance/personal-performances`);
       if (response.data.status === 'success') {
@@ -66,9 +71,9 @@ const MyTrainingDashboard: React.FC = () => {
     } catch (error) {
       showToast('Failed to fetch requested trainings', 'error');
     }
-  }, [showToast]);
+  };
 
-  const fetchAllTrainings = useCallback(async () => {
+  const fetchAllTrainings = async () => {
     try {
       // First fetch assigned trainings
       const response = await api.get(`/training/user/${user?.id}`);
@@ -113,12 +118,7 @@ const MyTrainingDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [showToast, user?.id, fetchRequestedTrainings]);
-
-  useEffect(() => {
-    dispatch(fetchAnnualTargets());
-    fetchAllTrainings();
-  }, [dispatch, fetchAllTrainings]);
+  };
 
   if (loading) {
     return (

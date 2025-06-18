@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -29,16 +29,7 @@ import { api } from '../../../services/api';
 import SendBackModal from '../../../components/Modal/SendBackModal';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 import CommentModal from '../../../components/CommentModal';
-import { useAppDispatch } from '../../../hooks/useAppDispatch';
-import { useAuth } from '../../../contexts/AuthContext';
 
-interface CompanyUser {
-    id: string;
-    fullName: string;
-    jobTitle: string,
-    team: string,
-    teamId: string
-}
 
 interface PersonalQuarterlyTargetProps {
     annualTarget: AnnualTarget;
@@ -61,7 +52,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     const [personalQuarterlyObjectives, setPersonalQuarterlyObjectives] = React.useState<PersonalQuarterlyTargetObjective[]>([]);
     const [personalPerformance, setPersonalPerformance] = React.useState<PersonalPerformance | null>(null);
     const [selectedRatingScales, setSelectedRatingScales] = React.useState<AnnualTargetRatingScale[] | null>(null);
-    const [companyUsers, setCompanyUsers] = useState<CompanyUser[]>([]);
+    const [companyUsers, setCompanyUsers] = useState<{ id: string, fullName: string, jobTitle: string, team: string, teamId: string }[]>([]);
     const [committeeReviewed, setCommitteeReviewed] = useState(false);
     const { showToast } = useToast();
     const [sendBackModalOpen, setSendBackModalOpen] = useState(false);
@@ -69,10 +60,21 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     const [warningModalOpen, setWarningModalOpen] = useState(false);
     const [commentModalOpen, setCommentModalOpen] = useState(false);
     const [selectedComment, setSelectedComment] = useState('');
-    const dispatch = useAppDispatch();
-    const { user } = useAuth();
 
-    const fetchCompanyUsers = useCallback(async () => {
+    useEffect(() => {
+        fetchPersonalPerformance();
+        fetchCompanyUsers();
+    }, []);
+
+    useEffect(() => {
+        if (personalPerformance) {
+            setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
+            setSelectedSupervisor(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.supervisorId || '');
+        }
+    }, [personalPerformance]);
+
+
+    const fetchCompanyUsers = async () => {
         try {
             const response = await api.get('/report/company-users');
             if (response.status === 200) {
@@ -83,9 +85,9 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         } catch (error) {
             setCompanyUsers([]);
         }
-    }, []);
+    }
 
-    const fetchPersonalPerformance = useCallback(async () => {
+    const fetchPersonalPerformance = async () => {
         try {
             const response = await api.get(`/personal-performance/personal-performance/`, {
                 params: {
@@ -101,19 +103,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         } catch (error) {
             console.error('Personal performance error:', error);
         }
-    }, [userId, annualTarget._id, quarter]);
-
-    useEffect(() => {
-        fetchPersonalPerformance();
-        fetchCompanyUsers();
-    }, [fetchPersonalPerformance, fetchCompanyUsers]);
-
-    useEffect(() => {
-        if (personalPerformance) {
-            setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
-            setSelectedSupervisor(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.supervisorId || '');
-        }
-    }, [personalPerformance, quarter]);
+    }
 
     // Add total weight calculation function
     const calculateTotalWeight = () => {

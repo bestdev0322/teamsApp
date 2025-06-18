@@ -44,7 +44,7 @@ const Champions: React.FC = () => {
         members: (teamMembers[team._id] || []).filter((member: any) => member?.isComplianceChampion === true)
       })));
     }
-  }, [teamMembers, teamsList]);
+  }, [teamMembers]);
 
   useEffect(() => {
   }, [teamsList]);

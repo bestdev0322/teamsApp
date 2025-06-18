@@ -1,5 +1,5 @@
 import { Box, Button, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, FormControl, InputLabel, Select, MenuItem, CircularProgress } from "@mui/material";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { api } from '../../../../services/api';
 import { useToast } from '../../../../contexts/ToastContext';
 
@@ -80,7 +80,11 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
     const [saving, setSaving] = useState(false);
     const { showToast } = useToast();
 
-    const fetchAll = useCallback(async () => {
+    useEffect(() => {
+        fetchAll();
+    }, []);
+
+    const fetchAll = async () => {
         setLoading(true);
         try {
             const [risksRes, treatmentsRes, effRes] = await Promise.all([
@@ -96,11 +100,7 @@ const ResidualDetailView = ({ currentQuarter, handleBackClick }) => {
             showToast('Failed to fetch risk data.', 'error');
         }
         setLoading(false);
-    }, [showToast]);
-
-    useEffect(() => {
-        fetchAll();
-    }, [fetchAll]);
+    };
 
     // Calculate inherent risk as in risk_assessment/index.tsx
     const calculateRiskInherentLevel = (impactScore, likelihoodScore, riskRatings) => {

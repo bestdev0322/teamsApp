@@ -76,19 +76,6 @@ const PlanView: React.FC<PlanViewProps> = ({ planId }) => {
   const [isFinalizingPlan, setIsFinalizingPlan] = useState(false);
   const [allEmployees, setAllEmployees] = useState<any[]>([]);
 
-  const fetchPlanDetails = useCallback(async () => {
-    try {
-      const response = await api.get(`/users/org-dev-plan/plan/${planId}`);
-      if (response.data) {
-        setPlanName(response.data.data.name || 'Training Plan');
-        setIsFinalized(response.data.data.isFinalized || false);
-      }
-    } catch (error) {
-      console.error('Error fetching plan details:', error);
-      setPlanName('Training Plan');
-    }
-  }, [planId]);
-
   useEffect(() => {
     dispatch(fetchEmployees(planId));
     dispatch(fetchAnnualTargets());
@@ -103,7 +90,20 @@ const PlanView: React.FC<PlanViewProps> = ({ planId }) => {
       }
     };
     fetchAllEmployees();
-  }, [planId, dispatch, fetchPlanDetails]);
+  }, [planId, dispatch]);
+
+  const fetchPlanDetails = async () => {
+    try {
+      const response = await api.get(`/users/org-dev-plan/plan/${planId}`);
+      if (response.data) {
+        setPlanName(response.data.data.name || 'Training Plan');
+        setIsFinalized(response.data.data.isFinalized || false);
+      }
+    } catch (error) {
+      console.error('Error fetching plan details:', error);
+      setPlanName('Training Plan');
+    }
+  };
 
   const handleAddEmployees = () => {
     setIsAddingEmployees(true);
@@ -224,10 +224,10 @@ const PlanView: React.FC<PlanViewProps> = ({ planId }) => {
     }
   };
 
-  const getAnnualTargetName = useCallback((targetId: string) => {
+  const getAnnualTargetName = (targetId: string) => {
     const target = annualTargets.find(t => t._id === targetId);
     return target?.name || '-';
-  }, [annualTargets]);
+  };
 
   const getProgressColor = (progress: number) => {
     if (progress >= 80) return '#22C55E'; // Green
@@ -298,7 +298,7 @@ const PlanView: React.FC<PlanViewProps> = ({ planId }) => {
       emp.quarter === quarter &&
       (emp.planId !== planId && emp.status !== TrainingStatus.NOT_COMPLETED)
     );
-  }, [allEmployees, planId]);
+  }, [allEmployees]);
 
   if (loading) {
     return (

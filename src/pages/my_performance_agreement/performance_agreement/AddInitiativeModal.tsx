@@ -74,7 +74,7 @@ const AddInitiativeModal: React.FC<AddInitiativeModalProps> = ({
       setInitiative(editingObjective.initiativeName);
       setKpis(editingObjective.KPIs);
     }
-  }, [editingObjective, annualTarget.content.perspectives]);
+  }, [editingObjective]);
 
   useEffect(() => {
     if (error) {

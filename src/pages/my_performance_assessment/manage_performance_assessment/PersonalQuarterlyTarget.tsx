@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -26,13 +26,6 @@ import SendBackModal from '../../../components/Modal/SendBackModal';
 import { QUARTER_ALIAS } from '../../../constants/quarterAlias';
 import CommentModal from '../../../components/CommentModal';
 
-interface CompanyUser {
-    id: string;
-    fullName: string;
-    jobTitle: string;
-    team: string;
-    teamId: string
-}
 
 interface PersonalQuarterlyTargetProps {
     annualTarget: AnnualTarget;
@@ -54,7 +47,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     const [selectedSupervisor, setSelectedSupervisor] = React.useState('');
     const [personalQuarterlyObjectives, setPersonalQuarterlyObjectives] = React.useState<PersonalQuarterlyTargetObjective[]>([]);
     const [personalPerformance, setPersonalPerformance] = React.useState<PersonalPerformance | null>(null);
-    const [companyUsers, setCompanyUsers] = useState<CompanyUser[]>([]);
+    const [companyUsers, setCompanyUsers] = useState<{ id: string, fullName: string, jobTitle: string, team: string, teamId: string }[]>([]);
     const [evidenceModalData, setEvidenceModalData] = useState<{
         evidence: string;
         attachments: Array<{ name: string; url: string }>;
@@ -66,41 +59,11 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     const [commentModalOpen, setCommentModalOpen] = useState(false);
     const [selectedComment, setSelectedComment] = useState('');
 
-    const fetchCompanyUsers = useCallback(async () => {
-        try {
-            const response = await api.get('/report/company-users');
-            if (response.status === 200) {
-                setCompanyUsers(response.data.data);
-            } else {
-                setCompanyUsers([]);
-            }
-        } catch (error) {
-            setCompanyUsers([]);
-        }
-    }, []);
-
-    const fetchPersonalPerformance = useCallback(async () => {
-        try {
-            const response = await api.get(`/personal-performance/personal-performance/`, {
-                params: {
-                    userId: userId,
-                    annualTargetId: annualTarget._id,
-                }
-            });
-
-            if (response.status === 200) {
-                setPersonalPerformance(response.data.data);
-                setIsApproved(response.data.data.quarterlyTargets.find(target => target.quarter === quarter)?.assessmentStatus === AssessmentStatus.Approved);
-            }
-        } catch (error) {
-            console.error('Personal performance error:', error);
-        }
-    }, [userId, annualTarget._id, quarter]);
 
     useEffect(() => {
         fetchPersonalPerformance();
         fetchCompanyUsers();
-    }, [fetchPersonalPerformance, fetchCompanyUsers]);
+    }, []);
 
     useEffect(() => {
         if (personalPerformance) {
@@ -113,7 +76,37 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
             }
             setIsApproved(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.assessmentStatus === AssessmentStatus.Approved);
         }
-    }, [personalPerformance, companyUsers, quarter]);
+    }, [personalPerformance, companyUsers]);
+
+    const fetchCompanyUsers = async () => {
+        try {
+            const response = await api.get('/report/company-users');
+            if (response.status === 200) {
+                setCompanyUsers(response.data.data);
+            } else {
+                setCompanyUsers([]);
+            }
+        } catch (error) {
+            setCompanyUsers([]);
+        }
+    }
+
+    const fetchPersonalPerformance = async () => {
+        try {
+            const response = await api.get(`/personal-performance/personal-performance/`, {
+                params: {
+                    userId: userId,
+                    annualTargetId: annualTarget._id,
+                }
+            });
+
+            if (response.status === 200) {
+                setPersonalPerformance(response.data.data);
+            }
+        } catch (error) {
+            console.error('Personal performance error:', error);
+        }
+    }
 
     const calculateTotalWeight = () => {
         return personalQuarterlyObjectives.reduce((total, objective) => {

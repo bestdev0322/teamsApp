@@ -136,14 +136,14 @@ const PersonalFeedback: React.FC<Props> = ({ quarter, annualTargetId, personalPe
                 setSelectedFeedbackId('');
             }
         }
-    }, [personalPerformance, quarter, feedbacks, selectedFeedbackId]);
+    }, [personalPerformance, quarter, feedbacks]);
 
     useEffect(() => {
         if (feedbacks.length > 0 && !selectedFeedbackId) {
             const firstFeedback = feedbacks[0];
             setSelectedFeedbackId(firstFeedback._id);
         }
-    }, [feedbacks, selectedFeedbackId]);
+    }, [feedbacks]);
 
     const handleAddProviderClose = () => {
         setIsAddProviderOpen(false);

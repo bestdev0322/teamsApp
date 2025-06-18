@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -71,27 +71,24 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   const currentQuarterTarget = personalPerformance?.quarterlyTargets.find(target => target.quarter === quarter);
   const isAssessmentApproved = currentQuarterTarget?.assessmentStatus === AssessmentStatus.Approved;
 
-  const fetchPersonalPerformance = useCallback(async () => {
-    try {
-      const response = await api.get(`/personal-performance/personal-performance/`, {
-        params: {
-          userId: userId,
-          annualTargetId: annualTarget._id,
-        }
-      });
-
-      if (response.status === 200) {
-        setPersonalPerformance(response.data.data);
-      }
-    } catch (error) {
-      console.error('Personal performance error:', error);
-    }
-  }, [userId, annualTarget._id]);
-
   useEffect(() => {
     fetchPersonalPerformance();
     fetchCompanyUsers();
-  }, [fetchPersonalPerformance]);
+  }, []);
+
+  useEffect(() => {
+    if (personalPerformance) {
+      setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
+      const supervisorId = personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.supervisorId || '';
+      if (companyUsers.some(user => user.id === supervisorId)) {
+        setSelectedSupervisor(supervisorId);
+      } else {
+        setSelectedSupervisor('');
+      }
+      setIsAgreementCommitteeSendBack(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.isAgreementCommitteeSendBack || false);
+    }
+  }, [personalPerformance, companyUsers, quarter]);
+
 
   const fetchCompanyUsers = async () => {
     try {
@@ -106,6 +103,22 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     }
   }
 
+  const fetchPersonalPerformance = async () => {
+    try {
+      const response = await api.get(`/personal-performance/personal-performance/`, {
+        params: {
+          userId: userId,
+          annualTargetId: annualTarget._id,
+        }
+      });
+
+      if (response.status === 200) {
+        setPersonalPerformance(response.data.data);
+      }
+    } catch (error) {
+      console.error('Personal performance error:', error);
+    }
+  }
 
   // Add total weight calculation function
   const calculateTotalWeight = () => {
@@ -175,19 +188,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     setSelectedComment(initiative.KPIs[kpiIndex].previousAgreementComment || '');
     setCommentModalOpen(true);
   };
-
-  useEffect(() => {
-    if (personalPerformance) {
-      setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
-      const supervisorId = personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.supervisorId || '';
-      if (companyUsers.some(user => user.id === supervisorId)) {
-        setSelectedSupervisor(supervisorId);
-      } else {
-        setSelectedSupervisor('');
-      }
-      setIsAgreementCommitteeSendBack(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.isAgreementCommitteeSendBack || false);
-    }
-  }, [personalPerformance, companyUsers, quarter]);
 
   return (
     <Box>

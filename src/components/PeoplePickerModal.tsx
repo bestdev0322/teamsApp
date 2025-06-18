@@ -60,8 +60,18 @@ const PeoplePickerModal: React.FC<PeoplePickerModalProps> = ({
   const [hasMore, setHasMore] = useState(true);
   const [mode, setMode] = useState<'default' | 'search'>('default');
   const observer = useRef<IntersectionObserver | null>(null);
+  const lastPersonElementRef = useCallback((node: HTMLDivElement) => {
+    if (loading || !hasMore) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        loadMorePeople();
+      }
+    });
+    if (node) observer.current.observe(node);
+  }, [loading, hasMore]);
 
-  const fetchPeople = useCallback(async (query?: string, reset = false) => {
+  const fetchPeople = async (query?: string, reset = false) => {
     try {
       setError(null);
       setLoading(true);
@@ -118,9 +128,9 @@ const PeoplePickerModal: React.FC<PeoplePickerModalProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [isElegibleModeOn, eligibleMembers, currentTeamMembers]);
+  };
 
-  const loadMorePeople = useCallback(async () => {
+  const loadMorePeople = async () => {
     if (!nextLink || loading || !hasMore) return;
     try {
       setLoading(true);
@@ -148,18 +158,7 @@ const PeoplePickerModal: React.FC<PeoplePickerModalProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [nextLink, loading, hasMore, mode, searchQuery, currentTeamMembers]);
-
-  const lastPersonElementRef = useCallback((node: HTMLDivElement) => {
-    if (loading || !hasMore) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && hasMore) {
-        loadMorePeople();
-      }
-    });
-    if (node) observer.current.observe(node);
-  }, [loading, hasMore, loadMorePeople]);
+  };
 
   useEffect(() => {
     if (open) {
@@ -168,7 +167,7 @@ const PeoplePickerModal: React.FC<PeoplePickerModalProps> = ({
       setSearchInput('');
       fetchPeople(undefined, true);
     }
-  }, [open, fetchPeople]);
+  }, [open]);
 
   const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(event.target.value);

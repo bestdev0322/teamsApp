@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -69,27 +69,10 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
   const currentQuarterTarget = personalPerformance?.quarterlyTargets.find(target => target.quarter === quarter);
 
-  const fetchPersonalPerformance = useCallback(async () => {
-    try {
-      const response = await api.get(`/personal-performance/personal-performance/`, {
-        params: {
-          userId: userId,
-          annualTargetId: annualTarget._id,
-        }
-      });
-
-      if (response.status === 200) {
-        setPersonalPerformance(response.data.data);
-      }
-    } catch (error) {
-      console.error('Personal performance error:', error);
-    }
-  }, [userId, annualTarget._id]);
-
   useEffect(() => {
     fetchPersonalPerformance();
     fetchCompanyUsers();
-  }, [fetchPersonalPerformance]);
+  }, []);
 
   useEffect(() => {
     if (personalPerformance) {
@@ -119,6 +102,22 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     }
   }
 
+  const fetchPersonalPerformance = async () => {
+    try {
+      const response = await api.get(`/personal-performance/personal-performance/`, {
+        params: {
+          userId: userId,
+          annualTargetId: annualTarget._id,
+        }
+      });
+
+      if (response.status === 200) {
+        setPersonalPerformance(response.data.data);
+      }
+    } catch (error) {
+      console.error('Personal performance error:', error);
+    }
+  }
 
   const calculateTotalWeight = () => {
     return personalQuarterlyObjectives.reduce((total, objective) => {

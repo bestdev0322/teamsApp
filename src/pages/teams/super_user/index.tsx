@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -39,7 +39,11 @@ const SuperUser: React.FC = () => {
     const { user } = useAuth();
     const [openPeoplePicker, setOpenPeoplePicker] = useState(false);
 
-    const fetchSuperUsers = useCallback(async () => {
+    useEffect(() => {
+        fetchSuperUsers();
+    }, []);
+
+    const fetchSuperUsers = async () => {
         try {
             setLoading(true);
             const response = await api.get('/super-users/tenant');
@@ -53,11 +57,7 @@ const SuperUser: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [showToast]);
-
-    useEffect(() => {
-        fetchSuperUsers();
-    }, [fetchSuperUsers]);
+    };
 
     const handleAddSuperUsers = async (selectedPeople: Person[]) => {
         try {

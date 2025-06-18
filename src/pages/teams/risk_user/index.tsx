@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Box,
     Button,
@@ -38,7 +38,11 @@ const RiskUser: React.FC = () => {
     const { user } = useAuth();
     const [openPeoplePicker, setOpenPeoplePicker] = useState(false);
 
-    const fetchRiskUsers = useCallback(async () => {
+    useEffect(() => {
+        fetchRiskUsers();
+    }, []);
+
+    const fetchRiskUsers = async () => {
         try {
             setLoading(true);
             const response = await api.get('/risk-users/tenant');
@@ -52,11 +56,7 @@ const RiskUser: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    }, [showToast]);
-
-    useEffect(() => {
-        fetchRiskUsers();
-    }, [fetchRiskUsers]);
+    };
 
     const handleAddRiskUsers = async (selectedPeople: Person[]) => {
         try {

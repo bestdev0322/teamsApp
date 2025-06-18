@@ -85,7 +85,7 @@ const PersonalPerformanceAgreement: React.FC = () => {
   useEffect(() => {
     dispatch(fetchAnnualTargets());
     dispatch(fetchPersonalPerformances({ annualTargetId: selectedAnnualTargetId }));
-  }, [dispatch, selectedAnnualTargetId]);
+  }, [dispatch]);
 
   const handleScorecardChange = (event: SelectChangeEvent) => {
     setSelectedAnnualTargetId(event.target.value);

@@ -101,7 +101,7 @@ function Main() {
     return () => {
       unsubscribe(SocketEvent.NOTIFICATION);
     };
-  }, [dispatch, subscribe, unsubscribe, isFeedbackModuleEnabled, user?.tenantId]);
+  }, [dispatch, subscribe, unsubscribe, isFeedbackModuleEnabled]);
 
   const isSuperUser = user?.role === 'SuperUser';
   const isAppOwner = user?.email === process.env.REACT_APP_OWNER_EMAIL;
@@ -123,7 +123,7 @@ function Main() {
       setIsRiskSuperUser(!!user?.isRiskSuperUser);
       setIsRiskChampion(!!user?.isRiskChampion);
     }
-  }, [user, user?.tenantId]);
+  }, [user]);
 
   const pages = [
     {

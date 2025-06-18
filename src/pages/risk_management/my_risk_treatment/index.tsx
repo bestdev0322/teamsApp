@@ -75,7 +75,7 @@ const MyRiskTreatments: React.FC = () => {
     return () => {
       unsubValidated();
     };
-  }, [subscribeValidated]);
+  }, []);
 
   const handleUpdateClick = (treatment: RiskTreatment) => {
     setEditingTreatment(treatment);
