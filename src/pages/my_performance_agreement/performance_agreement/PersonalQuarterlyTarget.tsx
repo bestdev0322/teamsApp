@@ -180,8 +180,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   }) => {
     try {
       setIsSaving(true);
-      
-      // Create new objective
       const newObjective: PersonalQuarterlyTargetObjective = {
         perspectiveId: data.perspectiveId,
         name: data.objectiveName,
@@ -189,45 +187,53 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
         KPIs: data.kpis,
       };
 
-      // Update objectives list
-      const newPersonalQuarterlyObjectives = editingObjective
-        ? personalQuarterlyObjectives.map(obj =>
-            (obj.name === editingObjective.name &&
-             obj.initiativeName === editingObjective.initiativeName &&
-             obj.perspectiveId === editingObjective.perspectiveId)
-              ? newObjective
-              : obj
-          )
-        : [...personalQuarterlyObjectives, newObjective];
+      let newPersonalQuarterlyObjectives = [...personalQuarterlyObjectives];
 
-      // Calculate total weight once
-      const totalWeight = calculateTotalWeight(newPersonalQuarterlyObjectives);
-      
-      // Update quarterly targets
-      const newPersonalQuarterlyTargets = personalPerformance?.quarterlyTargets.map(target => {
-        if (target.quarter === quarter) {
+      if (editingObjective) {
+        newPersonalQuarterlyObjectives = newPersonalQuarterlyObjectives.map(obj =>
+          (obj.name === editingObjective.name &&
+            obj.initiativeName === editingObjective.initiativeName &&
+            obj.perspectiveId === editingObjective.perspectiveId)
+            ? newObjective
+            : obj
+        );
+        setPersonalQuarterlyObjectives(newPersonalQuarterlyObjectives);
+      } else {
+        newPersonalQuarterlyObjectives.push(newObjective);
+        setPersonalQuarterlyObjectives(newPersonalQuarterlyObjectives);
+      }
+
+      const newPersonalQuarterlyTargets = personalPerformance?.quarterlyTargets.map((target: PersonalQuarterlyTarget) => {
+        if (quarter === 'Q1' && target.isEditable === false) {
           return {
             ...target,
             agreementStatus: AgreementStatus.Draft,
             agreementStatusUpdatedAt: new Date(),
             supervisorId: selectedSupervisor,
             objectives: newPersonalQuarterlyObjectives,
-            isEditable: quarter === 'Q1' || totalWeight >= 100
-          };
+            isEditable: calculateTotalWeight(newPersonalQuarterlyObjectives) >= 100 || target.quarter === 'Q1' ? true : false
+          }
+        } else {
+          if (target.quarter === quarter) {
+            return {
+              ...target,
+              agreementStatus: AgreementStatus.Draft,
+              agreementStatusUpdatedAt: new Date(),
+              supervisorId: selectedSupervisor,
+              objectives: newPersonalQuarterlyObjectives
+            }
+          } else {
+            return target;
+          }
         }
-        return target;
       });
 
-      // Update state and store
-      setPersonalQuarterlyObjectives(newPersonalQuarterlyObjectives);
       await dispatch(updatePersonalPerformance({
         _id: personalPerformance?._id || '',
         teamId: personalPerformance?.teamId || '',
         annualTargetId: personalPerformance?.annualTargetId || '',
         quarterlyTargets: newPersonalQuarterlyTargets || []
       }));
-
-      // Reset UI state
       setStatus(AgreementStatus.Draft);
       setEditingObjective(null);
       setIsAddInitiativeModalOpen(false);
