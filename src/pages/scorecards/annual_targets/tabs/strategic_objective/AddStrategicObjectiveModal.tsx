@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -48,7 +48,7 @@ const AddStrategicObjectiveModal: React.FC<AddStrategicObjectiveModalProps> = ({
   const annualTarget = useAppSelector((state: RootState) =>
     state.scorecard.annualTargets.find(target => target.name === targetName)
   );
-  const perspectives = annualTarget?.content.perspectives || [];
+  const perspectives = useMemo(() => annualTarget?.content.perspectives || [], [annualTarget?.content.perspectives]);
   const [perspective, setPerspective] = useState<AnnualTargetPerspective | null>(null);
   const [objective, setObjective] = useState('');
   const [kpis, setKpis] = useState<AnnualTargetKPI[]>([{
@@ -77,7 +77,7 @@ const AddStrategicObjectiveModal: React.FC<AddStrategicObjectiveModalProps> = ({
       setObjective(editingObjective.name);
       setKpis([...editingObjective.KPIs]);
     }
-  }, [editingObjective]);
+  }, [editingObjective, perspectives]);
 
   const validateForm = () => {
     const newErrors: typeof errors = {};

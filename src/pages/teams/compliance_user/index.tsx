@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Box,
     Button,
@@ -38,11 +38,7 @@ const ComplianceUser: React.FC = () => {
     const { user } = useAuth();
     const [openPeoplePicker, setOpenPeoplePicker] = useState(false);
 
-    useEffect(() => {
-        fetchComplianceUsers();
-    }, []);
-
-    const fetchComplianceUsers = async () => {
+    const fetchComplianceUsers = useCallback(async () => {
         try {
             setLoading(true);
             const response = await api.get('/compliance-users/tenant');
@@ -56,7 +52,11 @@ const ComplianceUser: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [showToast]);
+
+    useEffect(() => {
+        fetchComplianceUsers();
+    }, [fetchComplianceUsers]);
 
     const handleAddComplianceUsers = async (selectedPeople: Person[]) => {
         try {

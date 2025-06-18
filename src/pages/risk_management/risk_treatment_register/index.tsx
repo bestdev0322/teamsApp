@@ -94,7 +94,7 @@ const RiskTreatmentRegister: React.FC = () => {
             fetchRiskTreatments();
         });
         return () => unsub();
-    }, []);
+    }, [subscribeTreatmentUpdated]);
 
     const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
         setCurrentTab(newValue);

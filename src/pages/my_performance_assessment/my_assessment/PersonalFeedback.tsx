@@ -170,14 +170,14 @@ const PersonalFeedback: React.FC<Props> = ({ quarter, annualTargetId, personalPe
         if (personalPerformance.quarterlyTargets.find(t => t.quarter === quarter)?.selectedFeedbackId) {
             setSelectedFeedbackId(personalPerformance.quarterlyTargets.find(t => t.quarter === quarter)?.selectedFeedbackId || '');
         }
-    }, [personalPerformance]);
+    }, [personalPerformance, quarter]);
 
     useEffect(() => {
         if (feedbacks.length > 0 && !selectedFeedbackId) {
             const firstFeedback = feedbacks[0];
             setSelectedFeedbackId(firstFeedback._id);
         }
-    }, [feedbacks]);
+    }, [feedbacks, selectedFeedbackId]);
 
     const handleFeedbackChange = (event: SelectChangeEvent<string>) => {
         const newValue = event.target.value;

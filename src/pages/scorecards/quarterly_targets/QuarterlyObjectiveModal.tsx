@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -45,7 +45,7 @@ const QuarterlyObjectiveModal: React.FC<QuarterlyObjectiveModalProps> = ({
   editingObjective
 }) => {
   const dispatch = useAppDispatch();
-  const perspectives = annualTarget?.content.perspectives || [];
+  const perspectives = useMemo(() => annualTarget?.content.perspectives || [], [annualTarget?.content.perspectives]);
   const [perspective, setPerspective] = useState<AnnualTargetPerspective | null>(null);
   const [objective, setObjective] = useState('');
   const [kpis, setKpis] = useState<QuarterlyTargetKPI[]>([{
@@ -78,11 +78,7 @@ const QuarterlyObjectiveModal: React.FC<QuarterlyObjectiveModalProps> = ({
       setObjective(editingObjective.name);
       setKpis([...editingObjective.KPIs]);
     }
-  }, [editingObjective]);
-
-  const calculateTotalWeight = (currentKpis: QuarterlyTargetKPI[]) => {
-    return currentKpis.reduce((total, kpi) => total + (Number(kpi.weight) || 0), 0);
-  };
+  }, [editingObjective, perspectives]);
 
   const validateForm = () => {
     const newErrors: typeof errors = {};

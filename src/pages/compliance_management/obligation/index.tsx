@@ -77,7 +77,8 @@ const ComplianceObligationPage: React.FC = () => {
     if (!teams || teams.length === 0) {
       dispatch(fetchTeams(user?.tenantId));
     }
-  }, [dispatch]);
+    dispatch(fetchComplianceObligations());
+  }, [dispatch, user?.tenantId, teams]);
 
   const handleSaveObligation = async (data: any) => {
     if (editObligation) {

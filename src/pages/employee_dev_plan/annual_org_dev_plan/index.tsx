@@ -73,7 +73,7 @@ const AnnualOrganizationDevelopmentPlans: React.FC = () => {
           showToast('Failed to fetch development plans', 'error');
         });
     }
-  }, [dispatch, tenantId]);
+  }, [dispatch, tenantId, showToast]);
 
   const handleView = (id: string) => {
     setSelectedPlanId(id);

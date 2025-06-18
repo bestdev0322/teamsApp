@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Box,
     Button,
@@ -46,33 +46,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     const [selectedRatingScales, setSelectedRatingScales] = React.useState<AnnualTargetRatingScale[] | null>(null);
     const [companyUsers, setCompanyUsers] = useState<{ id: string, fullName: string, jobTitle: string, team: string, teamId: string }[]>([]);
 
-    useEffect(() => {
-        fetchPersonalPerformance();
-        fetchCompanyUsers();
-    }, []);
-
-    useEffect(() => {
-        if (personalPerformance) {
-            setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
-            setSelectedSupervisor(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.supervisorId || '');
-        }
-    }, [personalPerformance]);
-
-
-    const fetchCompanyUsers = async () => {
-        try {
-            const response = await api.get('/report/company-users');
-            if (response.status === 200) {
-                setCompanyUsers(response.data.data);
-            } else {
-                setCompanyUsers([]);
-            }
-        } catch (error) {
-            setCompanyUsers([]);
-        }
-    }
-
-    const fetchPersonalPerformance = async () => {
+    const fetchPersonalPerformance = useCallback(async () => {
         try {
             const response = await api.get(`/personal-performance/personal-performance/`, {
                 params: {
@@ -87,6 +61,32 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
             }
         } catch (error) {
             console.error('Personal performance error:', error);
+        }
+    }, [userId, teamId, annualTarget._id]);
+
+    useEffect(() => {
+        fetchPersonalPerformance();
+        fetchCompanyUsers();
+    }, [fetchPersonalPerformance]);
+
+    useEffect(() => {
+        if (personalPerformance) {
+            setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
+            setSelectedSupervisor(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.supervisorId || '');
+        }
+    }, [personalPerformance, quarter]);
+
+
+    const fetchCompanyUsers = async () => {
+        try {
+            const response = await api.get('/report/company-users');
+            if (response.status === 200) {
+                setCompanyUsers(response.data.data);
+            } else {
+                setCompanyUsers([]);
+            }
+        } catch (error) {
+            setCompanyUsers([]);
         }
     }
 

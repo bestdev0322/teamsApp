@@ -27,7 +27,7 @@ const EnableEmployeesDevelopment: React.FC = () => {
     if (selectedAnnualTarget) {
       setIsEnabledTwoQuarter(isEnabledTwoQuarterMode(selectedAnnualTarget?.content.quarterlyTarget.quarterlyTargets.filter(quarter => quarter.editable).map(quarter => quarter.quarter), user?.isTeamOwner || user?.role === 'SuperUser'));
     }
-  }, [selectedAnnualTarget]);
+  }, [selectedAnnualTarget, user?.isTeamOwner, user?.role]);
 
   useEffect(() => {
     dispatch(fetchAnnualTargets());

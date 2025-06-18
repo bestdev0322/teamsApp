@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Button, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -25,16 +25,10 @@ const PerformanceCalibrationTeam: React.FC = () => {
   const isSuperUser = user?.role === 'SuperUser';
   const isAppOwner = user?.role === 'AppOwner';
 
-  useEffect(() => {
-    if (user?.tenantId) {
-      fetchMembers();
-    }
-  }, [user?.tenantId]);
-
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await api.get(`/users/performance-calibration/get-all-members/${user?.tenantId}`);
+      const response = await api.get(`/users/performance-calibration/get-all-members`);
       // Map the response data to match the PerformanceCalibrationTeamMember interface
       const mappedMembers = response.data.data.map((member: any) => ({
         MicrosoftId: member.MicrosoftId,
@@ -50,7 +44,11 @@ const PerformanceCalibrationTeam: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchMembers();
+  }, [fetchMembers]);
 
   const handleAddMemberClick = () => {
     setIsPickerOpen(true);
@@ -61,12 +59,12 @@ const PerformanceCalibrationTeam: React.FC = () => {
       const userIds = selectedPeople.map(person => person.MicrosoftId);
       await api.post('/users/performance-calibration/add-member', { userIds });
       await fetchMembers();
-      
+
       // Update auth context if current user was added
       if (user && userIds.includes(user.id)) {
         setUser({ ...user, isPerformanceCalibrationMember: true });
       }
-      
+
       setIsPickerOpen(false);
     } catch (error) {
       console.error('Error adding team members:', error);
@@ -78,7 +76,7 @@ const PerformanceCalibrationTeam: React.FC = () => {
     try {
       await api.delete(`/users/performance-calibration/remove-member/${memberId}`);
       await fetchMembers();
-      
+
       // Update auth context if current user was removed
       if (user && memberId === user.id) {
         setUser({ ...user, isPerformanceCalibrationMember: false });

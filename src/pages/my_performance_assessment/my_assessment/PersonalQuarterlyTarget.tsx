@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -126,12 +126,32 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   );
   const isDevelopmentEnabled = annualQuarterlyTarget?.isDevelopmentPlanEnabled;
 
+  const fetchCompanyUsers = useCallback(async () => {
+    try {
+      const response = await api.get('/personal-performance/company-users');
+      if (response.status === 200) {
+        setCompanyUsers(response.data.data);
+      } else {
+        setCompanyUsers([]);
+      }
+    } catch (error) {
+      setCompanyUsers([]);
+    }
+  }, []);
+
+  const checkFeedbackModule = useCallback(async () => {
+    const isModuleEnabled = await api.get('/module/Feedback/is-enabled');
+    if (isModuleEnabled.data.data.isEnabled) {
+      setEnableFeedback(true);
+    }
+  }, []);
+
   useEffect(() => {
     fetchCompanyUsers();
     checkFeedbackModule();
     dispatch(fetchFeedback());
     dispatch(fetchNotifications());
-  }, []);
+  }, [dispatch, fetchCompanyUsers, checkFeedbackModule]);
 
   useEffect(() => {
     if (personalPerformance) {
@@ -141,14 +161,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
       setIsApproved(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.assessmentStatus === 'Approved');
       setStatus(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.assessmentStatus);
     }
-  }, [personalPerformance]);
-
-  const checkFeedbackModule = async () => {
-    const isModuleEnabled = await api.get('/module/Feedback/is-enabled');
-    if (isModuleEnabled.data.data.isEnabled) {
-      setEnableFeedback(true);
-    }
-  }
+  }, [personalPerformance, quarter]);
 
   const handleSupervisorChange = (event: SelectChangeEvent) => {
     setSelectedSupervisor(event.target.value);
@@ -184,19 +197,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
 
     setStatus(AssessmentStatus.Draft);
   };
-
-  const fetchCompanyUsers = async () => {
-    try {
-      const response = await api.get('/personal-performance/company-users');
-      if (response.status === 200) {
-        setCompanyUsers(response.data.data);
-      } else {
-        setCompanyUsers([]);
-      }
-    } catch (error) {
-      setCompanyUsers([]);
-    }
-  }
 
   // Add function to calculate overall rating score
   const calculateOverallScore = (objectives: QuarterlyTargetObjective[]) => {

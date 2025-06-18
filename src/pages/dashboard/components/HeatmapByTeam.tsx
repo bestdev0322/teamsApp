@@ -58,7 +58,7 @@ export const HeatmapByTeam: React.FC<HeatmapByTeamProps> = ({
   useEffect(() => {
     checkFeedbackModule();
     dispatch(fetchFeedback());
-  }, []);
+  }, [dispatch]);
 
   if (!selectedQuarter || !selectedAnnualTarget) {
     return null;
