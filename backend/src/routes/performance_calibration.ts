@@ -10,10 +10,9 @@ import { socketService } from '../server';
 import { SocketEvent } from '../types/socket';
 const router = express.Router();
 
-router.get('/get-all-members/:tenantId', authenticateToken, async (req, res, next) => {
+router.get('/get-all-members', authenticateToken, async (req:AuthenticatedRequest, res, next) => {
     try {
-        const { tenantId } = req.params;
-
+        const tenantId = req?.user?.tenantId;
         if (!tenantId) {
             throw new ApiError('Tenant ID is required', 400);
         }

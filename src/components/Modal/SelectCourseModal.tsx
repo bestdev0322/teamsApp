@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -40,17 +40,11 @@ const SelectCourseModal: React.FC<SelectCourseModalProps> = ({
   validateCourse
 }) => {
   const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCourses, setSelectedCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    if (open) {
-      fetchCourses();
-    }
-  }, [open, tenantId]);
-
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       setLoading(true);
       const response = await courseAPI.getAll(tenantId);
@@ -61,7 +55,14 @@ const SelectCourseModal: React.FC<SelectCourseModalProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [tenantId]);
+
+  useEffect(() => {
+    if (open) {
+      fetchCourses();
+      setSelectedCourses([]);
+    }
+  }, [open, tenantId, fetchCourses]);
 
   const handleToggleCourse = (course: Course) => {
     if (validateCourse && !validateCourse(course)) {

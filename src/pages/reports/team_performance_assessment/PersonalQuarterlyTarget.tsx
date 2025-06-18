@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -71,19 +71,37 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     attachments: Array<{ name: string; url: string }>;
   } | null>(null);
 
+  const fetchPersonalPerformance = useCallback(async () => {
+    try {
+      const response = await api.get(`/personal-performance/personal-performance/`, {
+        params: {
+          userId: userId,
+          annualTargetId: annualTarget._id,
+          teamId: teamId
+        }
+      });
+
+      if (response.status === 200) {
+        setPersonalPerformance(response.data.data);
+      }
+    } catch (error) {
+      console.error('Personal performance error:', error);
+    }
+  }, [userId, teamId, annualTarget._id]);
+
   useEffect(() => {
     fetchPersonalPerformance();
     fetchCompanyUsers();
     checkFeedbackModule();
     dispatch(fetchFeedback());
-  }, []);
+  }, [fetchPersonalPerformance, dispatch]);
 
   useEffect(() => {
     if (personalPerformance) {
       setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
       setSelectedSupervisor(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.supervisorId || '');
     }
-  }, [personalPerformance]);
+  }, [personalPerformance, quarter]);
 
   const checkFeedbackModule = async () => {
     const isModuleEnabled = await api.get('/module/Feedback/is-enabled');
@@ -105,23 +123,6 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     }
   }
 
-  const fetchPersonalPerformance = async () => {
-    try {
-      const response = await api.get(`/personal-performance/personal-performance/`, {
-        params: {
-          userId: userId,
-          annualTargetId: annualTarget._id,
-          teamId: teamId
-        }
-      });
-
-      if (response.status === 200) {
-        setPersonalPerformance(response.data.data);
-      }
-    } catch (error) {
-      console.error('Personal performance error:', error);
-    }
-  }
 
   // Add function to calculate overall rating score
   const calculateOverallScore = (objectives: QuarterlyTargetObjective[]) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   FormControl,
@@ -61,22 +61,9 @@ const EmployeesTraining: React.FC = () => {
   const { user } = useAuth();
   const dispatch = useAppDispatch();
   const { annualTargets } = useAppSelector((state: RootState) => state.scorecard);
-  const tableRef = useRef();
+  const tableRef = useRef<any>(null);
 
-  useEffect(() => {
-    fetchPlans();
-    dispatch(fetchAnnualTargets());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (selectedPlan) {
-      fetchEmployees(selectedPlan);
-    } else {
-      setEmployees([]);
-    }
-  }, [selectedPlan]);
-
-  const fetchPlans = async () => {
+  const fetchPlans = useCallback(async () => {
     try {
       const response = await api.get(`/users/org-dev-plan/${user?.tenantId}`);
       if (response.data.status === 'success' && Array.isArray(response.data.data)) {
@@ -90,14 +77,9 @@ const EmployeesTraining: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.tenantId, showToast]);
 
-  const handleView = () => {
-    fetchEmployees(selectedPlan);
-    setIsTableVisible(true);
-  };
-
-  const fetchEmployees = async (planId: string) => {
+  const fetchEmployees = useCallback(async (planId: string) => {
     setLoading(true);
     try {
       const response = await api.get(`/training/${planId}/employees`);
@@ -109,6 +91,24 @@ const EmployeesTraining: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  }, [showToast]);
+
+  useEffect(() => {
+    fetchPlans();
+    dispatch(fetchAnnualTargets());
+  }, [dispatch, fetchPlans]);
+
+  useEffect(() => {
+    if (selectedPlan) {
+      fetchEmployees(selectedPlan);
+    } else {
+      setEmployees([]);
+    }
+  }, [selectedPlan, fetchEmployees]);
+
+  const handleView = () => {
+    fetchEmployees(selectedPlan);
+    setIsTableVisible(true);
   };
 
   const calculateProgress = () => {

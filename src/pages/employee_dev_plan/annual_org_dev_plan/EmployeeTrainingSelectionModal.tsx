@@ -154,7 +154,7 @@ const EmployeeTrainingSelectionModal: React.FC<EmployeeTrainingSelectionModalPro
       emp.quarter === quarter &&
       (emp.planId !== planId && emp.status !== TrainingStatus.NOT_COMPLETED || emp.planId === planId)
     );
-  }, [allEmployees]);
+  }, [allEmployees, planId]);
 
   const approvedEmployees = useMemo(() => {
     if (!Array.isArray(teamPerformances)) return [];

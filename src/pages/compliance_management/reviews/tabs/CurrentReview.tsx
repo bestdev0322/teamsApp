@@ -152,7 +152,7 @@ const CurrentReview: React.FC = () => {
         };
 
         fetchData();
-    }, [dispatch]);
+    }, [dispatch, obligations]);
     
     const handleViewClick = (year: number, quarter: string) => {
         setSelectedYear(year);

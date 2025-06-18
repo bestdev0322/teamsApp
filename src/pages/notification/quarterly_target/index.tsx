@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -60,19 +60,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   const [currentComment, setCurrentComment] = useState('');
   const [previousComment, setPreviousComment] = useState('');
 
-  useEffect(() => {
-    fetchPersonalPerformance();
-  }, []);
-
-  useEffect(() => {
-    if (personalPerformance) {
-      setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
-      setIsAgreementCommitteeSendBack(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.isAgreementCommitteeSendBack || false);
-    }
-  }, [personalPerformance]);
-
-
-  const fetchPersonalPerformance = async () => {
+  const fetchPersonalPerformance = useCallback(async () => {
     try {
       const response = await api.get(`/notifications/personal-performance/${notification?._id}`);
       if (response.status === 200) {
@@ -83,8 +71,24 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     } catch (error) {
       console.error('Error fetching personal performance:', error);
     }
-  }
+  }, [notification?._id]);
 
+  useEffect(() => {
+    fetchPersonalPerformance();
+  }, [fetchPersonalPerformance]);
+
+  useEffect(() => {
+    if (personalQuarterlyObjectives.length > 0) {
+      setPersonalQuarterlyObjectives(personalQuarterlyObjectives);
+    }
+  }, [personalQuarterlyObjectives, quarter]);
+
+  useEffect(() => {
+    if (personalPerformance) {
+      setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
+      setIsAgreementCommitteeSendBack(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.isAgreementCommitteeSendBack || false);
+    }
+  }, [personalPerformance, quarter]);
 
   const handleViewRatingScales = (kpi: QuarterlyTargetKPI) => {
     setSelectedRatingScales(kpi.ratingScales);

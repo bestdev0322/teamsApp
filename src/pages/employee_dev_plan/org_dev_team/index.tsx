@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Button, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, IconButton, Tooltip } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
@@ -25,13 +25,7 @@ const OrganizationalDevelopmentTeam: React.FC = () => {
   const isSuperUser = user?.role === 'SuperUser';
   const isAppOwner = user?.role === 'AppOwner';
 
-  useEffect(() => {
-    if (user?.tenantId) {
-      fetchMembers();
-    }
-  }, [user?.tenantId]);
-
-  const fetchMembers = async () => {
+  const fetchMembers = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get(`/users/org-dev-plan/get-all-members/${user?.tenantId}`);
@@ -50,7 +44,13 @@ const OrganizationalDevelopmentTeam: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.tenantId]);
+
+  useEffect(() => {
+    if (user?.tenantId) {
+      fetchMembers();
+    }
+  }, [user?.tenantId, fetchMembers]);
 
   const handleAddMemberClick = () => {
     setIsPickerOpen(true);

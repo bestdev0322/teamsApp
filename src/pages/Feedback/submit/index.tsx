@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Box,
     Typography,
@@ -68,13 +68,7 @@ const FeedbackSubmission = () => {
     const [showValidationAlert, setShowValidationAlert] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
 
-    useEffect(() => {
-        if (id) {
-            fetchFeedbackData();
-        }
-    }, [id]);
-
-    const fetchFeedbackData = async () => {
+    const fetchFeedbackData = useCallback(async () => {
         try {
             const response = await publicApi.get(`/submit-feedback/${id}`);
             if (response.data.status === 200) {
@@ -108,7 +102,13 @@ const FeedbackSubmission = () => {
         } catch (error) {
             console.error('Error fetching feedback data:', error);
         }
-    };
+    }, [id]);
+
+    useEffect(() => {
+        if (id) {
+            fetchFeedbackData();
+        }
+    }, [id, fetchFeedbackData]);
 
     const handleEdit = (dimensionName: string, questionIndex: number) => {
         const key = `${dimensionName}-${questionIndex}`;

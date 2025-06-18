@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -88,20 +88,7 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
   // Use memoized selector
   const feedbacks = useAppSelector(state => selectFeedbacks(state, personalPerformance?.annualTargetId, quarter));
 
-  useEffect(() => {
-    fetchPersonalPerformance();
-    checkFeedbackModule();
-    dispatch(fetchFeedback());
-
-  }, []);
-
-  useEffect(() => {
-    if (personalPerformance) {
-      setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
-    }
-  }, [personalPerformance]);
-
-  const fetchPersonalPerformance = async () => {
+  const fetchPersonalPerformance = useCallback(async () => {
     try {
       const response = await api.get(`/notifications/personal-performance/${notification?._id}`);
       if (response.status === 200) {
@@ -112,14 +99,29 @@ const PersonalQuarterlyTargetContent: React.FC<PersonalQuarterlyTargetProps> = (
     } catch (error) {
       console.error('Error fetching personal performance:', error);
     }
-  }
+  }, [notification?._id]);
 
-  const checkFeedbackModule = async () => {
+  const checkFeedbackModule = useCallback(async () => {
     const isModuleEnabled = await api.get('/module/Feedback/is-enabled');
     if (isModuleEnabled.data.data.isEnabled) {
       setEnableFeedback(true);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchPersonalPerformance();
+    checkFeedbackModule();
+  }, [dispatch, fetchPersonalPerformance, checkFeedbackModule]);
+
+  useEffect(() => {
+    if (personalPerformance) {
+      setPersonalQuarterlyObjectives(personalPerformance.quarterlyTargets.find(target => target.quarter === quarter)?.objectives || []);
+    }
+  }, [personalPerformance, quarter]);
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
 
   // Add function to calculate overall rating score
   const calculateOverallScore = (objectives: QuarterlyTargetObjective[]) => {
