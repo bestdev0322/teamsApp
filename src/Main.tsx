@@ -143,6 +143,16 @@ function Main() {
       show: true
     },
     {
+      path: "/my-performance-agreement/*",
+      element: MyPerformanceAgreement,
+      title: "My Performance Agreement",
+      icon: <Handshake24Regular fontSize={iconSize} />,
+      tabs: isAppOwner || isSuperUser ?
+        ['My Performance Agreements', 'Manage Performance Agreement'] :
+        ['My Performance Agreements'],
+      show: true
+    },
+    {
       path: "/my-performance-assessment/*",
       element: MyPerformanceAssessment,
       title: "My Performance Assessment",
@@ -156,16 +166,6 @@ function Main() {
           ['My Assessments', 'My Performances', 'Manage Performance Assessment'] :
           ['My Assessments', 'My Performances']
         ),
-      show: true
-    },
-    {
-      path: "/my-performance-agreement/*",
-      element: MyPerformanceAgreement,
-      title: "My Performance Agreement",
-      icon: <Handshake24Regular fontSize={iconSize} />,
-      tabs: isAppOwner || isSuperUser ?
-        ['My Performance Agreements', 'Manage Performance Agreement'] :
-        ['My Performance Agreements'],
       show: true
     },
     {
