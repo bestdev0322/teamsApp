@@ -2,10 +2,18 @@ import express, { Response } from 'express';
 import { authenticateToken } from '../middleware/auth';
 import { AuthenticatedRequest } from '../middleware/auth';
 import Feedback, { FeedbackDocument } from '../models/Feedback';
-import { omit } from 'lodash';
+// import { omit } from 'lodash';
 import PersonalPerformance from '../models/PersonalPerformance';
 import { sendFeedbackEmail } from '../services/feedbackService';
 const router = express.Router();
+
+function omit<T extends object, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> {
+  const result = { ...obj };
+  keys.forEach(key => {
+    delete result[key];
+  });
+  return result;
+}
 
 // Get all companies
 router.get('/', authenticateToken, async (_req: AuthenticatedRequest, res: Response) => {

@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+// Remove: import * as XLSX from 'xlsx';
 
 interface ExcelImportOptions {
   requiredColumns: {
@@ -9,18 +9,19 @@ interface ExcelImportOptions {
   onError: (error: string) => void;
 }
 
-export const importExcelFile = (file: File, options: ExcelImportOptions) => {
+export const importExcelFile = async (file: File, options: ExcelImportOptions) => {
   const resetInput = (inputRef: HTMLInputElement | null) => {
     if (inputRef) inputRef.value = '';
   };
 
   try {
     const reader = new FileReader();
-    reader.onload = (evt) => {
+    reader.onload = async (evt) => {
       try {
         const bstr = evt.target?.result;
         if (!bstr) throw new Error('Failed to read file');
 
+        const XLSX = await import('xlsx');
         const wb = XLSX.read(bstr, { type: 'binary' });
         const wsname = wb.SheetNames[0];
         const ws = wb.Sheets[wsname];

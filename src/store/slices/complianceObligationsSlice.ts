@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction, createSelector } from '@reduxjs/toolkit';
 import { api } from '../../services/api';
 import { Obligation } from '../../types/compliance';
-import moment from 'moment';
+import { startOfToday, startOfDay, parseISO, isWithinInterval } from 'date-fns';
 
 interface ComplianceObligationsState {
     obligations: Obligation[];
@@ -49,16 +49,16 @@ export const submitQuarterlyUpdates = createAsyncThunk(
 export const getCurrentQuarterYear = createSelector(
   [(state: any) => state.complianceSettings?.settings],
   (settings) => {
-    const today = moment().startOf('day');
+    const today = startOfToday();
     // Sort settings by year descending
     const sortedSettings = [...(settings || [])].sort((a, b) => b.year - a.year);
     let foundQuarter = null;
     let foundYear = null;
     for (const setting of sortedSettings) {
       for (const quarter of setting.quarters) {
-        const quarterStart = moment(quarter.start).startOf('day');
-        const quarterEnd = moment(quarter.end).startOf('day');
-        if (today.isBetween(quarterStart, quarterEnd, null, '[]')) {
+        const quarterStart = startOfDay(parseISO(quarter.start));
+        const quarterEnd = startOfDay(parseISO(quarter.end));
+        if (isWithinInterval(today, { start: quarterStart, end: quarterEnd })) {
           foundQuarter = quarter.quarter;
           foundYear = setting.year;
           break;

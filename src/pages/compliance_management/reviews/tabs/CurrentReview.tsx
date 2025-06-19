@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, TableContainer, Paper, Table, TableHead, TableRow, TableBody, TableCell, Button } from '@mui/material';
-import moment from 'moment';
+import { startOfToday, startOfDay, parseISO, isWithinInterval } from 'date-fns';
 import { api } from '../../../../services/api';
 import QuarterObligationsDetail from '../components/SubmittedObligationsDetail';
 import { useAppDispatch } from '../../../../hooks/useAppDispatch';
@@ -48,7 +48,7 @@ const CurrentReview: React.FC = () => {
                     quarters: s.quarters,
                 }));
 
-                const today = moment().startOf('day');
+                const today = startOfToday();
                 settings.sort((a, b) => b.year - a.year);
 
                 let foundQuarter: Quarter | null = null;
@@ -57,10 +57,9 @@ const CurrentReview: React.FC = () => {
                 // Find current quarter
                 for (const setting of settings) {
                     for (const quarter of setting.quarters) {
-                        const quarterStart = moment(quarter.start).startOf('day');
-                        const quarterEnd = moment(quarter.end).startOf('day');
-                        
-                        if (today.isBetween(quarterStart, quarterEnd, null, '[]')) {
+                        const quarterStart = startOfDay(parseISO(quarter.start));
+                        const quarterEnd = startOfDay(parseISO(quarter.end));
+                        if (isWithinInterval(today, { start: quarterStart, end: quarterEnd })) {
                             foundQuarter = quarter;
                             foundYear = setting.year;
                             break;

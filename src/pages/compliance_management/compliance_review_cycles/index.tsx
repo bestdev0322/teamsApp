@@ -7,7 +7,6 @@ import { useAppDispatch } from '../../../hooks/useAppDispatch';
 import { useAppSelector } from '../../../hooks/useAppSelector';
 import { useAuth } from '../../../contexts/AuthContext';
 import { updateBadgeCounts, fetchComplianceObligations, getCurrentQuarterYear } from '../../../store/slices/complianceObligationsSlice';
-import moment from 'moment';
 import { fetchComplianceSettings } from '../../../store/slices/complianceSettingsSlice';
 
 const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() + 1 - i);

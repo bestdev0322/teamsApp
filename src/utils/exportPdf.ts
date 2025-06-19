@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-import jsPDF from 'jspdf';
-import { autoTable, Styles } from 'jspdf-autotable'
-
 export const exportPdf = async (type: string, tableRef: React.MutableRefObject<undefined>, title: string, totalWeight: string, footer: string, columnWidths: number[], overalScore?: {score: string, color: string}) => {
+  const { default: jsPDF } = await import('jspdf');
+  const { autoTable } = await import('jspdf-autotable');
   const doc = new jsPDF('l', 'mm', 'a4'); // Set to landscape
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();

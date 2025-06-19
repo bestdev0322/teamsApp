@@ -6,7 +6,6 @@ import AttachFileIcon from '@mui/icons-material/AttachFile';
 import EvidenceModal from '../../organization_performance/performance_evaluations/EvidenceModal';
 import { ExportButton } from "../../../components/Buttons";
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import html2canvas from "html2canvas";
 import jsPDF from 'jspdf';
 
 
@@ -47,6 +46,7 @@ const StrategyExecution: React.FC<StrategyExecutionProps> = ({ annualTargetId, q
         const perspectiveBlocks = document.querySelectorAll('[data-perspective-block]');
         const blockImages: { imgData: string, imgProps: any, imgHeight: number }[] = [];
         for (const block of Array.from(perspectiveBlocks)) {
+            const html2canvas = (await import('html2canvas')).default;
             const canvas = await html2canvas(block as HTMLElement, { scale: 2 });
             const imgData = canvas.toDataURL("image/png");
             const imgProps = pdf.getImageProperties(imgData);

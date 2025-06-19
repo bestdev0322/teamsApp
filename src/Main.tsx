@@ -1,8 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense, lazy } from 'react';
 import Layout from './layouts/Layout';
 import './styles/globals.css';
-import AnnualCorporateScorecard from './pages/scorecards';
-import { ManagePage } from './pages/manage';
 import {
   GridRegular,
   Alert24Regular,
@@ -20,11 +18,6 @@ import {
   PersonFeedback24Regular
 } from '@fluentui/react-icons';
 import { useAuth } from './contexts/AuthContext';
-import OrganizationPerformance from './pages/organization_performance';
-import NotificationPage from './pages/notification';
-import MyPerformanceAgreement from './pages/my_performance_agreement';
-import MyPerformanceAssessment from './pages/my_performance_assessment';
-import Reports from './pages/reports';
 import { fetchNotifications } from './store/slices/notificationSlice';
 import { useAppDispatch } from './hooks/useAppDispatch';
 import { fetchAnnualTargets } from './store/slices/scorecardSlice';
@@ -32,14 +25,24 @@ import { useSocket } from './hooks/useSocket';
 import { SocketEvent } from './types/socket';
 import { fetchTeams, fetchTeamOwner } from './store/slices/teamsSlice';
 import { api } from './services/api';
-import Dashboard from './pages/dashboard';
-import EmployeeDevPlan from './pages/employee_dev_plan';
-import TeamsPage from './pages/teams';
-import Feedback from './pages/feedback';
-import PerformanceCalibration from './pages/performance_calibration';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import ComplianceManagement from './pages/compliance_management';
-import RiskManagement from './pages/risk_management';
+
+// Lazy load all main page components
+const AnnualCorporateScorecard = lazy(() => import('./pages/scorecards'));
+const ManagePage = lazy(() => import('./pages/manage').then(m => ({ default: m.ManagePage })));
+const OrganizationPerformance = lazy(() => import('./pages/organization_performance'));
+const NotificationPage = lazy(() => import('./pages/notification'));
+const MyPerformanceAgreement = lazy(() => import('./pages/my_performance_agreement'));
+const MyPerformanceAssessment = lazy(() => import('./pages/my_performance_assessment'));
+const Reports = lazy(() => import('./pages/reports'));
+const Dashboard = lazy(() => import('./pages/dashboard'));
+const EmployeeDevPlan = lazy(() => import('./pages/employee_dev_plan'));
+const TeamsPage = lazy(() => import('./pages/teams'));
+const Feedback = lazy(() => import('./pages/feedback'));
+const PerformanceCalibration = lazy(() => import('./pages/performance_calibration'));
+const ComplianceManagement = lazy(() => import('./pages/compliance_management'));
+const RiskManagement = lazy(() => import('./pages/risk_management'));
+
 const iconSize = 24;
 
 function Main() {
@@ -267,29 +270,31 @@ function Main() {
   ];
 
   return (
-    <Routes>
-      <Route element={<Layout pages={pages} />}>
-        <Route path="/*" element={<Navigate to={(isAppOwner || isSuperUser || isTeamOwner) ? "/dashboard" : "/notifications"} replace />} />
-        {pages.map((page) => (
-          page.show && (
-            <Route
-              key={page.path}
-              path={page.path}
-              element={
-                <page.element
-                  title={page.title}
-                  icon={page.icon}
-                  tabs={page.tabs}
-                  path={page.path}
-                  show={page.show}
-                  element={page.element}
-                />
-              }
-            />
-          )
-        ))}
-      </Route>
-    </Routes>
+    <Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh'}}><div className="spinner" /></div>}>
+      <Routes>
+        <Route element={<Layout pages={pages} />}>
+          <Route path="/*" element={<Navigate to={(isAppOwner || isSuperUser || isTeamOwner) ? "/dashboard" : "/notifications"} replace />} />
+          {pages.map((page) => (
+            page.show && (
+              <Route
+                key={page.path}
+                path={page.path}
+                element={
+                  <page.element
+                    title={page.title}
+                    icon={page.icon}
+                    tabs={page.tabs}
+                    path={page.path}
+                    show={page.show}
+                    element={page.element}
+                  />
+                }
+              />
+            )
+          ))}
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }
 

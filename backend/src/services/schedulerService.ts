@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import moment from 'moment';
+import { startOfToday, startOfDay, parseISO, isWithinInterval, subDays, isAfter, isBefore } from 'date-fns';
 import { sendComplianceReminders } from './complianceReminderService';
 import axios from 'axios';
 import { config } from '../config';
@@ -41,7 +41,7 @@ class SchedulerService {
       const response = res.data as ApiResponse<ComplianceSetting[]>;
       const settings = response.data || [];
 
-      const today = moment().startOf('day');
+      const today = startOfToday();
       settings.sort((a, b) => b.year - a.year);
 
       let foundQuarter = null;
@@ -50,10 +50,9 @@ class SchedulerService {
       // Find the current quarter based on today's date
       for (const setting of settings) {
         for (const quarter of setting.quarters) {
-          const quarterStart = moment(quarter.start).startOf('day');
-          const quarterEnd = moment(quarter.end).startOf('day');
-          
-          if (today.isBetween(quarterStart, quarterEnd, null, '[]')) {
+          const quarterStart = startOfDay(parseISO(quarter.start));
+          const quarterEnd = startOfDay(parseISO(quarter.end));
+          if (isWithinInterval(today, { start: quarterStart, end: quarterEnd })) {
             foundQuarter = quarter;
             foundYear = setting.year;
             break;
@@ -80,10 +79,10 @@ class SchedulerService {
         if (quarter && year) {
           // Only send reminders if today is within the last 2 days before the end date
           const endDate = quarter.end;
-          const reminderDate = moment(endDate).subtract(2, 'days').startOf('day');
-          const endDateTime = moment(endDate).startOf('day');
-          const today = moment().startOf('day');
-          if (today.isSameOrAfter(reminderDate) && today.isSameOrBefore(endDateTime)) {
+          const reminderDate = subDays(startOfDay(parseISO(endDate)), 2);
+          const endDateTime = startOfDay(parseISO(endDate));
+          const today = startOfToday();
+          if (!isBefore(today, reminderDate) && !isAfter(today, endDateTime)) {
             await sendComplianceReminders(
               year.toString(),
               quarter.quarter,

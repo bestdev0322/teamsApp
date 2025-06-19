@@ -5,7 +5,6 @@ import { useAuth } from '../../../../../../contexts/AuthContext';
 import RiskChart from '../../../../../../components/RiskChart';
 import { ExportButton } from '../../../../../../components/Buttons';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Document, Packer, Paragraph, TextRun, ImageRun } from 'docx';
 import { saveAs } from 'file-saver';
@@ -93,6 +92,7 @@ const TreatmentsDistribution: React.FC<TreatmentsDistributionProps> = ({ year, q
         const chartBlocks = document.querySelectorAll('[data-chart-block]');
         const blockImages: { imgData: string, imgHeight: number }[] = [];
         for (const block of Array.from(chartBlocks)) {
+            const html2canvas = (await import('html2canvas')).default;
             const canvas = await html2canvas(block as HTMLElement, { scale: 2 });
             const imgData = canvas.toDataURL('image/png');
             const imgProps = pdf.getImageProperties(imgData);
@@ -140,6 +140,7 @@ const TreatmentsDistribution: React.FC<TreatmentsDistributionProps> = ({ year, q
             children.push(new Paragraph({ text: 'No charts available.' }));
         } else {
             for (const block of Array.from(chartBlocks)) {
+                const html2canvas = (await import('html2canvas')).default;
                 const canvas = await html2canvas(block as HTMLElement, { scale: 2 });
                 const imgData = canvas.toDataURL('image/png');
                 const base64Data = imgData.split(',')[1];
