@@ -270,9 +270,9 @@ function Main() {
   ];
 
   return (
-    <Suspense fallback={<div style={{display:'flex',justifyContent:'center',alignItems:'center',height:'100vh'}}><div className="spinner" /></div>}>
-      <Routes>
-        <Route element={<Layout pages={pages} />}>
+    <Routes>
+      <Route element={<Layout pages={pages} />}>
+        <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><div className="spinner" /></div>}>
           <Route path="/*" element={<Navigate to={(isAppOwner || isSuperUser || isTeamOwner) ? "/dashboard" : "/notifications"} replace />} />
           {pages.map((page) => (
             page.show && (
@@ -292,9 +292,9 @@ function Main() {
               />
             )
           ))}
-        </Route>
-      </Routes>
-    </Suspense>
+        </Suspense>
+      </Route>
+    </Routes>
   );
 }
 
