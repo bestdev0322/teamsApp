@@ -272,14 +272,14 @@ function Main() {
   return (
     <Routes>
       <Route element={<Layout pages={pages} />}>
-        <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><div className="spinner" /></div>}>
-          <Route path="/*" element={<Navigate to={(isAppOwner || isSuperUser || isTeamOwner) ? "/dashboard" : "/notifications"} replace />} />
-          {pages.map((page) => (
-            page.show && (
-              <Route
-                key={page.path}
-                path={page.path}
-                element={
+        <Route path="/*" element={<Navigate to={(isAppOwner || isSuperUser || isTeamOwner) ? "/dashboard" : "/notifications"} replace />} />
+        {pages.map((page) => (
+          page.show && (
+            <Route
+              key={page.path}
+              path={page.path}
+              element={
+                <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><div className="spinner" /></div>}>
                   <page.element
                     title={page.title}
                     icon={page.icon}
@@ -288,11 +288,11 @@ function Main() {
                     show={page.show}
                     element={page.element}
                   />
-                }
-              />
-            )
-          ))}
-        </Suspense>
+                </Suspense>
+              }
+            />
+          )
+        ))}
       </Route>
     </Routes>
   );
