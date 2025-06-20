@@ -168,7 +168,7 @@ const PeoplePickerModal: React.FC<PeoplePickerModalProps> = ({
       setSearchInput('');
       fetchPeople(undefined, true);
     }
-  }, [open, fetchPeople]);
+  }, [open]);
 
   const handleSearchInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(event.target.value);
