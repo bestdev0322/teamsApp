@@ -445,55 +445,66 @@ const Dashboard: React.FC = () => {
                                     </ExportButton>
                                 </Box>
                             </Box>
-                            <Box sx={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }} data-chart-block>
-                                <Box>
-                                    <Heatmap
-                                        title="Inherent Risk Heatmap"
-                                        risks={inherentRisks}
-                                        riskRatings={riskRatings}
-                                        xLabels={xLabels}
-                                        yLabels={yLabels}
-                                        year={year}
-                                        showLegend={false}
-                                    />
-                                </Box>
-                                <Box>
-                                    <Heatmap
-                                        title="Residual Risk Heatmap"
-                                        risks={residualRisks}
-                                        riskRatings={riskRatings}
-                                        xLabels={xLabels}
-                                        yLabels={yLabels}
-                                        year={year}
-                                        showLegend={false}
-                                    />
-                                </Box>
-                            </Box>
-                            <Box sx={{ mt: 4, maxWidth: 800, mx: 'auto', padding: 2 }} data-chart-block>
-                                <Typography variant="h6" align="center" sx={{ mb: 2 }}>
-                                    Risk Legend
-                                </Typography>
-                                <TableContainer component={Paper} variant="outlined">
-                                    <Table size="medium">
-                                        <TableHead>
-                                            <TableRow>
-                                                <TableCell>No.</TableCell>
-                                                <TableCell>Risk Name</TableCell>
-                                            </TableRow>
-                                        </TableHead>
-                                        <TableBody>
-                                            {risks.map((r) => (
-                                                <TableRow key={r._id}>
-                                                    <TableCell sx={{ width: 40 }}>{r.no}</TableCell>
-                                                    <TableCell>{r.riskNameElement}</TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                </TableContainer>
+                            <Box>
+                                {(!inherentRisks.length && !residualRisks.length && !risks.length) ? (
+                                    <Box sx={{ py: 8, textAlign: 'center' }}>
+                                        <Typography variant="h6" color="text.secondary">
+                                            No risk data available for this period.
+                                        </Typography>
+                                    </Box>
+                                ) : (
+                                    <>
+                                        <Box sx={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }} data-chart-block>
+                                            <Box>
+                                                <Heatmap
+                                                    title="Inherent Risk Heatmap"
+                                                    risks={inherentRisks}
+                                                    riskRatings={riskRatings}
+                                                    xLabels={xLabels}
+                                                    yLabels={yLabels}
+                                                    year={year}
+                                                    showLegend={false}
+                                                />
+                                            </Box>
+                                            <Box>
+                                                <Heatmap
+                                                    title="Residual Risk Heatmap"
+                                                    risks={residualRisks}
+                                                    riskRatings={riskRatings}
+                                                    xLabels={xLabels}
+                                                    yLabels={yLabels}
+                                                    year={year}
+                                                    showLegend={false}
+                                                />
+                                            </Box>
+                                        </Box>
+                                        <Box sx={{ mt: 4, maxWidth: 800, mx: 'auto', padding: 2 }} data-chart-block>
+                                            <Typography variant="h6" align="center" sx={{ mb: 2 }}>
+                                                Risk Legend
+                                            </Typography>
+                                            <TableContainer component={Paper} variant="outlined">
+                                                <Table size="medium">
+                                                    <TableHead>
+                                                        <TableRow>
+                                                            <TableCell>No.</TableCell>
+                                                            <TableCell>Risk Name</TableCell>
+                                                        </TableRow>
+                                                    </TableHead>
+                                                    <TableBody>
+                                                        {risks.map((r) => (
+                                                            <TableRow key={r._id}>
+                                                                <TableCell sx={{ width: 40 }}>{r.no}</TableCell>
+                                                                <TableCell>{r.riskNameElement}</TableCell>
+                                                            </TableRow>
+                                                        ))}
+                                                    </TableBody>
+                                                </Table>
+                                            </TableContainer>
+                                        </Box>
+                                    </>
+                                )}
                             </Box>
                         </Box>
-
                     )
                 ) : (
                     <TreatmentsDistribution year={year} quarter={selectedQuarter} />

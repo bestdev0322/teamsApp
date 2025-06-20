@@ -101,7 +101,7 @@ app.use('/api/v1/risk-treatments', authenticateToken, checkLicenseStatus, RiskTr
 app.use('/api/v1/residual-risk-assessment-cycle', authenticateToken, checkLicenseStatus, ResidualRiskAssessmentCycleRoutes);
 
 
-app.use('/api/v1/get-personal-performance-info', CustomerRoute);
+// app.use('/api/v1/get-personal-performance-info', CustomerRoute);
 
 // Connect to MongoDB
 mongoose.connect(config.mongoUri)
