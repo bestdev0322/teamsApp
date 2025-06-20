@@ -23,9 +23,13 @@ import { useAppDispatch } from './hooks/useAppDispatch';
 import { fetchAnnualTargets } from './store/slices/scorecardSlice';
 import { useSocket } from './hooks/useSocket';
 import { SocketEvent } from './types/socket';
-import { fetchTeams, fetchTeamOwner } from './store/slices/teamsSlice';
+import { fetchTeams } from './store/slices/teamsSlice';
 import { api } from './services/api';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import {
+  CircularProgress,
+  Box
+} from '@mui/material';
 
 // Lazy load all main page components
 const AnnualCorporateScorecard = lazy(() => import('./pages/scorecards'));
@@ -279,7 +283,11 @@ function Main() {
               key={page.path}
               path={page.path}
               element={
-                <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}><div className="spinner" /></div>}>
+                <Suspense fallback={
+                  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                    <CircularProgress />
+                  </Box>
+                }>
                   <page.element
                     title={page.title}
                     icon={page.icon}
