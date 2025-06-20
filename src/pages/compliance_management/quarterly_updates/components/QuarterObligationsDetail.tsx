@@ -275,7 +275,7 @@ const QuarterObligationsDetail: React.FC<QuarterObligationsDetailProps> = ({ yea
             };
             setTimeout(doExport, 0);
         }
-    }, [exportType, year, quarter]);
+    }, [exportType]);
 
     // Add function to find latest update before current quarter
     const findLatestUpdate = (obligation: Obligation) => {
