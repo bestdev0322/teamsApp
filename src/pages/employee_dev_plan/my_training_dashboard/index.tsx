@@ -3,7 +3,6 @@ import {
   Box,
   Typography,
   Container,
-  CircularProgress,
 } from '@mui/material';
 import { TrainingBoard } from './components/TrainingBoard';
 import { Training } from './types';
@@ -19,7 +18,6 @@ const MyTrainingDashboard: React.FC = () => {
   const [requestedTrainings, setRequestedTrainings] = useState<Training[]>([]);
   const [plannedTrainings, setPlannedTrainings] = useState<Training[]>([]);
   const [completedTrainings, setCompletedTrainings] = useState<Training[]>([]);
-  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { showToast } = useToast();
   const dispatch = useAppDispatch();
@@ -110,8 +108,6 @@ const MyTrainingDashboard: React.FC = () => {
       }
     } catch (error) {
       showToast('Failed to fetch trainings', 'error');
-    } finally {
-      setLoading(false);
     }
   }, [showToast, user?.id, fetchRequestedTrainings]);
 
@@ -119,14 +115,6 @@ const MyTrainingDashboard: React.FC = () => {
     dispatch(fetchAnnualTargets());
     fetchAllTrainings();
   }, [dispatch, fetchAllTrainings]);
-
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
 
   return (
     <Container 
