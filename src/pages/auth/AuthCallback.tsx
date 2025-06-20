@@ -32,7 +32,7 @@ export const AuthCallback: React.FC = () => {
 
         console.log('Processing auth callback with code');
         
-        const response = await axios.post(`${API_URL}/api/auth/callback`, {
+        const response = await axios.post(`${API_URL}/api/v1/auth/callback`, {
           code,
           redirect_uri: `${window.location.origin}/auth/callback`
         });

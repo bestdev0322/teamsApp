@@ -63,42 +63,45 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.static('public'));
 
 // Public routes (no license check)
-app.use('/api/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
 
 // Protected routes with license check
 // Apply both authentication and license check middleware
-app.use('/api/companies', authenticateToken, checkLicenseStatus, companyRoutes);
-app.use('/api/super-users', authenticateToken, checkLicenseStatus, superUserRoutes);
-app.use('/api/compliance-users', authenticateToken, checkLicenseStatus, complianceUserRoutes);
-app.use('/api/risk-users', authenticateToken, checkLicenseStatus, riskUserRoutes);
-app.use('/api/compliance-champions', authenticateToken, checkLicenseStatus, complianceChampionRoutes);
-app.use('/api/compliance-areas', authenticateToken, checkLicenseStatus, complianceAreaRoutes);
-app.use('/api/compliance-obligations', authenticateToken, checkLicenseStatus, complianceObligationRoutes);
-app.use('/api/licenses', authenticateToken, checkLicenseStatus, licenseRoutes);
-app.use('/api/score-card', authenticateToken, checkLicenseStatus, scoreCardRoutes);
-app.use('/api/personal-performance', authenticateToken, checkLicenseStatus, personalPerformanceRoutes);
-app.use('/api/notifications', authenticateToken, checkLicenseStatus, notificationRoutes);
-app.use('/api/teams', authenticateToken, checkLicenseStatus, teamRoutes);
-app.use('/api/report', authenticateToken, checkLicenseStatus, reportRoutes);
-app.use('/api/users', authenticateToken, checkLicenseStatus, userRoutes);
-app.use('/api/users/org-dev-plan', orgDevPlanRoutes);
-app.use('/api/training-courses', trainingCoursesRoutes);
-app.use('/api/training', trainingRoutes);
-app.use('/api/feedback', authenticateToken, checkLicenseStatus, feedbackRoutes);
-app.use('/api/module', authenticateToken, checkLicenseStatus, moduleRoutes);
-app.use('/api/submit-feedback', submitFeedbackRoutes);
-app.use('/api/users/performance-calibration', performanceCalibrationRoutes);
-app.use('/api/compliance-settings', authenticateToken, checkLicenseStatus, complianceSettingRoutes);
-app.use('/api/risk-categories', authenticateToken, checkLicenseStatus, RiskCategoriesRoutes);
-app.use('/api/risk-impact-settings', authenticateToken, checkLicenseStatus, RiskImpactSettingsRoutes);
-app.use('/api/risk-likelihood-settings', authenticateToken, checkLicenseStatus, RiskLikelihoodSettingsRoutes);
-app.use('/api/risk-impact-responses', authenticateToken, checkLicenseStatus, RiskImpactResponseRoutes);
-app.use('/api/risk-control-effectiveness', authenticateToken, checkLicenseStatus, RiskControlEffectivenessRoutes);
-app.use('/api/risk-champions', authenticateToken, checkLicenseStatus, RiskChampionsRoutes);
-app.use('/api/risk-ratings', authenticateToken, checkLicenseStatus, RiskRatingRoutes);
-app.use('/api/risks', RiskRoutes);
-app.use('/api/risk-treatments', authenticateToken, checkLicenseStatus, RiskTreatmentRoutes);
-app.use('/api/residual-risk-assessment-cycle', authenticateToken, checkLicenseStatus, ResidualRiskAssessmentCycleRoutes);
+app.use('/api/v1/companies', authenticateToken, checkLicenseStatus, companyRoutes);
+app.use('/api/v1/super-users', authenticateToken, checkLicenseStatus, superUserRoutes);
+app.use('/api/v1/compliance-users', authenticateToken, checkLicenseStatus, complianceUserRoutes);
+app.use('/api/v1/risk-users', authenticateToken, checkLicenseStatus, riskUserRoutes);
+app.use('/api/v1/compliance-champions', authenticateToken, checkLicenseStatus, complianceChampionRoutes);
+app.use('/api/v1/compliance-areas', authenticateToken, checkLicenseStatus, complianceAreaRoutes);
+app.use('/api/v1/compliance-obligations', authenticateToken, checkLicenseStatus, complianceObligationRoutes);
+app.use('/api/v1/licenses', authenticateToken, checkLicenseStatus, licenseRoutes);
+app.use('/api/v1/score-card', authenticateToken, checkLicenseStatus, scoreCardRoutes);
+app.use('/api/v1/personal-performance', authenticateToken, checkLicenseStatus, personalPerformanceRoutes);
+app.use('/api/v1/notifications', authenticateToken, checkLicenseStatus, notificationRoutes);
+app.use('/api/v1/teams', authenticateToken, checkLicenseStatus, teamRoutes);
+app.use('/api/v1/report', authenticateToken, checkLicenseStatus, reportRoutes);
+app.use('/api/v1/users', authenticateToken, checkLicenseStatus, userRoutes);
+app.use('/api/v1/users/org-dev-plan', orgDevPlanRoutes);
+app.use('/api/v1/training-courses', trainingCoursesRoutes);
+app.use('/api/v1/training', trainingRoutes);
+app.use('/api/v1/feedback', authenticateToken, checkLicenseStatus, feedbackRoutes);
+app.use('/api/v1/module', authenticateToken, checkLicenseStatus, moduleRoutes);
+app.use('/api/v1/submit-feedback', submitFeedbackRoutes);
+app.use('/api/v1/users/performance-calibration', performanceCalibrationRoutes);
+app.use('/api/v1/compliance-settings', authenticateToken, checkLicenseStatus, complianceSettingRoutes);
+app.use('/api/v1/risk-categories', authenticateToken, checkLicenseStatus, RiskCategoriesRoutes);
+app.use('/api/v1/risk-impact-settings', authenticateToken, checkLicenseStatus, RiskImpactSettingsRoutes);
+app.use('/api/v1/risk-likelihood-settings', authenticateToken, checkLicenseStatus, RiskLikelihoodSettingsRoutes);
+app.use('/api/v1/risk-impact-responses', authenticateToken, checkLicenseStatus, RiskImpactResponseRoutes);
+app.use('/api/v1/risk-control-effectiveness', authenticateToken, checkLicenseStatus, RiskControlEffectivenessRoutes);
+app.use('/api/v1/risk-champions', authenticateToken, checkLicenseStatus, RiskChampionsRoutes);
+app.use('/api/v1/risk-ratings', authenticateToken, checkLicenseStatus, RiskRatingRoutes);
+app.use('/api/v1/risks', RiskRoutes);
+app.use('/api/v1/risk-treatments', authenticateToken, checkLicenseStatus, RiskTreatmentRoutes);
+app.use('/api/v1/residual-risk-assessment-cycle', authenticateToken, checkLicenseStatus, ResidualRiskAssessmentCycleRoutes);
+
+
+app.use('/api/v1/get-personal-performance-info', CustomerRoute);
 
 // Connect to MongoDB
 mongoose.connect(config.mongoUri)

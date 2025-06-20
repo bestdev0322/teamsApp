@@ -4,15 +4,15 @@ import { Company, SuperUser, License, Course } from '../types';
 // Get the API URL from environment or try common development ports
 export const getAPIBaseURL = () => {
   if (process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL + '/api';
+    return process.env.REACT_APP_API_URL + '/api/v1';
   }
   
   // In development, try common ports
   const defaultPort = 3001;
   const isDevelopment = window.location.hostname === 'localhost';
   return isDevelopment 
-    ? `http://localhost:${defaultPort}/api`
-    : 'https://app.teamscorecards.online/api';
+    ? `http://localhost:${defaultPort}/api/v1`
+    : 'https://app.teamscorecards.online/api/v1';
 };
 
 const API_BASE_URL = getAPIBaseURL();

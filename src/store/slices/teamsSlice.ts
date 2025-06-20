@@ -101,8 +101,6 @@ export const deleteTeam = createAsyncThunk(
   async (teamId: string) => {
     const response = await api.delete(`/teams/${teamId}`);
     return response.data.data as string;
-    // await fetch(`/api/teams/${teamId}`, { method: 'DELETE' });
-    // return teamId;
   }
 );
 

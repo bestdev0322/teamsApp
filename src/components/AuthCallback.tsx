@@ -13,7 +13,7 @@ export const AuthCallback: React.FC = () => {
       
       if (code) {
         try {
-          const response = await fetch('/api/auth/callback', {
+          const response = await fetch('/api/v1/auth/callback', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

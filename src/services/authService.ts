@@ -1,6 +1,6 @@
 import { getAPIBaseURL, api } from './api';
 
-const API_URL = getAPIBaseURL() || 'http://localhost:3001/api';
+const API_URL = getAPIBaseURL() || 'http://localhost:3001/api/v1';
 const TENANT_ID = process.env.REACT_APP_TENANT_ID;
 const CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
 const OAUTH_AUTHORITY = process.env.REACT_APP_OAUTH_AUTHORITY;
